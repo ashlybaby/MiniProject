@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        /* Basic styles for the header, footer, and profile content */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff; /* Light blue background */
+            background: url('{% static "img/login1.jpg" %}') no-repeat center center fixed;
+            background-size: cover;
+        }
+        header {
+            background-color: #007bff; /* Blue color */
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            background-color: #0056b3; /* Darker blue */
+        }
+        nav ul li {
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            display: block;
+        }
+        nav ul li a:hover {
+            background-color: #004085; /* Darker hover color */
+        }
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            padding-bottom: 100px;
+        }
+        .profile-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .profile-card h2 {
+            margin-top: 0;
+            color: #007bff; /* Blue heading */
+        }
+        .profile-card p {
+            margin: 8px 0;
+            color: #333;
+        }
+        .profile-card p strong {
+            color: #0056b3;
+        }
+        footer {
+            background-color: #0056b3;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+        .messages {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+        }
+        .messages li {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Welcome to FinanceFolio</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="profile-card">
+            <h2>User Profile</h2>
+
+            <p><strong>First Name:</strong> {{ user.first_name }}</p>
+            <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Gender:</strong> {{ user.get_gender_display }}</p>
+            <p><strong>Age:</strong> {{ user.age }}</p>
+            <p><strong>Address:</strong> {{ user.address }}</p>
+            <p><strong>City:</strong> {{ user.city }}</p>
+            <p><strong>State:</strong> {{ user.state }}</p>
+            <p><strong>Date Joined:</strong> {{ user.date_joined }}</p>
+            <p><strong>Last Login:</strong> {{ user.last_login }}</p>
+        </div>
+
+        {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+    </main>
+
+    <footer>
+        <p>&copy; 2024 FinanceFolio</p>
+    </footer>
+
+</body>
+</html>

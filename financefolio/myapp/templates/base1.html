@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}User Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* Basic layout styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            background-image: url('{% static "img/login1.jpg" %}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        header { /* Your header styles here */ }
+        footer { /* Your footer styles here */ }
+        /* Add additional styles as necessary */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-left">
+            <span>Welcome, {{ user.email }}</span>
+        </div>
+        <div class="nav-right">
+            <div class="dropdown">
+                <button class="dropbtn">Profile</button>
+                <div class="dropdown-content">
+                    <a href="{% url 'profile_view' %}">View Profile</a>
+                    <a href="{% url 'profile_edit' %}">Edit Profile</a>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <aside>
+            <div class="main-menu">
+                <ul>
+                    <li><a href="{% url 'budget_view' %}" id="budgeting-menu">Budgeting</a></li>
+                    <li><a href="#" id="goal-tracking-menu">Goal Tracking</a></li>
+                    <li><a href="#" id="transactions-menu">Transactions</a></li>
+                    <li><a href="#" id="charts-menu">Charts</a></li>
+                </ul>
+            </div>
+            <div class="secondary-menu">
+                <ul>
+                    <li><a href="#" id="announcements-menu">Announcements</a></li>
+                    <li><a href="#" id="tutorials-menu">Tutorials</a></li>
+                    <li><a href="#" id="feedback-menu">Feedback</a></li>
+                    <li><a href="#" id="articles-menu">Articles</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main id="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Finance Folio. All rights reserved.</p>
+    </footer>
+</body>
+</html>

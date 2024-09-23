@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        header {
+            background-color: #ADD8E6; /* Light Blue */
+            color: white;
+            padding: 1rem;
+        }
+        
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        nav ul li {
+            display: inline;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        main {
+            padding: 1rem;
+        }
+        
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .overview, .charts {
+            flex: 1;
+            margin: 1rem;
+        }
+        
+        .widget {
+            background: #f4f4f4;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .widget h3 {
+            margin-top: 0;
+        }
+        
+        .chart-container {
+            margin-bottom: 2rem;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: #343a40; /* Dark Gray */
+            color: white;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .footer h4 {
+            margin-bottom: 1rem;
+        }
+
+        .footer a {
+            color: #ADD8E6; /* Light Blue */
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer .btn-link {
+            color: #ADD8E6; /* Light Blue */
+            text-decoration: none;
+        }
+
+        .footer .btn-link:hover {
+            text-decoration: underline;
+        }
+
+        .footer i {
+            color: #ADD8E6; /* Light Blue */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Income & Expense Tracking</a></li>
+                <li><a href="#">Goals</a></li>
+                <li><a href="#">Tutorials</a></li>
+                <li><a href="{% url 'index' %}">Back Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="dashboard">
+            <section class="overview">
+                <h2>Overview</h2>
+                <!-- Overview widgets -->
+                <div class="widget" id="income-widget">
+                    <h3>Income</h3>
+                    <p id="income-amount">$0.00</p>
+                </div>
+                <div class="widget" id="expense-widget">
+                    <h3>Expenses</h3>
+                    <p id="expense-amount">$0.00</p>
+                </div>
+                <div class="widget" id="balance-widget">
+                    <h3>Balance</h3>
+                    <p id="balance-amount">$0.00</p>
+                </div>
+            </section>
+            
+            <section class="charts">
+                <h2>Charts</h2>
+                <div class="chart-container">
+                    <canvas id="incomeChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="expenseChart" width="400" height="200"></canvas>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Example data for charts
+        const incomeData = {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+            datasets: [{
+                label: 'Income',
+                data: [5000, 4000, 6000, 7000, 8000],
+                backgroundColor: '#4CAF50',
+                borderColor: '#388E3C',
+                borderWidth: 1
+            }]
+        };
+
+        const expenseData = {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+            datasets: [{
+                label: 'Expenses',
+                data: [2000, 3000, 2500, 4000, 3500],
+                backgroundColor: '#FF5722',
+                borderColor: '#E64A19',
+                borderWidth: 1
+            }]
+        };
+
+        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        new Chart(incomeCtx, {
+            type: 'bar',
+            data: incomeData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+        new Chart(expenseCtx, {
+            type: 'bar',
+            data: expenseData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Update widgets with actual data (e.g., fetched from the server)
+        document.getElementById('income-amount').innerText = '$5000.00';
+        document.getElementById('expense-amount').innerText = '$3000.00';
+        document.getElementById('balance-amount').innerText = '$2000.00';
+    </script>
+
+    <div class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <h4 class="text-light mb-4">Quick Links</h4>
+                    <a class="btn btn-link" href="{% url 'about' %}">About</a>
+                    <a class="btn btn-link" href="">Services</a>
+                    <a class="btn btn-link" href="">Register</a>
+                    <a class="btn btn-link" href="login">Login</a>
+                    <a class="btn btn-link" href="{% url 'guest_view' %}">Guest View</a>
+                    <a class="btn btn-link" href="">Contact</a>
+                    <a class="btn btn-link" href="">FAQs</a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h4 class="text-light mb-4">Contact Us</h4>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Kochi, Kerala, India</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>91-9605289254</p>
+                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>financefolio.com</p>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h4 class="text-light mb-4">Follow Us</h4>
+                    <a class="btn btn-link" href=""><i class="fab fa-facebook-f"></i></a>
+                    <a class="btn btn-link" href=""><i class="fab fa-twitter"></i></a>
+                    <a class="btn btn-link" href=""><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h4 class="text-light mb-4">Newsletter</h4>
+                    <div class="position-relative mx-auto" style="max-width: 400px;">
+                        <input class="form-control border-0 py-3 ps-4 pe-5" type="text" placeholder="Your Email">
+                        <button type="button" class="btn btn-primary rounded-pill py-2 position-absolute top-50 end-0 translate-middle-y me-2">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+            <div class="container border-top border-light pt-4">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <p class="mb-0">&copy; <a class="text-primary" href="#">Finanza</a>. All Rights Reserved. Designed by <a class="text-primary" href="#">Your Name</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

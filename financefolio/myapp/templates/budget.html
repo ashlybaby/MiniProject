@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgeting</title>
+    <style>
+        /* Basic styles for the header, footer, and budgeting content */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff; /* Light blue background */
+            background: url('{% static "img/login1.jpg" %}') no-repeat center center fixed;
+            background-size: cover;
+        }
+        header {
+            background-color: #007bff; /* Blue color */
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            background-color: #0056b3; /* Darker blue */
+        }
+        nav ul li {
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            display: block;
+        }
+        nav ul li a:hover {
+            background-color: #004085; /* Darker hover color */
+        }
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            padding-bottom: 100px;
+        }
+        .budget-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .budget-card h2, .budget-card h3 {
+            margin-top: 0;
+            color: #007bff; /* Blue heading */
+        }
+        .budget-card label {
+            display: block;
+            margin-top: 10px;
+        }
+        .budget-card input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .budget-card button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .budget-card button:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        footer {
+            background-color: #0056b3;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+    <script>
+        function addExpense() {
+            const expenseContainer = document.getElementById('expense-container');
+            const newExpense = document.createElement('div');
+            newExpense.innerHTML = `
+                <label for="category">Category:</label>
+                <input type="text" name="expense-category" required>
+                <label for="planned-expense">Planned Expense:</label>
+                <input type="number" name="planned-expense" step="0.01" required>
+                <label for="actual-expense">Actual Expense:</label>
+                <input type="number" name="actual-expense" step="0.01" required>
+                <button type="button" onclick="removeExpense(this)">Remove</button>
+            `;
+            expenseContainer.appendChild(newExpense);
+        }
+
+        function removeExpense(button) {
+            button.parentElement.remove();
+        }
+
+        function showSuccessMessage(message) {
+            alert(message);
+        }
+
+        // Function to display success message after page load if exists
+        window.onload = function() {
+            const successMessage = "{{ success_message|escapejs }}";
+            if (successMessage) {
+                alert(successMessage);
+            }
+        };
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Welcome to FinanceFolio</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="budget-card">
+            <h2>Create a Budget</h2>
+            <form method="post" id="budget-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <label for="actual-income">Actual Income:</label>
+                <input type="number" name="actual-income" step="0.01" required>
+
+                <div id="expense-container">
+                    <h3>Expenses</h3>
+                    <div>
+                        <label for="category">Category:</label>
+                        <input type="text" name="expense-category" required>
+                        <label for="planned-expense">Planned Expense:</label>
+                        <input type="number" name="planned-expense" step="0.01" required>
+                        <label for="actual-expense">Actual Expense:</label>
+                        <input type="number" name="actual-expense" step="0.01" required>
+                        <button type="button" onclick="removeExpense(this)">Remove</button>
+                    </div>
+                </div>
+
+                <button type="button" onclick="addExpense()">Add Expense</button>
+                <button type="submit">Submit</button>
+            </form>
+
+            {% if form.errors %}
+                <div class="error">
+                    <h3>Errors:</h3>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            {% if summary %}
+                <h3>Summary</h3>
+                <p>Planned Income: {{ summary.planned_income }}</p>
+                <p>Actual Income: {{ summary.actual_income }}</p>
+                <p>Total Planned Expenses: {{ summary.total_planned_expenses }}</p>
+                <p>Total Actual Expenses: {{ summary.total_actual_expenses }}</p>
+                <p>Remaining Balance (Planned): {{ summary.remaining_balance_planned }}</p>
+                <p>Remaining Balance (Actual): {{ summary.remaining_balance_actual }}</p>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 FinanceFolio</p>
+    </footer>
+</body>
+</html>
