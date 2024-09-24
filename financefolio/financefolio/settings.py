@@ -49,8 +49,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'myapp.middleware.NoCacheMiddleware',
    
 ]
+
 
 ROOT_URLCONF = 'financefolio.urls'
 
@@ -152,6 +154,7 @@ DEBUG = True
 # settings.py
 LOGIN_REDIRECT_URL = '/login/'
 LOGOUT_REDIRECT_URL = 'index/'
+
 
 
 # settings.py

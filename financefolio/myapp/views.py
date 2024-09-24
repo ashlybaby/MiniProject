@@ -103,12 +103,12 @@ def user_login(request):
 
 from django.shortcuts import render, redirect
 from django.urls import reverse
+
 @login_required
 def user_dashboard(request):
     if request.user.is_superuser:
         return redirect(reverse('admin_dashboard'))  # Replace with the URL you want to redirect to
     return render(request, 'userdashboard.html')
-
 
 
 def admin_login(request):
@@ -357,4 +357,8 @@ class UserListView(View):
         users = User.objects.all().values('id', 'first_name', 'last_name', 'email', 'is_staff')
         return JsonResponse(list(users), safe=False)
     
-    
+# views.py
+from django.shortcuts import render
+
+def financial_management_videos(request):
+    return render(request, 'financial_management_videos.html')  # Adjust the template name as needed
