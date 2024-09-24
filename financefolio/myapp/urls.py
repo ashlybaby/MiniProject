@@ -33,6 +33,11 @@ urlpatterns = [
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('budget/', views.budget_view, name='budget_view'),
     path('api/history/', views.history_view, name='history_view'),
+    path('manage-users/', views.manage_users, name='manage_users'),
+    path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('api/users/', views.UserListView.as_view(), name='user_list'),
+
+    
     
           
 ]

@@ -15,30 +15,34 @@
             background-size: cover;
         }
         header {
-            background-color: #007bff; /* Blue color */
-            color: white;
-            padding: 1rem;
-            text-align: center;
+            background-color: #374D5A; /* Updated header color */
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #0056b3;
+        }
+        nav {
+            margin: 0;
         }
         nav ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            background-color: #0056b3; /* Darker blue */
+            list-style: none; /* Remove bullets */
+            padding: 0; /* Remove padding */
+            display: flex; /* Use flexbox for horizontal layout */
         }
         nav ul li {
-            margin: 0 15px;
+            margin-right: 20px; /* Space between links */
         }
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            padding: 14px 20px;
-            display: block;
+        nav a {
+            color: white; /* Set text color to white */
+            text-decoration: none; /* Remove underline */
+            padding: 10px; /* Add padding */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
         }
-        nav ul li a:hover {
-            background-color: #004085; /* Darker hover color */
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.1); /* Light background on hover */
+            border-radius: 4px; /* Rounded corners */
         }
         main {
             padding: 20px;
@@ -66,10 +70,10 @@
             color: #0056b3;
         }
         footer {
-            background-color: #0056b3;
-            color: white;
+            background-color: #374D5A; /* Updated footer color */
+            color: #fff;
             text-align: center;
-            padding: 10px;
+            padding: 15px;
             position: fixed;
             width: 100%;
             bottom: 0;
@@ -119,20 +123,19 @@
               }, 1000); // Adjust the delay as needed
           }
       });
-  </script>
+    </script>
 </head>
 <body>
 
     <header>
         <h1>Welcome to FinanceFolio</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'user_dashboard' %}"><i class="fas fa-tachometer-alt" style="color: white;"></i> Dashboard</a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt" style="color: white;"></i> Logout</a></li>
+            </ul>
+        </nav>
     </header>
-
-    <nav>
-        <ul>
-            <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-        </ul>
-    </nav>
 
     <main>
         <h2>Edit Profile</h2>

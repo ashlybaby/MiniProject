@@ -32,22 +32,48 @@
 
     <style>
         .navbar {
-            background-color: rgb(255, 255, 255);
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: rgba(0, 31, 63, 0.6); /* Semi-transparent dark blue */
+            backdrop-filter: blur(15px); /* Blur effect */
+            padding: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2); /* Shadow for depth */
             z-index: 2000; /* Ensure navbar is on top */
             position: fixed; /* Fix the navbar at the top */
             width: 100%;
             top: 0; /* Ensure it's at the top */
             left: 0;
         }
-
+        
         header {
-            background-color: #ADD8E6; /* Light Blue */
-            color: white;
+            background: rgba(0, 31, 63, 0.6); /* Semi-transparent dark blue */
+            backdrop-filter: blur(15px); /* Blur effect */
+            color: #fff; /* White text for contrast */
             padding: 1rem;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2); /* Similar shadow for consistency */
         }
-
+        
+        .footer {
+            background: #001f3f; /* Dark blue */
+            color: #fff; /* White text color */
+            padding: 20px; /* Padding for spacing */
+            text-align: center; /* Center the text */
+            font-size: 16px; /* Font size for the text */
+            position: fixed; /* Fix the footer at the bottom */
+            bottom: 0;
+            width: 100%;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Optional shadow for a nice effect */
+        }
+        
+        .footer p {
+            margin: 0; /* Remove default margin */
+            font-family: 'Arial', sans-serif; /* Font style */
+            letter-spacing: 1px; /* Add some letter spacing */
+        }
+        
+        .footer p:hover {
+            color: #D6D6D6; /* Optional hover effect (light gray) */
+        }
+        
+        
         /* Registration Container Styles */
         .register-container {
             display: flex;
@@ -55,12 +81,12 @@
             align-items: center;
             min-height: calc(100vh - 130px); /* Adjust for header and footer height */
             padding: 20px;
-            background: url('{% static "img/login1.jpg" %}') no-repeat center center fixed;
+            background: url('{% static "img/imm.jpg" %}') no-repeat center center fixed;
             background-size: cover;
             animation: fadeIn 1s ease-out;
-            margin-top: 60px; /* Ensure form is below the fixed navbar */
+            margin-top: 66px; /* Ensure form is below the fixed navbar */
         }
-
+    
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -71,73 +97,77 @@
                 transform: translateY(0);
             }
         }
-
+    
         .register-form {
             background-color: #fff;
-            padding: 15px; /* Reduced padding for smaller form */
+            padding: 8px; /* Reduced padding for the form */
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 350px; /* Reduced max-width for better fit */
+            max-width: 500px; /* Increased max-width for a wider form */
             z-index: 10;
             position: relative;
         }
-
+        
+    
         .register-form h1 {
-            margin-bottom: 15px;
-            font-size: 22px; /* Reduced font-size for heading */
+            margin-bottom: 8px; /* Reduced space for heading */
+            font-size: 18px; /* Reduced font-size for heading */
             color: #333;
             text-align: center; /* Centered heading */
         }
-
+    
         .form-group {
-            margin-bottom: 12px; /* Reduced margin for form fields */
+            margin-bottom: 8px; /* Reduced margin for form fields */
         }
-
+    
         .form-group label {
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 2px; /* Reduced margin below labels */
             font-weight: bold;
+            font-size: 13px; /* Smaller font size for labels */
         }
-
+    
         .form-group input, .form-group select {
             width: 100%;
-            padding: 8px;
+            padding: 4px; /* Reduced padding in input fields */
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px; /* Smaller font size for input fields */
         }
-
+    
         .form-group button {
             background-color: #007bff;
             color: #fff;
             border: none;
-            padding: 8px 15px;
+            padding: 6px 10px; /* Reduced padding for the button */
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px; /* Reduced font-size for button */
+            font-size: 14px; /* Font-size for button */
             width: 100%;
         }
-
+    
         .form-group button:hover {
             background-color: #0056b3;
         }
-
+    
         .form-message {
-            padding: 8px;
-            margin-bottom: 12px;
+            padding: 6px; /* Reduced padding for messages */
+            margin-bottom: 8px; /* Reduced margin for messages */
             border-radius: 4px;
             color: #fff;
         }
-
+    
         .form-message.success {
             background-color: #28a745;
         }
-
+    
         .form-message.error {
             background-color: #dc3545;
         }
     </style>
+    
+    
 </head>
 <body>
     <!-- Navbar Start -->
@@ -194,24 +224,10 @@
     <!-- Footer Start -->
     <div class="footer">
         <div class="footer-content">
-            <div class="footer-logo">
-                <h3>FinanceFolio</h3>
-            </div>
-            <div class="footer-social-links">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-            </div>
-            <div class="footer-quick-links">
-                <h4>Quick Links</h4>
-                <a href="{% url 'index' %}">Home</a>
-                <a href="{% url 'about' %}">About</a>
-                <a href="{% url 'user_login' %}">Login</a>
-                <a href="{% url 'contact' %}">Contact Us</a>
-            </div>
+            <p>financefolio@2024</p>
         </div>
     </div>
+    
     <!-- Footer End -->
 
     <!-- JavaScript Libraries -->

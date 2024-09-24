@@ -1,46 +1,460 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Custom Admin Dashboard">
-    <meta name="author" content="Your Name">
-    <title>Custom Admin Dashboard</title>
-    <!-- Include any CSS frameworks or custom styles -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
-<body>
-    <nav>
-        <!-- Admin-specific navigation links -->
-        <ul>
-            <li><a href="#">Dashboard</a></li>
-            <li><a href="#">Manage Users</a></li>
-            <li><a href="#">Reports</a></li>
-            <li><a href="#">Settings</a></li>
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="logout-button">Logout</button>
-            </form>
-          
-        </ul>
-    </nav>
     
-    <main>
-        <h1>{{ section_title }}</h1>
-        <p>{{ data }}</p>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Custom Admin Dashboard"> 
+    <meta name="author" content="Your Name">
+    <title>Admin Dashboard</title>
 
-        <!-- Additional dashboard content -->
-        <!-- Example form with CSRF token -->
-        <form method="post" action="#">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Embedded CSS Styles -->
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+            color: #2c3e50;
+            display: flex;
+            min-height: 100vh;
+        }
+    
+        a {
+            text-decoration: none;
+        }
+    
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background-color: #374D5A;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh; /* Changed to 100vh for better alignment */
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .brand {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ecf0f1;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    
+        .admin-icon {
+            font-size: 4em;
+            color: #ecf0f1;
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 50px;
+        }
+    
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+    
+        .sidebar-menu li {
+            margin-bottom: 20px;
+        }
+    
+        .sidebar-menu li a {
+            color: #ecf0f1;
+            font-size: 1.2em;
+            padding: 12px 20px;
+            border-radius: 6px;
+            display: block;
+            transition: background-color 0.3s;
+        }
+    
+        .sidebar-menu li a:hover {
+            background-color: #34495e;
+        }
+    
+        .logout-button {
+            background-color: #e74c3c;
+            border: none;
+            padding: 12px 20px;
+            color: #ecf0f1;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-top: auto;
+            text-align: center;
+        }
+    
+        .logout-button:hover {
+            background-color: #c0392b;
+        }
+    
+        /* Main Content */
+        .main-content {
+            margin-left: 280px; /* Sidebar width */
+            padding: 40px;
+            width: calc(100% - 280px);
+            background-color: #4B6D7A;
+            min-height: 100vh;
+            padding-bottom: 60px; /* Added padding to ensure content is not hidden by footer */
+            margin-top: 0; /* Ensure it starts directly below header */
+            margin-right: 0; /* Remove margin on right */
+        }
+    
+        /* Header Styles */
+        .header {
+            background-color: #1a242f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            position: fixed; 
+            top: 0; 
+            left: 0; /* Changed to left: 0 */
+            right: 0; 
+            z-index: 1000; 
+            height: 80px; /* Set a fixed height for the header */
+        }
+    
+        /* Section Header */
+        .section-header {
+            margin-bottom: 20px;
+            padding-top: 80px; /* Ensure content does not hide behind header */
+        }
+    
+        .section-header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #34495e;
+        }
+    
+        .section-header p {
+            font-size: 1.2em;
+            color: #7f8c8d;
+        }
+    
+        /* Function Boxes */
+        #function-boxes {
+            display: flex; 
+            justify-content: space-around; 
+            flex-wrap: wrap; /* Allow boxes to wrap on smaller screens */
+            margin-top: 20px;
+        }
+    
+        .function-box {
+            background-color: #fff;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 10px; /* Add margin between boxes */
+            width: 180px; /* Fixed width for each box */
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .function-box h3 {
+            margin-bottom: 10px;
+            color: #34495e;
+        }
+    
+        .function-box a {
+            background-color: #3498db;
+            color: #ecf0f1;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+    
+        .function-box a:hover {
+            background-color: #2980b9;
+        }
+    
+        /* User Management Table Styles */
+        #user-management {
+            display: none; /* Hide by default */
+            margin-top: 20px;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+    
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    
+        th {
+            background-color: #3498db;
+            color: #fff;
+        }
+    
+        td {
+            background-color: #fff;
+            color: #34495e;;
+        }
+    
+        /* Close Button Styles */
+        .close-button {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    
+        .close-button:hover {
+            background-color: #c0392b;
+        }
+    
+        /* Footer */
+        footer {
+            background-color: #1a242f; 
+            color: #ecf0f1;
+            text-align: center; 
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            left: 0; /* Changed to left: 0 */
+            right: 0; 
+        }
+    
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+    
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding-bottom: 60px; 
+            }
+    
+            .header {
+                position: relative; 
+                left: 0;
+                right: 0;
+            }
+    
+            footer {
+                margin-left: 0;
+            }
+            .delete-icon {
+                background: none; /* Remove background */
+                border: none; /* Remove border */
+                cursor: pointer; /* Change cursor on hover */
+            }
+            
+            .delete-icon img {
+                width: 20px; /* Adjust size as needed */
+                height: 20px; /* Adjust size as needed */
+            }
+            
+        }
+    </style>
+    
+</head>
+
+<body>
+    <!-- Sidebar Section -->
+    <div class="sidebar">
+        <div class="admin-icon">👤</div> 
+        <div class="brand">Admin Dashboard</div>
+        <ul class="sidebar-menu">
+            <li><a href="#">Announcements</a></li>
+            <li><a href="#">Feedback</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+        <form action="{% url 'logout' %}" method="post" class="logout-form">
             {% csrf_token %}
-            <label for="setting">Update Setting:</label>
-            <input type="text" id="setting" name="setting">
-            <input type="submit" value="Update">
+            <button type="submit" class="logout-button">Logout</button>
         </form>
-    </main>
+    </div>
 
-    <!-- Optional: Include JavaScript files -->
-    <script src="{% static 'js/scripts.js' %}"></script>
+    <!-- Main Content Section -->
+    <div class="main-content">
+        <div class="header">Admin dashboard</div>
+        <header class="section-header">
+            <h1>{{ section_title }}</h1>
+            <p>{{ data }}</p>
+        </header>
+
+        <!-- User Management Section -->
+        <div id="user-management">
+            <button class="close-button" id="close-user-management">Close</button>
+            <h2>User Management</h2>
+            <table id="user-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- User data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Function Boxes -->
+        <section id="function-boxes">
+            <div class="function-box">
+                <div>👤</div> <!-- Human Icon -->
+                <h3>Manage Users</h3>
+                <a href="#" id="manage-users-btn"> Users</a>
+            </div>
+            <div class="function-box">
+                <div>📊</div> <!-- Reports Icon -->
+                <h3>View Reports</h3>
+                <a href="#">Go to Reports</a>
+            </div>
+            <div class="function-box">
+                <div>⚙️</div> <!-- Settings Icon -->
+                <h3>Settings</h3>
+                <a href="#">Settings</a>
+            </div>
+            <div class="function-box">
+                <div>📢</div> <!-- Announcement Icon -->
+                <h3>Announcement</h3>
+                <a href="#">View Announcements</a>
+            </div>
+        </section>
+
+        <footer>
+            © 2024 Finance Folio
+        </footer>
+    </div>
+    <script>
+        const manageUsersBtn = document.getElementById('manage-users-btn');
+        const userManagementSection = document.getElementById('user-management');
+        const functionBoxes = document.getElementById('function-boxes');
+        const closeUserManagementBtn = document.getElementById('close-user-management');
+    
+        manageUsersBtn.addEventListener('click', function () {
+            fetch('/api/users/')  // Your API endpoint to get user details
+                .then(response => response.json())
+                .then(data => {
+                    const userTableBody = document.querySelector('#user-table tbody');
+                    userTableBody.innerHTML = ''; // Clear existing data
+    
+                    // Populate the table with user data
+                    data.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.first_name} ${user.last_name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.is_staff ? 'Admin' : 'User'}</td>
+                            <td>
+                                <button class="delete-icon" data-id="${user.id}">
+                                    <img src="{% static 'img/delete-icon.png' %}" alt="Delete" style="width: 20px; height: 20px;">
+                                </button>
+                            </td>
+                        `;
+                        userTableBody.appendChild(row);
+                    });
+    
+                    // Hide function boxes and show user management section
+                    functionBoxes.style.display = 'none';
+                    userManagementSection.style.display = 'block';
+    
+                    attachDeleteHandlers(); // Attach delete handlers to new buttons
+                })
+                .catch(error => console.error('Error fetching user data:', error));
+        });
+    
+        closeUserManagementBtn.addEventListener('click', function () {
+            // Hide user management section and show function boxes
+            userManagementSection.style.display = 'none';
+            functionBoxes.style.display = 'flex'; // Adjust the display property to match the original layout
+        });
+    
+        // Attach delete handlers to delete buttons
+        function attachDeleteHandlers() {
+            const deleteIcons = document.querySelectorAll('.delete-icon');
+            deleteIcons.forEach(icon => {
+                icon.addEventListener('click', function (event) {
+                    event.stopPropagation(); // Prevent click event from bubbling up to the row
+                    const userId = this.getAttribute('data-id');
+                    if (confirm("Are you sure you want to delete this user?")) {
+                        deleteUser(userId);
+                    }
+                });
+            });
+        }
+    
+        // Delete User function
+        function deleteUser(userId) {
+            fetch(`/delete_user/${userId}/`, { // Adjust the URL as needed
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // CSRF token for security
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("User deleted successfully.");
+                    loadUserData(); // Reload user data after deletion
+                } else {
+                    alert("Failed to delete user.");
+                }
+            })
+            .catch(error => console.error('Error deleting user:', error));
+        }
+    
+        // Load user data after deletion
+        function loadUserData() {
+            fetch('/api/users/') // Fetch updated user data
+                .then(response => response.json())
+                .then(data => {
+                    const userTableBody = document.querySelector('#user-table tbody');
+                    userTableBody.innerHTML = ''; // Clear existing data
+                    data.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.first_name} ${user.last_name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.is_staff ? 'Admin' : 'User'}</td>
+                            <td>
+                                <button class="delete-icon" data-id="${user.id}">
+                                    <img src="{% static 'img/delete-icon.png' %}" alt="Delete" style="width: 20px; height: 20px;"> 
+                                </button>
+                            </td>
+                        `;
+                        userTableBody.appendChild(row);
+                    });
+                    attachDeleteHandlers(); // Reattach delete handlers after reload
+                })
+                .catch(error => console.error('Error loading user data:', error));
+        }
+    </script>
+    
+    
+        
 </body>
+
 </html>

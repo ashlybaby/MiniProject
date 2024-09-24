@@ -32,7 +32,51 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
     <style>
-        /* Custom Styles */
+        .navbar {
+            background: rgba(0, 31, 63, 0.6); /* Semi-transparent dark blue */
+            backdrop-filter: blur(15px); /* Blur effect */
+            padding: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+            z-index: 2000; /* Ensure navbar is on top */
+            position: fixed; /* Fix the navbar at the top */
+            width: 100%;
+            top: 0; /* Ensure it's at the top */
+            left: 0;
+        }
+        
+        header {
+            background: rgba(0, 31, 63, 0.6); /* Semi-transparent dark blue */
+            backdrop-filter: blur(15px); /* Blur effect */
+            color: #fff; /* White text for contrast */
+            padding: 1rem;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2); /* Similar shadow for consistency */
+        }
+        
+        .footer {
+            background: #001f3f; /* Dark blue */
+            color: #fff; /* White text color */
+            padding: 20px; /* Padding for spacing */
+            text-align: center; /* Center the text */
+            font-size: 16px; /* Font size for the text */
+            position: fixed; /* Fix the footer at the bottom */
+            bottom: 0;
+            left:0;
+            width: 100%;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Optional shadow for a nice effect */
+        }
+        
+        .footer p {
+            margin: 0; /* Remove default margin */
+            left:0;
+            font-family: 'Arial', sans-serif; /* Font style */
+            letter-spacing: 1px; /* Add some letter spacing */
+        }
+        
+        .footer p:hover {
+            color: #D6D6D6; /* Optional hover effect (light gray) */
+        }
+    
+        /* Login Container */
         .login-container {
             display: flex;
             justify-content: center;
@@ -42,9 +86,9 @@
             background-size: cover;
             animation: fadeIn 1s ease-out;
         }
-
+    
         .login-form {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.8); /* Semi-transparent white for glass effect */
             padding: 2rem;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -54,31 +98,31 @@
             opacity: 0;
             animation: slideUp 0.5s forwards 0.3s;
         }
-
+    
         .login-form h1 {
             margin-bottom: 1rem;
             font-size: 2rem;
             color: #011A41;
         }
-
+    
         .form-group {
             margin-bottom: 1rem;
         }
-
+    
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: bold;
             color: #011A41;
         }
-
+    
         .form-group input {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-
+    
         .btn {
             display: inline-block;
             width: 100%;
@@ -91,37 +135,37 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-
+    
         .btn:hover {
             background-color: #2a4bff;
         }
-
+    
         .btn-google {
             background-color: #DB4437;
             color: #ffffff;
             margin-top: 1rem;
         }
-
+    
         .btn-google:hover {
             background-color: #c1351d;
         }
-
+    
         .form-footer {
             margin-top: 1rem;
             text-align: center;
         }
-
+    
         .form-footer a {
             display: block;
             margin-top: 0.5rem;
             color: #355EFC;
             text-decoration: none;
         }
-
+    
         .form-footer a:hover {
             text-decoration: underline;
         }
-
+    
         .back-to-top {
             position: fixed;
             bottom: 2rem;
@@ -137,17 +181,17 @@
             font-size: 1.5rem;
             text-decoration: none;
         }
-
+    
         .back-to-top:hover {
             background-color: #2a4bff;
         }
-
+    
         /* Animation */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
+    
         @keyframes slideUp {
             from {
                 transform: translateY(20px);
@@ -158,70 +202,52 @@
                 opacity: 1;
             }
         }
-
+    
         /* Responsive Styles */
         @media (max-width: 768px) {
             .login-form {
                 padding: 1.5rem;
             }
-
+    
             .login-form h1 {
                 font-size: 1.5rem;
             }
         }
-
+    
         @media (max-width: 576px) {
             .login-form {
                 padding: 1rem;
             }
-
+    
             .login-form h1 {
                 font-size: 1.25rem;
             }
-
+    
             .btn {
                 font-size: 0.9rem;
             }
         }
-
-        /* Footer Styles */
-        .footer .social-icons a {
-            color: #ffffff;
-            font-size: 1.25rem;
-            margin-right: 1rem;
-        }
-
-        .footer .social-icons a:hover {
-            color: #dcdcdc;
-        }
-
-        .footer .subscribe-container {
-            text-align: center;
-        }
-
+    
         /* Error Styles */
         .alert {
             padding: 1rem;
             border-radius: 4px;
             margin-bottom: 1rem;
         }
-
+    
         .alert-danger {
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
     </style>
+    
 </head>
 <body>
     <!-- Navbar Start -->
-    <div class="container-fluid fixed-top px-0 wow fadeIn" data-wow-delay="0.1s">
-        <div class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid fixed-top px-0">
+        <div class="navbar navbar-expand-lg navbar-light">
             <a class="navbar-brand" href="/">Home</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ml-auto">
-                </ul>
-            </div>
         </div>
     </div>
     <!-- Navbar End -->
@@ -274,22 +300,13 @@
     </div>
 
     <!-- Back to Top Button -->
-    <a href="#" class="back-to-top" onclick="window.scrollTo(0, 0);">↑</a>
+   
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="social-icons">
-                <a href="#" class="fab fa-facebook-f"></a>
-                <a href="#" class="fab fa-twitter"></a>
-                <a href="#" class="fab fa-linkedin-in"></a>
-            </div>
-            <div class="subscribe-container">
-                <p>Subscribe to our newsletter</p>
-                <form action="#" method="post">
-                    <input type="email" placeholder="Your email" required>
-                    <button type="submit">Subscribe</button>
-                </form>
+        <div class="footer">
+            <div class="footer-content">
+                <p>financefolio@2024</p>
             </div>
         </div>
     </footer>
@@ -301,15 +318,6 @@
     <script src="{% static 'js/main.js' %}"></script>
 
     <!-- Back to Top Script -->
-    <script>
-        document.addEventListener('scroll', function () {
-            const backToTopButton = document.querySelector('.back-to-top');
-            if (window.scrollY > 300) {
-                backToTopButton.style.display = 'flex';
-            } else {
-                backToTopButton.style.display = 'none';
-            }
-        });
-    </script>
+  
 </body>
 </html>

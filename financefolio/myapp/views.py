@@ -311,3 +311,50 @@ def history_view(request):
         })
 
     return JsonResponse(history_data, safe=False)  # Return data as JSON
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from .models import User  # Adjust import based on your user model
+
+def manage_users(request):
+    if request.method == 'POST':
+        users = list(User.objects.values('id', 'first_name', 'last_name', 'email'))  # Adjust fields as needed
+        return JsonResponse(users, safe=False)
+
+    return render(request, 'admin_dashboard.html')  # Replace with your actual template name
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import get_user_model
+from django.contrib import messages
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.delete()
+    messages.success(request, 'User deleted successfully.')
+    return redirect('manage_users')
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
+from .models import User  # Adjust the import based on your User model's location
+
+@csrf_exempt
+def delete_user(request, user_id):
+    if request.method == 'DELETE':
+        user = get_object_or_404(User, id=user_id)  # Fetch the user by ID
+        user.delete()  # Delete the user
+        return JsonResponse({'message': 'User deleted successfully.'}, status=200)
+    
+    return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+from django.http import JsonResponse
+from django.views import View
+from .models import User  # Adjust based on your user model
+
+class UserListView(View):
+    def get(self, request):
+        users = User.objects.all().values('id', 'first_name', 'last_name', 'email', 'is_staff')
+        return JsonResponse(list(users), safe=False)
+    
+    

@@ -216,15 +216,38 @@ class CustomPasswordResetForm(PasswordResetForm):
         return super().save(*args, **kwargs)
 
 
+from django import forms
+from django.contrib.auth.forms import SetPasswordForm
+from django.core.exceptions import ValidationError
+
 class CustomSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'New password'}),
-        strip=False
+        strip=False,
+        min_length=6  # Minimum length requirement
     )
     new_password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm new password'}),
-        strip=False
+        strip=False,
+        min_length=6  # Minimum length requirement
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password1 = cleaned_data.get("new_password1")
+        new_password2 = cleaned_data.get("new_password2")
+
+        # Check if both passwords are provided and match
+        if new_password1 and new_password2:
+            if new_password1 != new_password2:
+                raise ValidationError("Passwords do not match.")
+
+        # Check for minimum length of 6 characters
+        if new_password1 and len(new_password1) < 6:
+            raise ValidationError("Password must be at least 6 characters long.")
+
+        return cleaned_data
+
 
 
 # forms.py
