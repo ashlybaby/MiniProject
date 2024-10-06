@@ -108,3 +108,32 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.category} - Planned: {self.planned_expense}, Actual: {self.actual_expense}"
+
+from django.db import models
+from django.conf import settings  # To reference the CustomUser model
+
+class Feedback(models.Model):
+    RATING_CHOICES = [
+        (1, '1 - Very Poor'),
+        (2, '2 - Poor'),
+        (3, '3 - Average'),
+        (4, '4 - Good'),
+        (5, '5 - Excellent'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,  # Allows guest users to provide feedback without a user reference
+        blank=True,
+        related_name='feedbacks'
+    )
+    feedback_text = models.TextField()
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        user_display = self.user.email if self.user else "Guest User"
+        return f"{user_display} - {self.rating} Stars"
+
+# Optionally, create a view to display feedback for guests and admins.

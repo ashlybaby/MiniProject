@@ -1,0 +1,53 @@
+<!-- templates/budget_form.html -->
+<div class="budget-card">
+    <h2>Create a Budget</h2>
+    <form method="post" id="budget-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <label for="actual-income">Actual Income:</label>
+        <input type="number" name="actual-income" step="0.01" required>
+
+        <div id="expense-container">
+            <h3>Expenses</h3>
+            <div class="expense-item">
+                <label for="category">Category:</label>
+                <input type="text" name="expense-category" required>
+                <label for="planned-expense">Planned Expense:</label>
+                <input type="number" name="planned-expense" step="0.01" required>
+                <label for="actual-expense">Actual Expense:</label>
+                <input type="number" name="actual-expense" step="0.01" required>
+                <button type="button" class="remove-expense">Remove</button>
+            </div>
+        </div>
+
+        <button type="button" id="add-expense">Add Expense</button>
+        <button type="submit">Submit</button>
+    </form>
+
+    {% if form.errors %}
+        <div class="error">
+            <h3>Errors:</h3>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    {% if summary %}
+        <h3>Summary</h3>
+        <p>Planned Income: {{ summary.planned_income }}</p>
+        <p>Actual Income: {{ summary.actual_income }}</p>
+        <p>Total Planned Expenses: {{ summary.total_planned_expenses }}</p>
+        <p>Total Actual Expenses: {{ summary.total_actual_expenses }}</p>
+        <p>Remaining Balance (Planned): {{ summary.remaining_balance_planned }}</p>
+        <p>Remaining Balance (Actual): {{ summary.remaining_balance_actual }}</p>
+    {% endif %}
+</div>

@@ -36,8 +36,12 @@ urlpatterns = [
     path('manage-users/', views.manage_users, name='manage_users'),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
     path('api/users/', views.UserListView.as_view(), name='user_list'),
-    path('financial-videos/', views.financial_management_videos, name='financial_videos'),  # Add this line
+    path('financial-videos/', views.financial_management_videos, name='financial_videos'),
+    path('feedback/', views.submit_feedback, name='submit_feedback'),
+    path('toggle_user_activation/<int:user_id>/', views.toggle_user_activation, name='toggle_user_activation'),
 ]
+
+
   
 
     

@@ -8,7 +8,6 @@ from .forms import UserLoginForm, AdminLoginForm
 from django.urls import reverse
 from django.contrib.auth import authenticate
 from django.contrib.auth.views import PasswordResetDoneView
-from django.shortcuts import render, redirect
 from .forms import CustomUserChangeForm
 from datetime import date
 from .forms import RegistrationForm
@@ -188,22 +187,38 @@ def profile_view(request):
     return render(request, 'profile.html', context)
 
 #def profile_edit(request):
-    return redirect('profile.html')
+    #return redirect('profile.html')
 
 
+
+
+from django.contrib import messages
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def profile_edit(request):
+    # Load the form with the current user's details for GET request
+    form = CustomUserChangeForm(instance=request.user)
+
     if request.method == 'POST':
+        # Bind form with submitted data and the current user instance
         form = CustomUserChangeForm(request.POST, instance=request.user)
+
         if form.is_valid():
+            # If the form is valid, save the form and update the profile
             form.save()
             messages.success(request, 'Profile updated successfully.')
-            return redirect('profile_edit')  # Redirect to the same page to show the message
-    else:
-        form = CustomUserChangeForm(instance=request.user)
-    
-    return render(request, 'profile_edit.html', {'form': form})
+            # Reload the form with updated data after a successful save
+            form = CustomUserChangeForm(instance=request.user)  # Reinitialize the form with updated user data
+        else:
+            # If the form is invalid, errors will be shown on the same modal form
+            messages.error(request, 'Please correct the errors below.')
+
+    # Render the same page where the modal is located
+    return render(request, 'userdashboard.html', {'form': form})
+
+
 
 #...................................................................................................................#
 from django.shortcuts import render
@@ -222,7 +237,10 @@ from django.shortcuts import render
 from .models import Budget, Expense
 from .forms import BudgetForm
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
+
+@login_required
 @csrf_exempt  # Use with caution; consider using CSRF tokens for production
 def budget_view(request):
     if request.method == 'POST':
@@ -318,11 +336,10 @@ from .models import User  # Adjust import based on your user model
 
 def manage_users(request):
     if request.method == 'POST':
-        users = list(User.objects.values('id', 'first_name', 'last_name', 'email'))  # Adjust fields as needed
+        users = list(User.objects.values('id', 'first_name', 'last_name', 'email', 'is_active'))  # Include is_active if needed
         return JsonResponse(users, safe=False)
 
     return render(request, 'admin_dashboard.html')  # Replace with your actual template name
-
 
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -351,14 +368,128 @@ def delete_user(request, user_id):
 from django.http import JsonResponse
 from django.views import View
 from .models import User  # Adjust based on your user model
-
 class UserListView(View):
     def get(self, request):
-        users = User.objects.all().values('id', 'first_name', 'last_name', 'email', 'is_staff')
+        users = User.objects.all().values('id', 'first_name', 'last_name', 'email', 'is_staff', 'is_active')
         return JsonResponse(list(users), safe=False)
-    
+
 # views.py
 from django.shortcuts import render
 
 def financial_management_videos(request):
     return render(request, 'financial_management_videos.html')  # Adjust the template name as needed
+
+#feedback
+from django.shortcuts import render, redirect
+from .forms import FeedbackForm
+from django.contrib import messages
+
+def submit_feedback(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            if request.user.is_authenticated:
+                feedback.user = request.user  # Associate feedback with logged-in user
+            feedback.save()
+            messages.success(request, 'Thank you for your feedback!')
+            return redirect('user_dashboard')  # Redirect to a thank-you page or appropriate URL
+    else:
+        form = FeedbackForm()
+
+    return render(request, 'userdashboard.html', {'form': form})
+
+
+
+# views.py
+import json  # Import the json module
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.shortcuts import get_object_or_404
+from .models import User  # Import your User model
+
+@require_http_methods(["PATCH"])  # Ensure only PATCH requests are allowed
+def toggle_user_activation(request, user_id):
+    user = get_object_or_404(User, id=user_id)  # Fetch the user object
+
+    # Parse the request body to get the activation state
+    try:
+        data = json.loads(request.body)  # Load JSON data from the request body
+        is_active = data.get('is_active')  # Get the activation state
+
+        if is_active is not None:  # Ensure is_active is provided
+            user.is_active = is_active  # Set the user's activation status
+            user.save()  # Save the updated user object
+
+            return JsonResponse({'status': 'success', 'is_active': user.is_active})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'is_active not provided'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+
+
+
+
+# from django.shortcuts import redirect, get_object_or_404
+# from django.http import HttpResponseRedirect
+# from .models import CustomUser
+
+# def toggle_active_status(request, user_id):
+#     user = get_object_or_404(CustomUser, id=user_id)
+    
+#     if request.method == 'POST':
+#         status = request.POST.get('status')
+#         current_table = request.POST.get('current_table')  # Get the current table (users or service providers)
+        
+#         if status == 'deactivate':
+#             user.is_active = False
+#         elif status == 'activate':
+#             user.is_active = True
+#         user.save()
+
+#         # Redirect back to the same page with the correct table
+#         if current_table == 'users':
+#             return HttpResponseRedirect('/admin_dashboard?show=users')
+#         elif current_table == 'service_providers':
+#             return HttpResponseRedirect('/admin_dashboard? show=service_providers')
+    
+#     return redirect('view_users')  # Fallback if something goes wrong
+
+
+# views.py
+# from django.http import JsonResponse, HttpResponse
+# from django.views.decorators.csrf import csrf_exempt
+# from .models import Feedback  # Assuming you have a Feedback model
+# from django.contrib.auth.models import User
+
+# def feedback_list(request):
+#     if request.method == 'GET':
+#         feedbacks = Feedback.objects.select_related('user').all()
+#         feedback_data = [
+#             {
+#                 'id': fb.id,
+#                 'user': {
+#                     'first_name': fb.user.first_name,
+#                     'last_name': fb.user.last_name,
+#                 },
+#                 'feedback_text': fb.feedback_text,
+#             }
+#             for fb in feedbacks
+#         ]
+#         return JsonResponse(feedback_data, safe=False)
+
+# @csrf_exempt
+# def delete_feedback(request, feedback_id):
+#     if request.method == 'DELETE':
+#         try:
+#             feedback = Feedback.objects.get(id=feedback_id)
+#             feedback.delete()
+#             return HttpResponse(status=204)
+#         except Feedback.DoesNotExist:
+#             return JsonResponse({'error': 'Feedback not found'}, status=404)
+#     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+ # views.py
+

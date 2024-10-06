@@ -15,6 +15,37 @@
 
     <!-- Embedded CSS Styles -->
     <style>
+
+        /* General button styles */
+        /* Button Styles */
+        .activate-deactivate-btn {
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+        }
+        
+        /* Active User Button (Green) */
+        .active-btn {
+            background-color: green;
+        }
+        
+        .active-btn:hover {
+            background-color: darkgreen;
+        }
+        
+        /* Inactive User Button (Red) */
+        .inactive-btn {
+            background-color: red;
+        }
+        
+        .inactive-btn:hover {
+            background-color: darkred;
+        }
+        
         /* General Styles */
         * {
             margin: 0;
@@ -287,7 +318,8 @@
             <li><a href="#">Ratings</a></li>
             <li><a href="#">Queries</a></li>
             <li><a href="#">Articles</a></li>
-            <li><a href="#">Feedback</a></li>
+            <li><a href="#" id="feedback-btn">Feedback</a></li>
+
             <li><a href="#">Tutorials</a></li>
         </ul>
         <form action="{% url 'logout' %}" method="post" class="logout-form">
@@ -324,6 +356,26 @@
             </table>
         </div>
 
+        <!-- Feedback Section -->
+<div id="feedback-section" style="display: none;">
+    <button class="close-button" id="close-feedback-section">Close</button>
+    <h2>Feedback</h2>
+    <table id="feedback-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Feedback</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Feedback data will be inserted here -->
+        </tbody>
+    </table>
+</div>
+
+
         <!-- Function Boxes -->
         <section id="function-boxes">
             <div class="function-box">
@@ -353,11 +405,13 @@
         </footer>
     </div>
     <script>
+        // Get references to DOM elements
         const manageUsersBtn = document.getElementById('manage-users-btn');
         const userManagementSection = document.getElementById('user-management');
         const functionBoxes = document.getElementById('function-boxes');
         const closeUserManagementBtn = document.getElementById('close-user-management');
     
+        // Event listener for the "Manage Users" button
         manageUsersBtn.addEventListener('click', function () {
             fetch('/api/users/')  // Your API endpoint to get user details
                 .then(response => response.json())
@@ -367,70 +421,114 @@
     
                     // Populate the table with user data
                     data.forEach(user => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${user.id}</td>
-                            <td>${user.first_name} ${user.last_name}</td>
-                            <td>${user.email}</td>
-                            <td>${user.is_staff ? 'Admin' : 'User'}</td>
-                            <td>
-                                <button class="delete-icon" data-id="${user.id}">
-                                    <img src="{% static 'img/delete-icon.png' %}" alt="Delete" style="width: 20px; height: 20px;">
-                                </button>
-                            </td>
-                        `;
-                        userTableBody.appendChild(row);
+                        // Only append users with the "User" role (i.e., non-admin users)
+                        if (!user.is_staff) {
+                            const row = document.createElement('tr');
+                            
+                            // Determine button text and class based on is_active status
+                            const buttonText = user.is_active ? 'Deactivate' : 'Activate';
+                            const buttonClass = user.is_active ? 'active-btn' : 'inactive-btn'; // Green for active, red for inactive
+                            
+                            row.innerHTML = `
+                                <td>${user.id}</td>
+                                <td>${user.first_name} ${user.last_name}</td>
+                                <td>${user.email}</td>
+                                <td>User</td> <!-- Display 'User' since only non-admins are included -->
+                                <td>
+                                    <button class="activate-deactivate-btn ${buttonClass}" data-id="${user.id}" data-active="${user.is_active}">
+                                        ${buttonText}
+                                    </button> 
+                                </td>
+                            `;
+                            userTableBody.appendChild(row);
+                        }
                     });
     
                     // Hide function boxes and show user management section
                     functionBoxes.style.display = 'none';
                     userManagementSection.style.display = 'block';
     
-                    attachDeleteHandlers(); // Attach delete handlers to new buttons
+                    attachActivateDeactivateHandlers(); // Attach handlers to new buttons
                 })
                 .catch(error => console.error('Error fetching user data:', error));
         });
     
+        // Event listener for the "Close User Management" button
         closeUserManagementBtn.addEventListener('click', function () {
             // Hide user management section and show function boxes
             userManagementSection.style.display = 'none';
             functionBoxes.style.display = 'flex'; // Adjust the display property to match the original layout
         });
     
-        // Attach delete handlers to delete buttons
-        function attachDeleteHandlers() {
-            const deleteIcons = document.querySelectorAll('.delete-icon');
-            deleteIcons.forEach(icon => {
-                icon.addEventListener('click', function (event) {
+        // Function to attach activate/deactivate handlers to buttons
+        function attachActivateDeactivateHandlers() {
+            const buttons = document.querySelectorAll('.activate-deactivate-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function (event) {
                     event.stopPropagation(); // Prevent click event from bubbling up to the row
                     const userId = this.getAttribute('data-id');
-                    if (confirm("Are you sure you want to delete this user?")) {
-                        deleteUser(userId);
-                    }
+                    const isActive = this.getAttribute('data-active') === 'true';
+    
+                    // Toggle user activation status
+                    toggleUserActivation(userId, isActive);
                 });
             });
         }
     
-        // Delete User function
-        function deleteUser(userId) {
-            fetch(`/delete_user/${userId}/`, { // Adjust the URL as needed
-                method: 'DELETE',
+        // Function to toggle user activation
+        function toggleUserActivation(userId, currentStatus) {
+            const newStatus = !currentStatus; // Toggle the status
+            fetch(`/toggle_user_activation/${userId}/`, {
+                method: 'PATCH', // Use PATCH for partial updates
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}', // CSRF token for security
-                }
+                    'X-CSRFToken': getCSRFToken(), // CSRF token for security
+                    'Content-Type': 'application/json', // Indicate JSON content
+                },
+                body: JSON.stringify({ is_active: newStatus }) // Send the activation state in the request body
             })
-            .then(response => {
-                if (response.ok) {
-                    alert("User deleted successfully.");
-                    loadUserData(); // Reload user data after deletion
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update the button text and status without reloading the data
+                    const button = document.querySelector(`.activate-deactivate-btn[data-id="${userId}"]`);
+                    button.textContent = newStatus ? 'Deactivate' : 'Activate'; // Change button text
+                    button.setAttribute('data-active', newStatus); // Update the data-active attribute
+    
+                    // Update button classes based on new status
+                    if (newStatus) {
+                        button.classList.add('active-btn'); // Green for active
+                        button.classList.remove('inactive-btn'); // Remove red for inactive
+                    } else {
+                        button.classList.add('inactive-btn'); // Red for inactive
+                        button.classList.remove('active-btn'); // Remove green for active
+                    }
+    
+                    alert(`User ${newStatus ? 'activated' : 'deactivated'} successfully.`);
                 } else {
-                    alert("Failed to delete user.");
+                    alert(data.message || "Failed to change user activation state.");
                 }
             })
-            .catch(error => console.error('Error deleting user:', error));
+            .catch(error => console.error('Error toggling user activation:', error));
         }
     
-        // Load user data after deletion
+        // Utility function to get CSRF token from cookies
+        function getCSRFToken() {
+            let cookieValue = null;
+            const name = 'csrftoken';
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        // Optional: Function to reload user data after activation change (if needed)
         function loadUserData() {
             fetch('/api/users/') // Fetch updated user data
                 .then(response => response.json())
@@ -438,27 +536,33 @@
                     const userTableBody = document.querySelector('#user-table tbody');
                     userTableBody.innerHTML = ''; // Clear existing data
                     data.forEach(user => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${user.id}</td>
-                            <td>${user.first_name} ${user.last_name}</td>
-                            <td>${user.email}</td>
-                            <td>${user.is_staff ? 'Admin' : 'User'}</td>
-                            <td>
-                                <button class="delete-icon" data-id="${user.id}">
-                                    <img src="{% static 'img/delete-icon.png' %}" alt="Delete" style="width: 20px; height: 20px;"> 
-                                </button>
-                            </td>
-                        `;
-                        userTableBody.appendChild(row);
+                        if (!user.is_staff) { // Only non-admin users
+                            const row = document.createElement('tr');
+                            
+                            // Determine button text and class based on is_active status
+                            const buttonText = user.is_active ? 'Deactivate' : 'Activate';
+                            const buttonClass = user.is_active ? 'active-btn' : 'inactive-btn'; // Green for active, red for inactive
+                            
+                            row.innerHTML = `
+                                <td>${user.id}</td>
+                                <td>${user.first_name} ${user.last_name}</td>
+                                <td>${user.email}</td>
+                                <td>${user.is_staff ? 'Admin' : 'User'}</td>
+                                <td>
+                                    <button class="activate-deactivate-btn ${buttonClass}" data-id="${user.id}" data-active="${user.is_active}">
+                                        ${buttonText}
+                                    </button>
+                                </td>
+                            `;
+                            userTableBody.appendChild(row);
+                        }
                     });
-                    attachDeleteHandlers(); // Reattach delete handlers after reload
+                    attachActivateDeactivateHandlers(); // Reattach handlers after reload
                 })
                 .catch(error => console.error('Error loading user data:', error));
         }
     </script>
-    
-    
+        
         
 </body>
 
