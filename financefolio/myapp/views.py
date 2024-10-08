@@ -1,7 +1,6 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .models import User
-from .forms import RegistrationForm
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from .forms import UserLoginForm, AdminLoginForm
@@ -12,11 +11,14 @@ from .forms import CustomUserChangeForm
 from datetime import date
 from .forms import RegistrationForm
 from decimal import Decimal
+from django.views.decorators.cache import never_cache
 
 
-
+@never_cache
 def index(request):
-    return render(request, 'index.html')
+    if request.user.is_authenticated and request.user.is_active:
+        return redirect(reverse('user_dashboard'))  # Redirect authenticated user to the dashboard
+    return render(request, 'index.html')  
 
 def about(request):
     return render(request, 'about.html')
@@ -27,7 +29,12 @@ def contact(request):
 def about(request):
     return render(request, 'about.html')
 
+@never_cache
 def home(request):
+    if request.user.is_authenticated and request.user.is_active:
+        # Optionally, you can ensure the user is logged in (though they should already be)
+        # auth_login(request, request.user)  # Not necessary if the user is already authenticated
+        return redirect(reverse('user_dashboard'))
     return render(request, 'index.html')
 
 def guest_view(request):
@@ -75,7 +82,32 @@ def register(request):
 
     return render(request, 'register.html', {'form': form})
 
+# def user_login(request):
+#     if request.method == 'POST':
+#         form = UserLoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data.get('email')
+#             password = form.cleaned_data.get('password')
+#             user = authenticate(email=email, password=password)
+#             if user is not None:
+#                 if user.is_active:
+#                     auth_login(request, user)
+#                     return redirect(reverse('user_dashboard'))  # Redirect to home or another appropriate page
+#                 else:
+#                     messages.error(request, 'Your account is disabled.')
+#             else:
+#                 messages.error(request, 'Invalid email or password.')
+#     else:
+#         form = UserLoginForm()
+
+#     return render(request, 'user_login.html', {'form': form})
+from django.views.decorators.cache import never_cache
+#new change user login#
+@never_cache
 def user_login(request):
+    if request.user.is_authenticated:
+        return redirect(reverse('user_dashboard'))
+    
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
         if form.is_valid():
@@ -85,7 +117,7 @@ def user_login(request):
             if user is not None:
                 if user.is_active:
                     auth_login(request, user)
-                    return redirect(reverse('user_dashboard'))  # Redirect to home or another appropriate page
+                    return redirect(reverse('user_dashboard'))  # Redirect to dashboard or appropriate page
                 else:
                     messages.error(request, 'Your account is disabled.')
             else:
@@ -100,8 +132,7 @@ def user_login(request):
     return render(request, 'userdashboard.html')
 
 
-from django.shortcuts import render, redirect
-from django.urls import reverse
+
 
 @login_required
 def user_dashboard(request):
@@ -127,11 +158,14 @@ def admin_login(request):
 
     return render(request, 'admin_login.html', {'form': form})
 
-
+@never_cache
 @login_required
 def admin_dashboard(request):
-    return render(request, 'customadmindashboard.html')
-
+    if request.user.is_superuser:
+        return render(request, 'customadmindashboard.html')  # Render admin dashboard for superusers
+    else:
+        messages.error(request, "You do not have the required permissions to access this page.")
+        return redirect(reverse('user_dashboard'))  
 
 # views.py
 
@@ -175,6 +209,7 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 
 
+@never_cache
 @login_required
 def profile_view(request):
     # Get the currently authenticated user
@@ -196,44 +231,70 @@ from django.contrib import messages
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
+from django.views.decorators.cache import never_cache
+from django.http import JsonResponse
+from django.views.decorators.cache import never_cache
+
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib import messages
+from .forms import CustomUserChangeForm
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib import messages
+from .forms import CustomUserChangeForm
+
+@never_cache
 @login_required
 def profile_edit(request):
-    # Load the form with the current user's details for GET request
-    form = CustomUserChangeForm(instance=request.user)
-
     if request.method == 'POST':
-        # Bind form with submitted data and the current user instance
         form = CustomUserChangeForm(request.POST, instance=request.user)
-
+        
         if form.is_valid():
-            # If the form is valid, save the form and update the profile
             form.save()
-            messages.success(request, 'Profile updated successfully.')
-            # Reload the form with updated data after a successful save
-            form = CustomUserChangeForm(instance=request.user)  # Reinitialize the form with updated user data
+            success_message = 'Profile updated successfully.'
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': success_message
+                })
+            else:
+                messages.success(request, success_message)
+                return redirect('userdashboard')  # Redirect to dashboard after non-AJAX update
         else:
-            # If the form is invalid, errors will be shown on the same modal form
-            messages.error(request, 'Please correct the errors below.')
-
-    # Render the same page where the modal is located
+            error_message = 'Please correct the errors below.'
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_message,
+                    'errors': form.errors
+                })
+            else:
+                messages.error(request, error_message)
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+    
     return render(request, 'userdashboard.html', {'form': form})
 
 
-
 #...................................................................................................................#
-from django.shortcuts import render
+
 from django.http import JsonResponse
-from .models import Budget, Expense
+
 from .forms import BudgetForm, ExpenseForm
-from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
-
-from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Budget, Expense
-from .forms import BudgetForm
-
-from django.shortcuts import render
 from .models import Budget, Expense
 from .forms import BudgetForm
 from django.views.decorators.csrf import csrf_exempt
@@ -493,3 +554,22 @@ def toggle_user_activation(request, user_id):
 
  # views.py
 
+# views.py
+from django.http import JsonResponse
+from .models import Feedback
+
+def feedback_list(request):
+    feedbacks = Feedback.objects.select_related('user').all()
+    feedback_data = []
+
+    for feedback in feedbacks:
+        feedback_data.append({
+            'username': feedback.user.email if feedback.user else "Guest User",
+            'feedback_text': feedback.feedback_text,
+            'rating': feedback.rating,
+        })
+
+    # Debugging output
+    print("Feedback Data:", feedback_data)  # Log the data being returned
+
+    return JsonResponse(feedback_data, safe=False)

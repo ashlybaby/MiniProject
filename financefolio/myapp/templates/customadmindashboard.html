@@ -302,6 +302,40 @@
             }
             
         }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
     </style>
     
 </head>
@@ -385,8 +419,8 @@
             </div>
             <div class="function-box">
                 <div>📊</div> <!-- Reports Icon -->
-                <h3>View Reports</h3>
-                <a href="#">Go to Reports</a>
+                <h3>View Feedback</h3>
+                <a href="#" id="feedbackBtn">Feedback</a>
             </div>
             <div class="function-box">
                 <div>⚙️</div> <!-- Settings Icon -->
@@ -397,6 +431,14 @@
                 <div>📢</div> <!-- Announcement Icon -->
                 <h3>Announcement</h3>
                 <a href="#">View Announcements</a>
+            </div>
+
+            <div id="feedbackModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h2>User Feedback</h2>
+                    <div id="feedbackContainer"></div>
+                </div>
             </div>
         </section>
 
@@ -561,6 +603,61 @@
                 })
                 .catch(error => console.error('Error loading user data:', error));
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const feedbackBtn = document.getElementById('feedbackBtn');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const closeBtn = document.querySelector('.close-btn');
+            const feedbackContainer = document.getElementById('feedbackContainer');
+        
+            // Function to fetch and display feedback from the database
+            function displayFeedback() {
+                fetch('/feedback/list')  // Ensure this URL matches your Django URL configuration
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok ' + response.statusText);
+                        }
+                        return response.json(); // Parse JSON data from response
+                    })
+                    .then(data => {
+                        feedbackContainer.innerHTML = ''; // Clear previous feedback
+                        // Check if there's any feedback data
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                const feedbackElement = document.createElement('p');
+                                feedbackElement.innerHTML = `<strong>${item.username}:</strong> ${item.feedback_text} <em>(${item.rating} Stars)</em>`;
+                                feedbackContainer.appendChild(feedbackElement);
+                            });
+                        } else {
+                            feedbackContainer.innerHTML = '<p>No feedback available.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching feedback:', error);
+                        feedbackContainer.innerHTML = `<p>Error fetching feedback: ${error.message}</p>`;
+                    });
+            }
+        
+            // Open modal and display feedback
+            feedbackBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                displayFeedback(); // Call the function to fetch and display feedback
+                feedbackModal.style.display = 'block';
+            });
+        
+            // Close modal
+            closeBtn.addEventListener('click', () => {
+                feedbackModal.style.display = 'none';
+            });
+        
+            // Close modal when clicking outside of it
+            window.addEventListener('click', (event) => {
+                if (event.target === feedbackModal) {
+                    feedbackModal.style.display = 'none';
+                }
+            });
+        });
+        
     </script>
         
         

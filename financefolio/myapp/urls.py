@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/users/', views.UserListView.as_view(), name='user_list'),
     path('financial-videos/', views.financial_management_videos, name='financial_videos'),
     path('feedback/', views.submit_feedback, name='submit_feedback'),
+    path('feedback/list', views.feedback_list, name='feedback-list'),
     path('toggle_user_activation/<int:user_id>/', views.toggle_user_activation, name='toggle_user_activation'),
 ]
 

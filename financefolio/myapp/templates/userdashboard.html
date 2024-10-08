@@ -387,33 +387,41 @@
         .close:focus {
             color: #000;
         }
-
-        /* Star Rating */
+        
         .star-rating {
-            direction: ltr; /* Set to left-to-right */
+            direction: rtl; /* Change to left-to-right */
             display: flex; /* Align stars horizontally */
             justify-content: flex-start; /* Align stars to the left */
-            font-size: 0; /* Remove whitespace */
-            position: relative;
+            font-size: 0; /* Remove whitespace between stars */
+            
         }
-
+        
         .star-rating input {
-            display: none; /* Hide radio inputs */
+            display: none; /* Hide radio buttons */
         }
-
+        
         .star-rating label {
-            font-size: 30px;
-            color: lightgray;
-            cursor: pointer;
-            transition: color 0.2s ease;
-            margin: 0 2px; /* Small margin between stars */
+           
+            font-size: 30px; /* Set star size */
+            color: lightgray; /* Default star color */
+            cursor: pointer; /* Pointer cursor */
+            transition: color 0.2s ease; /* Smooth color change */
+            margin: 0 1px; /* Small spacing between stars */
         }
-
-        .star-rating input:checked ~ label,
-        .star-rating label:hover,
-        .star-rating label:hover ~ label {
+        
+        /* Highlight selected and hovered stars */
+        .star-rating input:checked ~ label .fas,
+        .star-rating label:hover .fas,
+        .star-rating label:hover ~ label .fas {
+            color: gold; /* Gold for selected/hovered stars */
+        }
+        
+        /* Specific color for the selected star */
+        .star-rating input:checked + label .fas {
             color: gold;
         }
+        
+        
 
         /* History Table */
         .history-table-container {
@@ -646,16 +654,18 @@
                         
                         <label for="rating">Rating:</label>
                         <div class="star-rating">
-                            <input type="radio" id="star5" name="rating" value="5" required>
-                            <label for="star5" class="star"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star4" name="rating" value="4">
-                            <label for="star4" class="star"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star3" name="rating" value="3">
-                            <label for="star3" class="star"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star2" name="rating" value="2">
-                            <label for="star2" class="star"><i class="fas fa-star"></i></label>
                             <input type="radio" id="star1" name="rating" value="1">
                             <label for="star1" class="star"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star2" name="rating" value="2">
+                            <label for="star2" class="star"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star3" name="rating" value="3">
+                            <label for="star3" class="star"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star4" name="rating" value="4">
+                            <label for="star4" class="star"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star5" name="rating" value="5" required>
+                            <label for="star5" class="star"><i class="fas fa-star"></i></label>
+                            
+                
                         </div>
                         {% if form.rating.errors %}
                             <div class="alert alert-danger">
@@ -700,29 +710,16 @@
         <span id="closeEditProfileModal" class="close">&times;</span>
         <h2>Edit Profile</h2>
 
-       
+        <!-- Success Message -->
+        <div id="editProfileSuccess" class="alert alert-success" style="display: none;">
+            <p id="successMessage"></p>
+        </div>
 
-        <!-- Display success message -->
-        {% if messages %}
-            <div id="editProfileSuccess" class="alert alert-success">
-                <ul>
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
-
-        <!-- Display error message -->
-        {% if form.errors %}
-            <div id="editProfileError" class="alert alert-danger">
-                <ul>
-                    {% for field, errors in form.errors.items %}
-                        <li>{{ field|capfirst }}: {{ errors|join:", " }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
+        <!-- Error Message -->
+        <div id="editProfileError" class="alert alert-danger" style="display: none;">
+            <p id="errorMessage"></p>
+            <ul id="errorList"></ul>
+        </div>
 
         <form id="editProfileForm" method="POST" action="{% url 'profile_edit' %}">
             {% csrf_token %}
@@ -758,15 +755,15 @@
                 <span class="error" id="ageError" style="display:none;"></span>
             </div>
             
-           <div>
-               <label for="id_gender">Gender:</label>
-               <select name="gender" id="id_gender" required>
-               <option value="">Select Gender</option>
-               <option value="M" {% if user.gender == "M" %}selected{% endif %}>Male</option>
-               <option value="F" {% if user.gender == "F" %}selected{% endif %}>Female</option>
-               <option value="O" {% if user.gender == "O" %}selected{% endif %}>Other</option>
-         </select>
-             <span class="error" id="genderError" style="display:none;"></span>
+            <div>
+                <label for="id_gender">Gender:</label>
+                <select name="gender" id="id_gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="M" {% if user.gender == "M" %}selected{% endif %}>Male</option>
+                    <option value="F" {% if user.gender == "F" %}selected{% endif %}>Female</option>
+                    <option value="O" {% if user.gender == "O" %}selected{% endif %}>Other</option>
+                </select>
+                <span class="error" id="genderError" style="display:none;"></span>
             </div>
             
             <div>
@@ -797,270 +794,348 @@
     
     <!-- JavaScript for Interactivity -->
     <script>
-    // Sidebar Toggle for Mobile
-    const sidebarToggleBtn = document.querySelector('.sidebar-toggle');
-    const aside = document.querySelector('aside');
-    const mainContent = document.getElementById('main-content');
+// Sidebar Toggle for Mobile
+const sidebarToggleBtn = document.querySelector('.sidebar-toggle');
+const aside = document.querySelector('aside');
+const mainContent = document.getElementById('main-content');
 
-    sidebarToggleBtn.addEventListener('click', () => {
-        aside.classList.toggle('active');
+sidebarToggleBtn.addEventListener('click', () => {
+    aside.classList.toggle('active');
+});
+
+// Feedback Modal Functionality
+const feedbackModal = document.getElementById("feedbackModal");
+const feedbackMenu = document.getElementById("feedback-menu");
+const closeFeedbackModal = document.getElementById("closeFeedbackModal");
+
+feedbackMenu.addEventListener('click', function(event) {
+    event.preventDefault();
+    feedbackModal.style.display = "block";
+});
+
+closeFeedbackModal.addEventListener('click', function() {
+    feedbackModal.style.display = "none";
+});
+
+// Profile Modal Functionality
+const profileModal = document.getElementById("profileModal");
+const viewProfileBtn = document.getElementById("view-profile");
+const closeProfileBtn = document.getElementById("closeProfileModal");
+
+viewProfileBtn.addEventListener('click', function(event) {
+    event.preventDefault();
+    profileModal.style.display = "block";
+});
+
+closeProfileBtn.addEventListener('click', function() {
+    profileModal.style.display = "none";
+});
+
+// Edit Profile Modal Functionality
+const editProfileModal = document.getElementById("editProfileModal");
+const editProfileButton = document.getElementById("edit-profile-button");
+const closeEditProfileModal = document.getElementById("closeEditProfileModal");
+
+editProfileButton.addEventListener("click", function(event) {
+    event.preventDefault(); // Prevent the default link behavior
+    editProfileModal.style.display = "block"; // Show the modal
+});
+
+closeEditProfileModal.addEventListener("click", function() {
+    editProfileModal.style.display = "none"; // Hide the modal
+});
+
+// Consolidated window click handler
+window.addEventListener("click", function(event) {
+    // Array of modal elements
+    const modals = [feedbackModal, profileModal, editProfileModal];
+    
+    modals.forEach(modal => {
+        if (modal && event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+
+// Dynamic Content Loading
+document.addEventListener('DOMContentLoaded', () => {
+    // Budgeting Menu
+    document.getElementById('budgeting-menu').addEventListener('click', (event) => {
+        // Navigation is handled via href, so no need to handle here
     });
 
-    // Function to handle modal closures when clicking outside
-    function handleWindowClick(event) {
-        // Array of modal elements
-        const modals = [feedbackModal, profileModal, editProfileModal];
-        
-        modals.forEach(modal => {
-            if (modal && event.target === modal) {
-                modal.style.display = "none";
+    // History & Chart Menu
+    document.getElementById('history-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadHistory();
+    });
+
+    // Goal Tracking Menu
+    document.getElementById('goal-tracking-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadGoalTracking();
+    });
+
+    // Goal Progress Menu
+    document.getElementById('goal-progress-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadGoalProgress();
+    });
+
+    // Alerts Menu
+    document.getElementById('alerts-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadAlerts();
+    });
+
+    // Announcements Menu
+    document.getElementById('announcements-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadAnnouncements();
+    });
+
+    // Tutorials Menu
+    document.getElementById('tutorials-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadTutorials();
+    });
+
+    // Queries Menu
+    document.getElementById('queries-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadQueries();
+    });
+
+    // Articles Menu
+    document.getElementById('articles-menu').addEventListener('click', (event) => {
+        event.preventDefault();
+        loadArticles();
+    });
+
+    // Function to load History and Chart
+    async function loadHistory() {
+        try {
+            const response = await fetch('/api/history/');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            renderHistory(data);
+        } catch (error) {
+            console.error('Error fetching history:', error);
+            mainContent.innerHTML = '<h3>There was an error loading the history data.</h3>';
+        }
+    }
+
+    function renderHistory(data) {
+        const historyTable = `
+            <h2>Expense and Income History</h2>
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Planned Income</th>
+                            <th>Actual Income</th>
+                            <th>Expenses</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(item => `
+                            <tr>
+                                <td>${item.month}</td>
+                                <td>${item.planned_income || 0}</td>
+                                <td>${item.actual_income || 0}</td>
+                                <td>${item.expenses || 0}</td>
+                                <td>${item.balance || 0}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <canvas id="income-expense-chart" style="width: 100%; height: 400px;"></canvas>
+        `;
+        mainContent.innerHTML = historyTable;
+
+        // Prepare data for the chart
+        const labels = data.map(item => item.month);
+        const actualIncome = data.map(item => item.actual_income || 0);
+        const expenses = data.map(item => item.expenses || 0);
+
+        // Create the chart
+        const ctx = document.getElementById('income-expense-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Actual Income',
+                        data: actualIncome,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Expenses',
+                        data: expenses,
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#333'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#333'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#333'
+                        }
+                    }
+                }
             }
         });
     }
 
-    // Feedback Modal Functionality
-    const feedbackModal = document.getElementById("feedbackModal");
-    const feedbackMenu = document.getElementById("feedback-menu");
-    const closeFeedbackModal = document.getElementById("closeFeedbackModal");
-
-    feedbackMenu.addEventListener('click', function(event) {
-        event.preventDefault();
-        feedbackModal.style.display = "block";
-    });
-
-    closeFeedbackModal.addEventListener('click', function() {
-        feedbackModal.style.display = "none";
-    });
-
-    // Profile Modal Functionality
-    const profileModal = document.getElementById("profileModal");
-    const viewProfileBtn = document.getElementById("view-profile");
-    const closeProfileBtn = document.getElementById("closeProfileModal");
-
-    viewProfileBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        profileModal.style.display = "block";
-    });
-
-    closeProfileBtn.addEventListener('click', function() {
-        profileModal.style.display = "none";
-    });
-
-    // Edit Profile Modal Functionality
-    const editProfileModal = document.getElementById("editProfileModal");
-    const editProfileButton = document.getElementById("edit-profile-button");
-    const closeEditProfileModal = document.getElementById("closeEditProfileModal");
-
-    editProfileButton.addEventListener("click", function(event) {
-        event.preventDefault(); // Prevent the default link behavior
-        editProfileModal.style.display = "block"; // Show the modal
-    });
-
-    closeEditProfileModal.addEventListener("click", function() {
-        editProfileModal.style.display = "none"; // Hide the modal
-    });
-
-    // Add a single window click listener for all modals
-    window.addEventListener("click", handleWindowClick);
-
-    // Dynamic Content Loading
-    document.addEventListener('DOMContentLoaded', () => {
-        // Budgeting Menu
-        document.getElementById('budgeting-menu').addEventListener('click', (event) => {
-            // Navigation is handled via href, so no need to handle here
-        });
-
-        // History & Chart Menu
-        document.getElementById('history-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadHistory();
-        });
-
-        // Goal Tracking Menu
-        document.getElementById('goal-tracking-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadGoalTracking();
-        });
-
-        // Goal Progress Menu
-        document.getElementById('goal-progress-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadGoalProgress();
-        });
-
-        // Alerts Menu
-        document.getElementById('alerts-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadAlerts();
-        });
-
-        // Announcements Menu
-        document.getElementById('announcements-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadAnnouncements();
-        });
-
-        // Tutorials Menu
-        document.getElementById('tutorials-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadTutorials();
-        });
-
-        // Queries Menu
-        document.getElementById('queries-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadQueries();
-        });
-
-        // Articles Menu
-        document.getElementById('articles-menu').addEventListener('click', (event) => {
-            event.preventDefault();
-            loadArticles();
-        });
-
-        // Function to load History and Chart
-        async function loadHistory() {
-            try {
-                const response = await fetch('/api/history/');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                renderHistory(data);
-            } catch (error) {
-                console.error('Error fetching history:', error);
-                mainContent.innerHTML = '<h3>There was an error loading the history data.</h3>';
-            }
-        }
-
-        function renderHistory(data) {
-            const historyTable = `
-                <h2>Expense and Income History</h2>
-                <div class="history-table-container">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th>Planned Income</th>
-                                <th>Actual Income</th>
-                                <th>Expenses</th>
-                                <th>Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${data.map(item => `
-                                <tr>
-                                    <td>${item.month}</td>
-                                    <td>${item.planned_income || 0}</td>
-                                    <td>${item.actual_income || 0}</td>
-                                    <td>${item.expenses || 0}</td>
-                                    <td>${item.balance || 0}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+    // Function to load Tutorials
+    function loadTutorials() {
+        const tutorialsContent = `
+            <h2>Video Tutorials</h2>
+            <div class="tutorials-section">
+                <div class="video">
+                    <h3>Introduction to Budgeting</h3>
+                    <iframe src="https://www.youtube.com/embed/GxrhIuVxURo" allowfullscreen></iframe>
                 </div>
-                <canvas id="income-expense-chart" style="width: 100%; height: 400px;"></canvas>
-            `;
-            mainContent.innerHTML = historyTable;
+                <div class="video">
+                    <h3>Expense Tracking Tips</h3>
+                    <iframe src="https://www.youtube.com/embed/4sT2B2SRypo" allowfullscreen></iframe>
+                </div>
+            </div>
+        `;
+        mainContent.innerHTML = tutorialsContent;
+    }
 
-            // Prepare data for the chart
-            const labels = data.map(item => item.month);
-            const actualIncome = data.map(item => item.actual_income || 0);
-            const expenses = data.map(item => item.expenses || 0);
+    // Placeholder functions for other menus
+    function loadGoalTracking() {
+        mainContent.innerHTML = '<h2>Goal Tracking Section Coming Soon...</h2>';
+    }
 
-            // Create the chart
-            const ctx = document.getElementById('income-expense-chart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Actual Income',
-                            data: actualIncome,
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Expenses',
-                            data: expenses,
-                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1
-                        }
-                    ]
+    function loadGoalProgress() {
+        mainContent.innerHTML = '<h2>Goal Progress Section Coming Soon...</h2>';
+    }
+
+    function loadAlerts() {
+        mainContent.innerHTML = '<h2>Alerts Section Coming Soon...</h2>';
+    }
+
+    function loadAnnouncements() {
+        mainContent.innerHTML = '<h2>Announcements Section Coming Soon...</h2>';
+    }
+
+    function loadQueries() {
+        mainContent.innerHTML = '<h2>Queries Section Coming Soon...</h2>';
+    }
+
+    function loadArticles() {
+        mainContent.innerHTML = '<h2>Articles Section Coming Soon...</h2>';
+    }
+
+    // AJAX Form Submission for Edit Profile
+    const editProfileForm = document.getElementById('editProfileForm');
+    const editProfileSuccess = document.getElementById('editProfileSuccess');
+    const successMessage = document.getElementById('successMessage');
+    const editProfileError = document.getElementById('editProfileError');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorList = document.getElementById('errorList');
+
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Clear previous messages
+            editProfileSuccess.style.display = 'none';
+            successMessage.textContent = '';
+            editProfileError.style.display = 'none';
+            errorMessage.textContent = '';
+            errorList.innerHTML = '';
+
+            // Clear previous field errors
+            const errorSpans = editProfileForm.querySelectorAll('.error');
+            errorSpans.forEach(span => {
+                span.style.display = 'none';
+                span.textContent = '';
+            });
+
+            const formData = new FormData(editProfileForm);
+            const csrfToken = getCookie('csrftoken');
+
+            fetch(editProfileForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken,
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#333'
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Display success message
+                    successMessage.textContent = data.message;
+                    editProfileSuccess.style.display = 'block';
+                    
+                    // Optionally, update form fields or other UI elements here
+
+                    // Close the modal after a short delay and redirect
+                    setTimeout(() => {
+                        editProfileModal.style.display = "none";
+                        window.location.href = "{% url 'user_dashboard' %}"; // Redirect to userdashboard
+                    }, 1500); // 1.5 seconds delay
+                } else {
+                    // Display general error message
+                    errorMessage.textContent = data.message;
+                    editProfileError.style.display = 'block';
+
+                    // Display field-specific errors
+                    if (data.errors) {
+                        for (let field in data.errors) {
+                            // Populate the corresponding error span
+                            const errorSpan = document.getElementById(`${field}Error`);
+                            if (errorSpan) {
+                                errorSpan.textContent = data.errors[field].join(', ');
+                                errorSpan.style.display = 'block';
                             }
-                        },
-                        x: {
-                            ticks: {
-                                color: '#333'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#333'
-                            }
+
+                            // Optionally, add the errors to the error list
+                            const li = document.createElement('li');
+                            li.textContent = `${field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}: ${data.errors[field].join(', ')}`;
+                            errorList.appendChild(li);
                         }
                     }
                 }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                errorMessage.textContent = 'An unexpected error occurred. Please try again.';
+                editProfileError.style.display = 'block';
             });
-        }
-
-        // Function to load Tutorials
-        function loadTutorials() {
-            const tutorialsContent = `
-                <h2>Video Tutorials</h2>
-                <div class="tutorials-section">
-                    <div class="video">
-                        <h3>Introduction to Budgeting</h3>
-                        <iframe src="https://www.youtube.com/embed/GxrhIuVxURo" allowfullscreen></iframe>
-                    </div>
-                    <div class="video">
-                        <h3>Expense Tracking Tips</h3>
-                        <iframe src="https://www.youtube.com/embed/4sT2B2SRypo" allowfullscreen></iframe>
-                    </div>
-                </div>
-            `;
-            mainContent.innerHTML = tutorialsContent;
-        }
-
-        // Placeholder functions for other menus
-        function loadGoalTracking() {
-            mainContent.innerHTML = '<h2>Goal Tracking Section Coming Soon...</h2>';
-        }
-
-        function loadGoalProgress() {
-            mainContent.innerHTML = '<h2>Goal Progress Section Coming Soon...</h2>';
-        }
-
-        function loadAlerts() {
-            mainContent.innerHTML = '<h2>Alerts Section Coming Soon...</h2>';
-        }
-
-        function loadAnnouncements() {
-            mainContent.innerHTML = '<h2>Announcements Section Coming Soon...</h2>';
-        }
-
-        function loadQueries() {
-            mainContent.innerHTML = '<h2>Queries Section Coming Soon...</h2>';
-        }
-
-        function loadArticles() {
-            mainContent.innerHTML = '<h2>Articles Section Coming Soon...</h2>';
-        }
-    });
+        });
+    }
 
     // Function to get CSRF token from cookies (if needed for AJAX requests)
     function getCookie(name) {
@@ -1077,24 +1152,9 @@
         }
         return cookieValue;
     }
+});
+</script>
 
-    // Consolidated window click handler
-    function handleWindowClick(event) {
-        // Array of modal elements
-        const modals = [feedbackModal, profileModal, editProfileModal];
-        
-        modals.forEach(modal => {
-            if (modal && event.target === modal) {
-                modal.style.display = "none";
-            }
-        });
-    }
 
-    // Attach the consolidated window click handler
-    window.addEventListener("click", handleWindowClick);
-    
-    
-
-    </script>
 </body>
 </html>
