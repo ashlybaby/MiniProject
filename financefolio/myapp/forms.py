@@ -5,28 +5,9 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import date
 from django.contrib.auth.hashers import make_password
-
 from django import forms
 from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import make_password
-from .models import User
-from datetime import date
 
-from django import forms
-from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import make_password
-from .models import User
-from datetime import date
-
-from django import forms
-from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import make_password
-from .models import User
-from datetime import date
-
-from django import forms
-from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import make_password
 from .models import User
 from datetime import date
 
@@ -298,10 +279,13 @@ class CustomUserChangeForm(UserChangeForm):
 
     # Validation for email
     def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
-            raise ValidationError('This email is already registered.')
-        return email
+        # Since the field is disabled, ensure it's not being altered
+        # Fetch the original email from the instance
+        original_email = self.instance.email
+        current_email = self.cleaned_data.get('email')
+        if current_email != original_email:
+            raise ValidationError("You cannot change your email address.")
+        return original_email
 
     # Validation for gender
     def clean_gender(self):
@@ -313,7 +297,7 @@ class CustomUserChangeForm(UserChangeForm):
     def clean_age(self):
         age = self.cleaned_data.get('age')
         if age <= 18 or age > 100:  # Ensure age is within a realistic range
-            raise ValidationError('Please enter a valid age.')
+            raise ValidationError('Age should be between 18 and 100.')
         return age
 
     # Validation for address

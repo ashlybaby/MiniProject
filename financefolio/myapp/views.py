@@ -225,29 +225,7 @@ def profile_view(request):
     #return redirect('profile.html')
 
 
-
-
-from django.contrib import messages
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-
-from django.views.decorators.cache import never_cache
-from django.http import JsonResponse
-from django.views.decorators.cache import never_cache
-
-from django.contrib import messages
-from django.http import JsonResponse
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import never_cache
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from django.contrib import messages
-from .forms import CustomUserChangeForm
-
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.shortcuts import render, redirect
@@ -289,8 +267,6 @@ def profile_edit(request):
 
 
 #...................................................................................................................#
-
-from django.http import JsonResponse
 
 from .forms import BudgetForm, ExpenseForm
 from django.shortcuts import render, redirect
@@ -445,6 +421,9 @@ from django.shortcuts import render, redirect
 from .forms import FeedbackForm
 from django.contrib import messages
 
+from django.http import JsonResponse
+from django.contrib import messages
+
 def submit_feedback(request):
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
@@ -453,12 +432,10 @@ def submit_feedback(request):
             if request.user.is_authenticated:
                 feedback.user = request.user  # Associate feedback with logged-in user
             feedback.save()
-            messages.success(request, 'Thank you for your feedback!')
-            return redirect('user_dashboard')  # Redirect to a thank-you page or appropriate URL
-    else:
-        form = FeedbackForm()
-
-    return render(request, 'userdashboard.html', {'form': form})
+            return JsonResponse({'success': True, 'message': 'Thank you for your feedback!'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
 
 
 
@@ -468,6 +445,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 from .models import User  # Import your User model
+
+from django.core.mail import send_mail
+import json
+from .models import User  # Adjust based on your user model
 
 @require_http_methods(["PATCH"])  # Ensure only PATCH requests are allowed
 def toggle_user_activation(request, user_id):
@@ -479,6 +460,21 @@ def toggle_user_activation(request, user_id):
         is_active = data.get('is_active')  # Get the activation state
 
         if is_active is not None:  # Ensure is_active is provided
+            # Check if the account is being deactivated
+            if user.is_active and not is_active:
+                # Send an email notification to the user
+                send_mail(
+                    subject='Account Deactivated - FinanceFolio',
+                    message=(
+                        'Dear {},\n\nYour account has been deactivated due to suspicious activities.\n'
+                        'If you believe this is a mistake, please contact us at financefolio2024@gmail.com.\n\n'
+                        'Best regards,\nFinanceFolio Support Team'
+                    ).format(user.first_name),
+                    from_email='financefolio2024@gmail.com',
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+
             user.is_active = is_active  # Set the user's activation status
             user.save()  # Save the updated user object
 

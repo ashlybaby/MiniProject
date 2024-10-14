@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% comment %} <link rel="stylesheet" href="{% static 'css/styles.css' %}"> {% endcomment %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Include Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -499,9 +499,10 @@
             background: #f9f9f9; /* Light gray background */
             border-radius: 12px; /* Slightly increased border radius */
             box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15); /* Deeper shadow for more depth */
-            width: 320px; /* Slightly wider */
+            width: 520px; /* Slightly wider */
             overflow: hidden;
             transition: transform 0.3s, box-shadow 0.3s; /* Added transition for shadow */
+            margin: 20px; /* Added margin for spacing */
         }
         
         .profile-card:hover {
@@ -632,48 +633,28 @@
                         {% endfor %}
                     {% endif %}
         
-                    <form action="{% url 'submit_feedback' %}" method="POST" id="feedbackForm">
-                        {% csrf_token %}
-                        
-                        <!-- Display form errors -->
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
-                        
-                        <div>
-                            <label for="feedback_text">Your Feedback:</label>
-                            <textarea name="feedback_text" id="feedback_text" rows="5" placeholder="Enter your feedback here..." required></textarea>
-                            {% if form.feedback_text.errors %}
-                                <div class="alert alert-danger">
-                                    {{ form.feedback_text.errors }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <label for="rating">Rating:</label>
-                        <div class="star-rating">
-                            <input type="radio" id="star1" name="rating" value="1">
-                            <label for="star1" class="star"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star2" name="rating" value="2">
-                            <label for="star2" class="star"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star3" name="rating" value="3">
-                            <label for="star3" class="star"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star4" name="rating" value="4">
-                            <label for="star4" class="star"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star5" name="rating" value="5" required>
-                            <label for="star5" class="star"><i class="fas fa-star"></i></label>
-                            
-                
-                        </div>
-                        {% if form.rating.errors %}
-                            <div class="alert alert-danger">
-                                {{ form.rating.errors }}
-                            </div>
-                        {% endif %}
-                        <button type="submit" class="btn btn-success">Submit Feedback</button>
-                    </form>
+                   <form id="feedbackForm" method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="feedback_text">Your Feedback:</label>
+        <textarea name="feedback_text" id="feedback_text" rows="5" placeholder="Enter your feedback here..." required></textarea>
+    </div>
+    <label for="rating">Rating:</label>
+    <div class="star-rating">
+        <input type="radio" id="star1" name="rating" value="1">
+        <label for="star1" class="star"><i class="fas fa-star"></i></label>
+        <input type="radio" id="star2" name="rating" value="2">
+        <label for="star2" class="star"><i class="fas fa-star"></i></label>
+        <input type="radio" id="star3" name="rating" value="3">
+        <label for="star3" class="star"><i class="fas fa-star"></i></label>
+        <input type="radio" id="star4" name="rating" value="4">
+        <label for="star4" class="star"><i class="fas fa-star"></i></label>
+        <input type="radio" id="star5" name="rating" value="5" required>
+        <label for="star5" class="star"><i class="fas fa-star"></i></label>
+    </div>
+    <button type="submit" class="btn btn-success">Submit Feedback</button>
+</form>
+
                 </div>
             </div>
             <div id="profileModal" class="modal" style="display: none;">
@@ -807,15 +788,56 @@ sidebarToggleBtn.addEventListener('click', () => {
 const feedbackModal = document.getElementById("feedbackModal");
 const feedbackMenu = document.getElementById("feedback-menu");
 const closeFeedbackModal = document.getElementById("closeFeedbackModal");
+const feedbackForm = document.getElementById("feedbackForm");
 
+// Open feedback modal
 feedbackMenu.addEventListener('click', function(event) {
     event.preventDefault();
     feedbackModal.style.display = "block";
 });
 
+// Close feedback modal
 closeFeedbackModal.addEventListener('click', function() {
     feedbackModal.style.display = "none";
 });
+
+// AJAX form submission
+feedbackForm.addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    const formData = new FormData(feedbackForm); // Collect form data
+
+    fetch("{% url 'submit_feedback' %}", {
+        method: "POST",
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+        },
+        body: formData,
+    })
+    .then(response => response.json()) // Expect JSON response from the server
+    .then(data => {
+        if (data.success) {
+            // Display success message and clear form
+            feedbackForm.reset();
+            document.querySelector('.modal-content').innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+        } else {
+            // Display validation errors in the form
+            for (const [field, errors] of Object.entries(data.errors)) {
+                const fieldElement = document.querySelector(`[name=${field}]`);
+                if (fieldElement) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.classList.add('alert', 'alert-danger');
+                    errorDiv.textContent = errors.join(', ');
+                    fieldElement.insertAdjacentElement('afterend', errorDiv);
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
 
 // Profile Modal Functionality
 const profileModal = document.getElementById("profileModal");
