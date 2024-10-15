@@ -277,65 +277,226 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
 
+# @login_required
+# @csrf_exempt  # Use with caution; consider using CSRF tokens for production
+# def budget_view(request):
+#     if request.method == 'POST':
+#         budget_form = BudgetForm(request.POST)
+#         actual_income = request.POST.get('actual-income')
+
+#         if budget_form.is_valid():
+#             # Create budget instance but don't save yet
+#             budget = budget_form.save(commit=False)
+#             budget.user = request.user  # Assign the logged-in user
+
+#             # Validate and convert actual_income to Decimal if necessary
+#             if actual_income:
+#                 try:
+#                     budget.actual_income = Decimal(actual_income)
+#                 except ValueError:
+#                     budget.actual_income = None  # Handle invalid input
+
+#             # Save the budget
+#             budget.save()
+
+#             # Handle expense entries
+#             expense_categories = request.POST.getlist('expense-category')
+#             planned_expenses = request.POST.getlist('planned-expense')
+#             actual_expenses = request.POST.getlist('actual-expense')
+
+#             for i in range(len(expense_categories)):
+#                 Expense.objects.create(
+#                     budget=budget,
+#                     category=expense_categories[i],
+#                     planned_expense=planned_expenses[i],
+#                     actual_expense=actual_expenses[i]
+#                 )
+
+#             # Prepare the summary
+#             summary = {
+#                 'planned_income': budget.planned_income,
+#                 'actual_income': budget.actual_income,
+#                 'total_planned_expenses': budget.total_planned_expenses(),
+#                 'total_actual_expenses': budget.total_actual_expenses(),
+#                 'remaining_balance_planned': budget.remaining_balance_planned(),
+#                 'remaining_balance_actual': budget.remaining_balance_actual()
+#             }
+
+#             return render(request, 'budget.html', {
+#                 'form': BudgetForm(), 
+#                 'summary': summary, 
+#                 'success_message': 'Budget added successfully!'
+#             })
+
+#         # If the form is not valid, re-render with errors
+#         return render(request, 'budget.html', {
+#             'form': budget_form, 
+#             'errors': budget_form.errors
+#         })
+
+#     # For GET requests, render the empty form
+#     return render(request, 'budget.html', {'form': BudgetForm()})
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt  # Consider removing this in production
+from django.shortcuts import render, redirect
+from decimal import Decimal
+from .forms import BudgetForm
+from .models import Budget, Expense
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from decimal import Decimal
+from .forms import BudgetForm
+from .models import Budget, Expense
+
+from django.shortcuts import render, get_object_or_404
+from .models import Budget, Expense
+from .forms import BudgetForm, ExpenseForm
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from decimal import Decimal
+from django.utils.dateparse import parse_date
+
+from django.shortcuts import render, get_object_or_404
+from .models import Budget, Expense
+from .forms import BudgetForm, ExpenseForm
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from decimal import Decimal
+from django.utils.dateparse import parse_date
+from django.utils import timezone
+
 @login_required
 @csrf_exempt  # Use with caution; consider using CSRF tokens for production
 def budget_view(request):
+    expense_form = ExpenseForm()  # Instantiate the ExpenseForm here
+
     if request.method == 'POST':
         budget_form = BudgetForm(request.POST)
         actual_income = request.POST.get('actual-income')
 
         if budget_form.is_valid():
-            # Create budget instance but don't save yet
-            budget = budget_form.save(commit=False)
-            budget.user = request.user  # Assign the logged-in user
+            # Extract the selected month from the form
+            selected_month = budget_form.cleaned_data['month']
 
-            # Validate and convert actual_income to Decimal if necessary
-            if actual_income:
-                try:
+            # Check if a budget for this month already exists
+            budget, created = Budget.objects.get_or_create(
+                user=request.user,
+                month=selected_month,
+                defaults={'planned_income': budget_form.cleaned_data['planned_income']}
+            )
+
+            if not created:
+                # If the budget already exists, update the planned_income if needed
+                budget.planned_income = budget_form.cleaned_data['planned_income']
+                budget.save()
+
+                # Optionally, update actual_income if provided
+                if actual_income:
                     budget.actual_income = Decimal(actual_income)
-                except ValueError:
-                    budget.actual_income = None  # Handle invalid input
-
-            # Save the budget
-            budget.save()
+                    budget.save()
+            else:
+                # If a new budget was created, set the actual_income if provided
+                if actual_income:
+                    budget.actual_income = Decimal(actual_income)
+                    budget.save()
 
             # Handle expense entries
             expense_categories = request.POST.getlist('expense-category')
-            planned_expenses = request.POST.getlist('planned-expense')
             actual_expenses = request.POST.getlist('actual-expense')
+            custom_categories = request.POST.getlist('custom-category')
+
+            # Clear existing expenses if editing an existing budget
+            if not created:
+                budget.expenses.all().delete()
 
             for i in range(len(expense_categories)):
-                Expense.objects.create(
-                    budget=budget,
-                    category=expense_categories[i],
-                    planned_expense=planned_expenses[i],
-                    actual_expense=actual_expenses[i]
-                )
+                category = expense_categories[i]
+                expense_value = Decimal(actual_expenses[i]) if actual_expenses[i] else 0
 
-            # Prepare the summary
+                if category == 'custom' and custom_categories[i]:
+                    category = custom_categories[i]
+
+                if category and actual_expenses[i]:
+                    Expense.objects.create(
+                        budget=budget,
+                        category=category,
+                        actual_expense=expense_value
+                    )
+
+            # Calculate summary details
+            planned_income = budget.planned_income
+            actual_income_decimal = Decimal(actual_income) if actual_income else 0
+            total_actual_expenses = budget.total_actual_expenses()
+            remaining_balance =  actual_income_decimal - total_actual_expenses
+
             summary = {
-                'planned_income': budget.planned_income,
-                'actual_income': budget.actual_income,
-                'total_planned_expenses': budget.total_planned_expenses(),
-                'total_actual_expenses': budget.total_actual_expenses(),
-                'remaining_balance_planned': budget.remaining_balance_planned(),
-                'remaining_balance_actual': budget.remaining_balance_actual()
+                'planned_income': planned_income,
+                'actual_income': actual_income_decimal,
+                'total_actual_expenses': total_actual_expenses,
+                'remaining_balance': remaining_balance
             }
 
             return render(request, 'budget.html', {
-                'form': BudgetForm(), 
-                'summary': summary, 
-                'success_message': 'Budget added successfully!'
+                'form': BudgetForm(initial={'month': selected_month, 'planned_income': planned_income}),
+                'expense_form': expense_form,  # Pass expense form
+                'summary': summary,
+                'success_message': 'Budget added/updated successfully!'
             })
 
-        # If the form is not valid, re-render with errors
+        # If the budget form is not valid, render the page with errors
         return render(request, 'budget.html', {
-            'form': budget_form, 
+            'form': budget_form,
+            'expense_form': expense_form,  # Pass expense form even when budget form fails
             'errors': budget_form.errors
         })
 
-    # For GET requests, render the empty form
-    return render(request, 'budget.html', {'form': BudgetForm()})
+    elif request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Handle AJAX request to fetch existing budget data
+        month = request.GET.get('month')
+        if month:
+            try:
+                # Parse the month from 'YYYY-MM' format
+                selected_month = parse_date(f"{month}-01")
+                if not selected_month:
+                    raise ValueError
+
+                budget = Budget.objects.get(user=request.user, month=selected_month)
+                expenses = Expense.objects.filter(budget=budget)
+
+                expenses_data = []
+                for expense in expenses:
+                    expenses_data.append({
+                        'category': expense.category,
+                        'actual_expense': float(expense.actual_expense)
+                    })
+               
+                summary = {
+                    'planned_income': float(budget.planned_income),
+                    'actual_income': float(budget.actual_income) if budget.actual_income else 0,
+                    'total_actual_expenses': float(budget.total_actual_expenses()),
+                    'remaining_balance': float(budget.remaining_balance_actual()) if budget.remaining_balance_actual() is not None else 0
+                }
+
+                data = {
+                    'summary': summary,
+                    'expenses': expenses_data
+                }
+
+                return JsonResponse(data, safe=False)
+            except (Budget.DoesNotExist, ValueError):
+                return JsonResponse({'error': 'No budget found for the selected month.'}, status=404)
+
+    # Handle standard GET request
+    return render(request, 'budget.html', {
+        'form': BudgetForm(),
+        'expense_form': expense_form  # Pass expense form on GET request
+    })
+
 
 # views.py
 
@@ -354,7 +515,7 @@ def history_view(request):
 
     for budget in budgets:
         expenses = Expense.objects.filter(budget=budget)
-        total_planned_expenses = sum(exp.planned_expense for exp in expenses)
+       
         total_actual_expenses = sum(exp.actual_expense for exp in expenses)
 
         history_data.append({

@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budgeting</title>
+    <title>Budgeting - FinanceFolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Basic styles for the header, footer, and budgeting content */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f0f8ff; /* Light blue background */
@@ -16,10 +17,11 @@
             background-size: cover;
         }
         header {
-            background-color:#374D5A; /* Blue color */
+            background-color: #2c3e50; /* Darker blue color */
             color: white;
-            padding: 1rem;
+            padding: 1.5rem;
             text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         nav ul {
             list-style-type: none;
@@ -27,7 +29,7 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            background-color: #0056b3; /* Darker blue */
+            background-color: #2980b9; /* Button blue */
         }
         nav ul li {
             margin: 0 15px;
@@ -37,50 +39,56 @@
             text-decoration: none;
             padding: 14px 20px;
             display: block;
+            transition: background-color 0.3s;
         }
         nav ul li a:hover {
-            background-color: #004085; /* Darker hover color */
+            background-color: #3498db; /* Lighter hover color */
         }
         main {
             padding: 20px;
-            max-width: 800px;
-            margin: auto;
-            padding-bottom: 100px;
+            max-width: 900px;
+            margin: 40px auto; /* Added margin for spacing */
+            background: rgba(255, 255, 255, 0.9); /* Light background for the main section */
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         .budget-card {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            border-radius: 8px;
         }
         .budget-card h2, .budget-card h3 {
             margin-top: 0;
-            color: #007bff; /* Blue heading */
+            color: #2980b9; /* Blue heading */
         }
         .budget-card label {
             display: block;
             margin-top: 10px;
+            font-weight: 500; /* Slightly bolder for emphasis */
         }
-        .budget-card input {
+        .budget-card input, .budget-card select {
             width: calc(100% - 20px);
             padding: 10px;
             margin-top: 5px;
-            border: 1px solid #ccc;
+            border: 1px solid #bdc3c7; /* Lighter border */
             border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        .budget-card input:focus, .budget-card select:focus {
+            border-color: #2980b9; /* Focus color */
+            outline: none; /* Remove outline */
         }
         .budget-card button {
             margin-top: 10px;
             padding: 10px 15px;
-            background-color: #007bff;
+            background-color: #2980b9;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         .budget-card button:hover {
-            background-color: #0056b3;
+            background-color: #3498db;
         }
         .error {
             background-color: #f8d7da;
@@ -88,53 +96,194 @@
             padding: 10px;
             border-radius: 8px;
             margin-top: 20px;
+            border: 1px solid #f5c6cb;
         }
         footer {
-            background-color: #374D5A;
+            background-color: #2c3e50;
             color: white;
             text-align: center;
             padding: 10px;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
+            position: fixed; /* Make footer fixed */
+            width: 100%; /* Full width */
+            bottom: 0; /* Position it at the bottom */
+        }
+
+        /* Media queries for responsive design */
+        @media (max-width: 600px) {
+            nav ul {
+                flex-direction: column; /* Stack links on small screens */
+            }
+            nav ul li {
+                margin: 5px 0;
+            }
+        }
+
+        /* Styles for Autofill Section */
+        #autofill-data {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e8f6f3;
+            border-radius: 8px;
+        }
+        #autofill-data h3 {
+            color: #16a085;
         }
     </style>
     <script>
         function addExpense() {
             const expenseContainer = document.getElementById('expense-container');
             const newExpense = document.createElement('div');
+            newExpense.className = "expense-entry"; // Add class for styling
             newExpense.innerHTML = `
-                <label for="category">Category:</label>
-                <input type="text" name="expense-category" required>
-                <label for="planned-expense">Planned Expense:</label>
-                <input type="number" name="planned-expense" step="0.01" required>
-                <label for="actual-expense">Actual Expense:</label>
-                <input type="number" name="actual-expense" step="0.01" required>
-                <button type="button" onclick="removeExpense(this)">Remove</button>
+                <div class="expense-item">
+                    <label for="category">Category:</label>
+                    <select name="expense-category" onchange="toggleCustomCategory(this)">
+                        <option value="">Select a category</option>
+                        {% for category in expense_form.category.field.choices %}
+                            <option value="{{ category.0 }}">{{ category.1 }}</option>
+                        {% endfor %}
+                        <option value="custom">Add Any Other Expense</option>
+                    </select>
+                    <div class="custom-category" style="display:none;">
+                        <label for="custom-category">Custom Category:</label>
+                        <input type="text" name="custom-category" placeholder="Specify custom category">
+                    </div>
+                    <label for="actual-expense">Amount:</label>
+                    <input type="number" name="actual-expense" step="0.01" required>
+                    <button type="button" onclick="removeExpense(this)">Remove</button>
+                </div>
             `;
             expenseContainer.appendChild(newExpense);
         }
-
+    
         function removeExpense(button) {
             button.parentElement.remove();
         }
-
+    
+        function toggleCustomCategory(select) {
+            const customCategoryDiv = select.parentElement.querySelector('.custom-category');
+            if (select.value === 'custom') {
+                customCategoryDiv.style.display = 'block';
+            } else {
+                customCategoryDiv.style.display = 'none';
+            }
+        }
+    
         function showSuccessMessage(message) {
             alert(message);
         }
-
+    
         // Function to display success message after page load if exists
         window.onload = function() {
+            const monthInput = document.getElementById('month-picker');
+            if (monthInput) {
+                // Set the max attribute for the month picker to the current month
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+                const maxMonth = `${yyyy}-${mm}`;
+                monthInput.setAttribute('max', maxMonth);
+            }
+
             const successMessage = "{{ success_message|escapejs }}";
             if (successMessage) {
                 alert(successMessage);
             }
+    
+            // Attach event listener to month picker for autofill
+            if (monthInput) {
+                monthInput.addEventListener('change', function() {
+                    const selectedMonth = this.value;  // Format: 'YYYY-MM'
+    
+                    if (selectedMonth) {
+                        fetch(`/budget/?month=${selectedMonth}`, {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',  // Set AJAX header
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                                clearForm();
+                            } else {
+                                populateForm(data);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching budget data:', error);
+                            alert('An error occurred while fetching budget data.');
+                        });
+                    }
+                });
+            }
         };
-        // Push a new state to prevent the back button from navigating to the previous page
-       
-        
-     
+    
+        function clearForm() {
+            document.querySelector('input[name="planned_income"]').value = '';
+            document.querySelector('input[name="actual-income"]').value = '';
+            const expenseContainer = document.getElementById('expense-container');
+            expenseContainer.innerHTML = `
+                <div class="expense-entry">
+                    <label for="category">Category:</label>
+                    <select name="expense-category" onchange="toggleCustomCategory(this)">
+                        <option value="">Select a category</option>
+                        {% for category in expense_form.category.field.choices %}
+                            <option value="{{ category.0 }}">{{ category.1 }}</option>
+                        {% endfor %}
+                        <option value="custom">Add Any Other Expense</option>
+                    </select>
+                    <div class="custom-category" style="display:none;">
+                        <label for="custom-category">Custom Category:</label>
+                        <input type="text" name="custom-category" placeholder="Specify custom category">
+                    </div>
+                    <label for="actual-expense">Amount:</label>
+                    <input type="number" name="actual-expense" step="0.01" required>
+                    <button type="button" onclick="removeExpense(this)">Remove</button>
+                </div>
+            `;
+        }
+    
+        function populateForm(data) {
+            // Populate planned income
+            document.querySelector('input[name="planned_income"]').value = data.summary.planned_income;
+    
+            // Populate actual income
+            document.querySelector('input[name="actual-income"]').value = data.summary.actual_income;
+    
+            // Clear existing expense entries
+            const expenseContainer = document.getElementById('expense-container');
+            expenseContainer.innerHTML = '';
+    
+            // Populate expenses
+            data.expenses.forEach(expense => {
+                const expenseEntry = document.createElement('div');
+                expenseEntry.className = "expense-entry";
+                expenseEntry.innerHTML = `
+                    <div class="expense-item">
+                        <label for="category">Category:</label>
+                        <select name="expense-category" onchange="toggleCustomCategory(this)">
+                            <option value="">Select a category</option>
+                            {% for category in expense_form.category.field.choices %}
+                                <option value="{{ category.0 }}" ${expense.category === "{{ category.0 }}" ? 'selected' : ''}>{{ category.1 }}</option>
+                            {% endfor %}
+                            <option value="custom" ${expense.category === 'custom' ? 'selected' : ''}>Add Any Other Expense</option>
+                        </select>
+                        <div class="custom-category" style="display:${expense.category === 'custom' ? 'block' : 'none'};">
+                            <label for="custom-category">Custom Category:</label>
+                            <input type="text" name="custom-category" placeholder="Specify custom category" value="${expense.category === 'custom' ? '' : expense.category}">
+                        </div>
+                        <label for="actual-expense">Amount:</label>
+                        <input type="number" name="actual-expense" step="0.01" required value="${expense.actual_expense}">
+                        <button type="button" onclick="removeExpense(this)">Remove</button>
+                    </div>
+                `;
+                expenseContainer.appendChild(expenseEntry);
+            });
+        }
     </script>
+    
 </head>
 <body>
     
@@ -145,7 +294,6 @@
     <nav>
         <ul>
             <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
-           
         </ul>
     </nav>
 
@@ -154,19 +302,37 @@
             <h2>Create a Budget</h2>
             <form method="post" id="budget-form">
                 {% csrf_token %}
-                {{ form.as_p }}
-
+                
+                <!-- Month Picker -->
+                <label for="month-picker">Select Month:</label>
+                <input type="month" id="month-picker" name="month" required>
+                
+                <!-- Planned Income -->
+                <label for="planned-income">Planned Income:</label>
+                <input type="number" name="planned_income" step="0.01" required>
+                
+                <!-- Actual Income -->
                 <label for="actual-income">Actual Income:</label>
                 <input type="number" name="actual-income" step="0.01" required>
 
+                <!-- Expenses Section -->
                 <div id="expense-container">
                     <h3>Expenses</h3>
-                    <div>
+                    <!-- Initial expense entry -->
+                    <div class="expense-entry">
                         <label for="category">Category:</label>
-                        <input type="text" name="expense-category" required>
-                        <label for="planned-expense">Planned Expense:</label>
-                        <input type="number" name="planned-expense" step="0.01" required>
-                        <label for="actual-expense">Actual Expense:</label>
+                        <select name="expense-category" onchange="toggleCustomCategory(this)">
+                            <option value="">Select a category</option>
+                            {% for category in expense_form.category.field.choices %}
+                                <option value="{{ category.0 }}">{{ category.1 }}</option>
+                            {% endfor %}
+                            <option value="custom">Add Any Other Expense</option>
+                        </select>
+                        <div class="custom-category" style="display:none;">
+                            <label for="custom-category">Custom Category:</label>
+                            <input type="text" name="custom-category" placeholder="Specify custom category">
+                        </div>
+                        <label for="actual-expense">Amount:</label>
                         <input type="number" name="actual-expense" step="0.01" required>
                         <button type="button" onclick="removeExpense(this)">Remove</button>
                     </div>
@@ -176,30 +342,27 @@
                 <button type="submit">Submit</button>
             </form>
 
-            {% if form.errors %}
+            <!-- Display Errors -->
+            {% if errors %}
                 <div class="error">
                     <h3>Errors:</h3>
                     <ul>
-                        {% for field in form %}
-                            {% for error in field.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                        {% for error in form.non_field_errors %}
+                        {% for error in errors %}
                             <li>{{ error }}</li>
                         {% endfor %}
                     </ul>
                 </div>
             {% endif %}
-            
+
+            <!-- Display Summary -->
             {% if summary %}
-                <h3>Summary</h3>
-                <p>Planned Income: {{ summary.planned_income }}</p>
-                <p>Actual Income: {{ summary.actual_income }}</p>
-                <p>Total Planned Expenses: {{ summary.total_planned_expenses }}</p>
-                <p>Total Actual Expenses: {{ summary.total_actual_expenses }}</p>
-                <p>Remaining Balance (Planned): {{ summary.remaining_balance_planned }}</p>
-                <p>Remaining Balance (Actual): {{ summary.remaining_balance_actual }}</p>
+                <div id="summary-section">
+                    <h3>Summary</h3>
+                    <p><strong>Planned Income:</strong> {{ summary.planned_income }}</p>
+                    <p><strong>Actual Income:</strong> {{ summary.actual_income }}</p>
+                    <p><strong>Total Expenses:</strong> {{ summary.total_actual_expenses }}</p>
+                    <p><strong>Remaining Balance:</strong> {{ summary.remaining_balance }}</p>
+                </div>
             {% endif %}
         </div>
     </main>
@@ -207,5 +370,6 @@
     <footer>
         <p>&copy; 2024 FinanceFolio</p>
     </footer>
+
 </body>
 </html>

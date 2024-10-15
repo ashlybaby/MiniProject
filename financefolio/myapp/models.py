@@ -60,54 +60,54 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 #............................................................#
-from django.db import models
-from django.conf import settings  # To reference the CustomUser model
+# from django.db import models
+# from django.conf import settings  # To reference the CustomUser model
 
-class Budget(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='budgets'
-    )
-    month = models.DateField()
-    planned_income = models.DecimalField(max_digits=12, decimal_places=2)
-    actual_income = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
+# class Budget(models.Model):
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         related_name='budgets'
+#     )
+#     month = models.DateField()
+#     planned_income = models.DecimalField(max_digits=12, decimal_places=2)
+#     actual_income = models.DecimalField(
+#         max_digits=12,
+#         decimal_places=2,
+#         null=True,
+#         blank=True
+#     )
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def total_planned_expenses(self):
-        return self.expenses.aggregate(models.Sum('planned_expense'))['planned_expense__sum'] or 0
+#     def total_planned_expenses(self):
+#         return self.expenses.aggregate(models.Sum('planned_expense'))['planned_expense__sum'] or 0
 
-    def total_actual_expenses(self):
-        return self.expenses.aggregate(models.Sum('actual_expense'))['actual_expense__sum'] or 0
+#     def total_actual_expenses(self):
+#         return self.expenses.aggregate(models.Sum('actual_expense'))['actual_expense__sum'] or 0
 
-    def remaining_balance_planned(self):
-        return self.planned_income - self.total_planned_expenses()
+#     def remaining_balance_planned(self):
+#         return self.planned_income - self.total_planned_expenses()
 
-    def remaining_balance_actual(self):
-        if self.actual_income is not None:
-            return self.actual_income - self.total_actual_expenses()
-        return None
+#     def remaining_balance_actual(self):
+#         if self.actual_income is not None:
+#             return self.actual_income - self.total_actual_expenses()
+#         return None
 
-    def __str__(self):
-        return f"{self.user.email} - {self.month.strftime('%B %Y')}"
+#     def __str__(self):
+#         return f"{self.user.email} - {self.month.strftime('%B %Y')}"
 
-class Expense(models.Model):
-    budget = models.ForeignKey(
-        Budget,
-        on_delete=models.CASCADE,
-        related_name='expenses'
-    )
-    category = models.CharField(max_length=100)
-    planned_expense = models.DecimalField(max_digits=12, decimal_places=2)
-    actual_expense = models.DecimalField(max_digits=12, decimal_places=2)
+# class Expense(models.Model):
+#     budget = models.ForeignKey(
+#         Budget,
+#         on_delete=models.CASCADE,
+#         related_name='expenses'
+#     )
+#     category = models.CharField(max_length=100)
+#     planned_expense = models.DecimalField(max_digits=12, decimal_places=2)
+#     actual_expense = models.DecimalField(max_digits=12, decimal_places=2)
 
-    def __str__(self):
-        return f"{self.category} - Planned: {self.planned_expense}, Actual: {self.actual_expense}"
+#     def __str__(self):
+#         return f"{self.category} - Planned: {self.planned_expense}, Actual: {self.actual_expense}"
 
 from django.db import models
 from django.conf import settings  # To reference the CustomUser model
@@ -137,3 +137,72 @@ class Feedback(models.Model):
         return f"{user_display} - {self.rating} Stars"
 
 # Optionally, create a view to display feedback for guests and admins.
+from django.db import models
+from django.conf import settings  # To reference the CustomUser model
+
+class Budget(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='budgets'
+    )
+    month = models.DateField()
+    planned_income = models.DecimalField(max_digits=12, decimal_places=2)
+    actual_income = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def total_actual_expenses(self):
+        return self.expenses.aggregate(models.Sum('actual_expense'))['actual_expense__sum'] or 0
+
+    def remaining_balance_actual(self):
+        if self.actual_income is not None:
+            return self.actual_income - self.total_actual_expenses()
+        return None
+
+    def __str__(self):
+        return f"{self.user.email} - {self.month.strftime('%B %Y')}"
+
+
+class Expense(models.Model):
+    CATEGORIES = [
+        ('rent', 'Rent'),
+        ('food', 'Food'),
+        ('travel', 'Travel'),
+        ('entertainment', 'Entertainment'),
+        ('electricity', 'Electricity'),
+        ('medicine', 'Medicine'),
+        ('groceries', 'Groceries'),
+        ('bills', 'Bills'),
+        ('loan', 'Loan'),
+        ('insurance', 'Insurance'),                # Added
+        ('transport', 'Transport'),                  # Added
+        ('subscriptions', 'Subscriptions'),          # Added
+        ('clothing', 'Clothing'),                    # Added
+        ('household_supplies', 'Household Supplies'), # Added
+        ('dining_out', 'Dining Out'),                # Added
+        ('gifts', 'Gifts'),                          # Added
+        ('miscellaneous', 'Miscellaneous'),          # Added
+        ('charity', 'Charity'),
+        ('education', 'Education'),
+        ('dress', 'Dress'),
+        ('gym', 'Gym'),
+        # Option for user-defined category
+        ('custom', 'Add Any Other Expense'),
+    ]
+
+    budget = models.ForeignKey(
+        Budget,
+        on_delete=models.CASCADE,
+        related_name='expenses'
+    )
+    category = models.CharField(max_length=100, choices=CATEGORIES)
+    actual_expense = models.DecimalField(max_digits=12, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.category} - Actual: {self.actual_expense}"
+

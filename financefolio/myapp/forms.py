@@ -350,25 +350,33 @@ from django.core.exceptions import ValidationError
 import re
 from decimal import Decimal
 
-# Custom validation for positive numbers
+from django import forms
+from django.core.validators import MinValueValidator
+from decimal import Decimal
+from .models import Budget
+from django import forms
+from django.core.validators import MinValueValidator
+from decimal import Decimal
+from .models import Budget
+
 def validate_positive(value):
     if value < 0:
-        raise ValidationError("Value cannot be negative.")
-
-# Custom validation for category field to ensure it's not a number
-def validate_category(value):
-    if value.isdigit():
-        raise ValidationError("Category cannot be a number.")
-    # Optionally, check for invalid characters
-    if not re.match(r'^[a-zA-Z\s]+$', value):  # Allow letters and spaces only
-        raise ValidationError("Category can only contain letters and spaces.")
+        raise forms.ValidationError("Value must be positive.")
 
 class BudgetForm(forms.ModelForm):
     month = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'month'}),
         input_formats=['%Y-%m']  # Accepts YYYY-MM format
     )
-    planned_income = forms.DecimalField(validators=[validate_positive])
+    planned_income = forms.DecimalField(
+        validators=[validate_positive],
+        decimal_places=2,
+        max_digits=10,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter planned income',
+        })
+    )
 
     class Meta:
         model = Budget
@@ -381,44 +389,124 @@ class BudgetForm(forms.ModelForm):
         if planned_income is not None and planned_income < Decimal('0.00'):
             self.add_error('planned_income', "Planned income cannot be negative.")
 
-        return cleaned_data
+    
+
+          
+
+    def fill_existing_budget(self, month):
+        """ Autofill form fields with existing budget data for a given month. """
+        try:
+            existing_budget = Budget.objects.get(month=month)
+            self.fields['planned_income'].initial = existing_budget.planned_income
+            # Add any additional fields you want to autofill
+        except Budget.DoesNotExist:
+            pass  # No existing budget for this month
+
+
+# class ExpenseForm(forms.ModelForm):
+#     category = forms.CharField(validators=[validate_category])
+#     planned_expense = forms.DecimalField(validators=[validate_positive])
+#     actual_expense = forms.DecimalField(validators=[validate_positive])
+
+#     class Meta:
+#         model = Expense
+#         fields = ['category', 'planned_expense', 'actual_expense']
+
+#     def __init__(self, *args, actual_income=None, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.actual_income = actual_income
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         planned_expense = cleaned_data.get('planned_expense')
+#         actual_expense = cleaned_data.get('actual_expense')
+#         category = cleaned_data.get('category')
+
+#         # Validate that actual income is not zero
+#         if self.actual_income is not None and self.actual_income <= Decimal('0.00'):
+#             raise ValidationError("You cannot add expenses because your received income is 0.")
+
+#         # Validate that planned_expense is positive
+#         if planned_expense is not None and planned_expense < Decimal('0.00'):
+#             self.add_error('planned_expense', "Planned expense cannot be negative.")
+
+#         # Validate that actual_expense is positive
+#         if actual_expense is not None and actual_expense < Decimal('0.00'):
+#             self.add_error('actual_expense', "Actual expense cannot be negative.")
+
+#         # Validate category (if needed)
+#         if category and category.isdigit():
+#             self.add_error('category', "Category cannot be a number.")
+
+#         return cleaned_data
+
+
+
+
+from decimal import Decimal
+from django import forms
+from .models import Expense, Budget
 
 class ExpenseForm(forms.ModelForm):
-    category = forms.CharField(validators=[validate_category])
-    planned_expense = forms.DecimalField(validators=[validate_positive])
-    actual_expense = forms.DecimalField(validators=[validate_positive])
+    # Field for custom category, which is optional unless 'custom' is selected
+    custom_category = forms.CharField(
+        max_length=100, 
+        required=False, 
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter custom category',
+        })
+    )
+    
+    # Field for actual expense, to be rendered dynamically in the template
+    actual_expense = forms.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        required=False, 
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter amount',
+            'min': '0',
+        })
+    )
 
     class Meta:
         model = Expense
-        fields = ['category', 'planned_expense', 'actual_expense']
+        fields = ['budget', 'category', 'custom_category', 'actual_expense']
+        widgets = {
+            'budget': forms.Select(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control', 'id': 'category-select'}),
+        }
 
-    def __init__(self, *args, actual_income=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.actual_income = actual_income
+        # Ensure that the queryset for budget includes all Budget instances
+        self.fields['budget'].queryset = Budget.objects.all()
+        # Use CATEGORIES defined in the Expense model for the category field
+        self.fields['category'].choices = Expense.CATEGORIES
 
     def clean(self):
         cleaned_data = super().clean()
-        planned_expense = cleaned_data.get('planned_expense')
-        actual_expense = cleaned_data.get('actual_expense')
         category = cleaned_data.get('category')
+        custom_category = cleaned_data.get('custom_category')
+        actual_expense = cleaned_data.get('actual_expense')
 
-        # Validate that actual income is not zero
-        if self.actual_income is not None and self.actual_income <= Decimal('0.00'):
-            raise ValidationError("You cannot add expenses because your received income is 0.")
+        # Validate that a custom category is provided if 'custom' is selected
+        if category == 'custom' and not custom_category:
+            self.add_error('custom_category', "Please provide a custom category.")
 
-        # Validate that planned_expense is positive
-        if planned_expense is not None and planned_expense < Decimal('0.00'):
-            self.add_error('planned_expense', "Planned expense cannot be negative.")
-
-        # Validate that actual_expense is positive
-        if actual_expense is not None and actual_expense < Decimal('0.00'):
-            self.add_error('actual_expense', "Actual expense cannot be negative.")
-
-        # Validate category (if needed)
-        if category and category.isdigit():
-            self.add_error('category', "Category cannot be a number.")
+        # Ensure that the actual expense is provided if a valid category is selected
+        if category and not actual_expense:
+            self.add_error('actual_expense', "Please provide an expense amount.")
 
         return cleaned_data
+
+    def clean_actual_expense(self):
+        actual_expense = self.cleaned_data.get('actual_expense')
+        if actual_expense is not None and actual_expense <= 0:
+            raise forms.ValidationError("Expense must be greater than zero.")
+        return actual_expense
+
 
 #...............................................................................................#
 #feedback
