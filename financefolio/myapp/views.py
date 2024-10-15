@@ -370,6 +370,15 @@ from decimal import Decimal
 from django.utils.dateparse import parse_date
 from django.utils import timezone
 
+from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.dateparse import parse_date
+from .forms import BudgetForm, ExpenseForm
+from .models import Budget, Expense
+
 @login_required
 @csrf_exempt  # Use with caution; consider using CSRF tokens for production
 def budget_view(request):
@@ -409,6 +418,7 @@ def budget_view(request):
             expense_categories = request.POST.getlist('expense-category')
             actual_expenses = request.POST.getlist('actual-expense')
             custom_categories = request.POST.getlist('custom-category')
+            expense_dates = request.POST.getlist('expense-date')  # New: Get list of dates
 
             # Clear existing expenses if editing an existing budget
             if not created:
@@ -417,22 +427,30 @@ def budget_view(request):
             for i in range(len(expense_categories)):
                 category = expense_categories[i]
                 expense_value = Decimal(actual_expenses[i]) if actual_expenses[i] else 0
+                expense_date_str = expense_dates[i] if i < len(expense_dates) else None
+
+                # Parse the date string into a date object
+                if expense_date_str:
+                    expense_date = parse_date(expense_date_str)
+                else:
+                    expense_date = None
 
                 if category == 'custom' and custom_categories[i]:
                     category = custom_categories[i]
 
-                if category and actual_expenses[i]:
+                if category and actual_expenses[i] and expense_date:
                     Expense.objects.create(
                         budget=budget,
                         category=category,
-                        actual_expense=expense_value
+                        actual_expense=expense_value,
+                        date=expense_date  # Set the date field
                     )
 
             # Calculate summary details
             planned_income = budget.planned_income
             actual_income_decimal = Decimal(actual_income) if actual_income else 0
             total_actual_expenses = budget.total_actual_expenses()
-            remaining_balance =  actual_income_decimal - total_actual_expenses
+            remaining_balance = actual_income_decimal - total_actual_expenses
 
             summary = {
                 'planned_income': planned_income,
@@ -472,7 +490,8 @@ def budget_view(request):
                 for expense in expenses:
                     expenses_data.append({
                         'category': expense.category,
-                        'actual_expense': float(expense.actual_expense)
+                        'actual_expense': float(expense.actual_expense),
+                        'date': expense.date.strftime('%Y-%m-%d') if expense.date else ''
                     })
                
                 summary = {
@@ -496,6 +515,7 @@ def budget_view(request):
         'form': BudgetForm(),
         'expense_form': expense_form  # Pass expense form on GET request
     })
+
 
 
 # views.py

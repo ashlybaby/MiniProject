@@ -128,6 +128,21 @@
         #autofill-data h3 {
             color: #16a085;
         }
+
+        /* Additional Styles for Expense Entries */
+        .expense-entry {
+            border: 1px solid #bdc3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #ecf0f1;
+        }
+        .expense-entry button {
+            background-color: #c0392b;
+        }
+        .expense-entry button:hover {
+            background-color: #e74c3c;
+        }
     </style>
     <script>
         function addExpense() {
@@ -137,7 +152,7 @@
             newExpense.innerHTML = `
                 <div class="expense-item">
                     <label for="category">Category:</label>
-                    <select name="expense-category" onchange="toggleCustomCategory(this)">
+                    <select name="expense-category" onchange="toggleCustomCategory(this)" required>
                         <option value="">Select a category</option>
                         {% for category in expense_form.category.field.choices %}
                             <option value="{{ category.0 }}">{{ category.1 }}</option>
@@ -150,16 +165,24 @@
                     </div>
                     <label for="actual-expense">Amount:</label>
                     <input type="number" name="actual-expense" step="0.01" required>
-                    <button type="button" onclick="removeExpense(this)">Remove</button>
+                    <label for="expense-date">Date:</label>
+                    <input type="date" name="expense-date" required>
+                    <button type="button" onclick="removeExpense(this)">Remove Expense</button>
                 </div>
             `;
             expenseContainer.appendChild(newExpense);
         }
-    
+
         function removeExpense(button) {
-            button.parentElement.remove();
+            const expenseEntry = button.closest('.expense-entry');
+            const expenseContainer = document.getElementById('expense-container');
+            if (expenseContainer.children.length > 1) {
+                expenseEntry.remove();
+            } else {
+                alert('At least one expense entry is required.');
+            }
         }
-    
+
         function toggleCustomCategory(select) {
             const customCategoryDiv = select.parentElement.querySelector('.custom-category');
             if (select.value === 'custom') {
@@ -168,11 +191,11 @@
                 customCategoryDiv.style.display = 'none';
             }
         }
-    
+
         function showSuccessMessage(message) {
             alert(message);
         }
-    
+
         // Function to display success message after page load if exists
         window.onload = function() {
             const monthInput = document.getElementById('month-picker');
@@ -189,12 +212,12 @@
             if (successMessage) {
                 alert(successMessage);
             }
-    
+
             // Attach event listener to month picker for autofill
             if (monthInput) {
                 monthInput.addEventListener('change', function() {
                     const selectedMonth = this.value;  // Format: 'YYYY-MM'
-    
+
                     if (selectedMonth) {
                         fetch(`/budget/?month=${selectedMonth}`, {
                             method: 'GET',
@@ -219,43 +242,47 @@
                 });
             }
         };
-    
+
         function clearForm() {
             document.querySelector('input[name="planned_income"]').value = '';
             document.querySelector('input[name="actual-income"]').value = '';
             const expenseContainer = document.getElementById('expense-container');
             expenseContainer.innerHTML = `
                 <div class="expense-entry">
-                    <label for="category">Category:</label>
-                    <select name="expense-category" onchange="toggleCustomCategory(this)">
-                        <option value="">Select a category</option>
-                        {% for category in expense_form.category.field.choices %}
-                            <option value="{{ category.0 }}">{{ category.1 }}</option>
-                        {% endfor %}
-                        <option value="custom">Add Any Other Expense</option>
-                    </select>
-                    <div class="custom-category" style="display:none;">
-                        <label for="custom-category">Custom Category:</label>
-                        <input type="text" name="custom-category" placeholder="Specify custom category">
+                    <div class="expense-item">
+                        <label for="category">Category:</label>
+                        <select name="expense-category" onchange="toggleCustomCategory(this)" required>
+                            <option value="">Select a category</option>
+                            {% for category in expense_form.category.field.choices %}
+                                <option value="{{ category.0 }}">{{ category.1 }}</option>
+                            {% endfor %}
+                            <option value="custom">Add Any Other Expense</option>
+                        </select>
+                        <div class="custom-category" style="display:none;">
+                            <label for="custom-category">Custom Category:</label>
+                            <input type="text" name="custom-category" placeholder="Specify custom category">
+                        </div>
+                        <label for="actual-expense">Amount:</label>
+                        <input type="number" name="actual-expense" step="0.01" required>
+                        <label for="expense-date">Date:</label>
+                        <input type="date" name="expense-date" required>
+                        <button type="button" onclick="removeExpense(this)">Remove Expense</button>
                     </div>
-                    <label for="actual-expense">Amount:</label>
-                    <input type="number" name="actual-expense" step="0.01" required>
-                    <button type="button" onclick="removeExpense(this)">Remove</button>
                 </div>
             `;
         }
-    
+
         function populateForm(data) {
             // Populate planned income
             document.querySelector('input[name="planned_income"]').value = data.summary.planned_income;
-    
+
             // Populate actual income
             document.querySelector('input[name="actual-income"]').value = data.summary.actual_income;
-    
+
             // Clear existing expense entries
             const expenseContainer = document.getElementById('expense-container');
             expenseContainer.innerHTML = '';
-    
+
             // Populate expenses
             data.expenses.forEach(expense => {
                 const expenseEntry = document.createElement('div');
@@ -263,7 +290,7 @@
                 expenseEntry.innerHTML = `
                     <div class="expense-item">
                         <label for="category">Category:</label>
-                        <select name="expense-category" onchange="toggleCustomCategory(this)">
+                        <select name="expense-category" onchange="toggleCustomCategory(this)" required>
                             <option value="">Select a category</option>
                             {% for category in expense_form.category.field.choices %}
                                 <option value="{{ category.0 }}" ${expense.category === "{{ category.0 }}" ? 'selected' : ''}>{{ category.1 }}</option>
@@ -272,18 +299,20 @@
                         </select>
                         <div class="custom-category" style="display:${expense.category === 'custom' ? 'block' : 'none'};">
                             <label for="custom-category">Custom Category:</label>
-                            <input type="text" name="custom-category" placeholder="Specify custom category" value="${expense.category === 'custom' ? '' : expense.category}">
+                            <input type="text" name="custom-category" placeholder="Specify custom category" value="${expense.category !== 'custom' ? '' : ''}">
                         </div>
                         <label for="actual-expense">Amount:</label>
                         <input type="number" name="actual-expense" step="0.01" required value="${expense.actual_expense}">
-                        <button type="button" onclick="removeExpense(this)">Remove</button>
+                        <label for="expense-date">Date:</label>
+                        <input type="date" name="expense-date" required value="${expense.date}">
+                        <button type="button" onclick="removeExpense(this)">Remove Expense</button>
                     </div>
                 `;
                 expenseContainer.appendChild(expenseEntry);
             });
         }
     </script>
-    
+
 </head>
 <body>
     
@@ -294,12 +323,13 @@
     <nav>
         <ul>
             <li><a href="{% url 'user_dashboard' %}">Dashboard</a></li>
+            <!-- Add more navigation links as needed -->
         </ul>
     </nav>
 
     <main>
         <div class="budget-card">
-            <h2>Create a Budget</h2>
+            <h2>Income and Expense Tracking</h2>
             <form method="post" id="budget-form">
                 {% csrf_token %}
                 
@@ -320,21 +350,25 @@
                     <h3>Expenses</h3>
                     <!-- Initial expense entry -->
                     <div class="expense-entry">
-                        <label for="category">Category:</label>
-                        <select name="expense-category" onchange="toggleCustomCategory(this)">
-                            <option value="">Select a category</option>
-                            {% for category in expense_form.category.field.choices %}
-                                <option value="{{ category.0 }}">{{ category.1 }}</option>
-                            {% endfor %}
-                            <option value="custom">Add Any Other Expense</option>
-                        </select>
-                        <div class="custom-category" style="display:none;">
-                            <label for="custom-category">Custom Category:</label>
-                            <input type="text" name="custom-category" placeholder="Specify custom category">
+                        <div class="expense-item">
+                            <label for="category">Category:</label>
+                            <select name="expense-category" onchange="toggleCustomCategory(this)" required>
+                                <option value="">Select a category</option>
+                                {% for category in expense_form.category.field.choices %}
+                                    <option value="{{ category.0 }}">{{ category.1 }}</option>
+                                {% endfor %}
+                                <option value="custom">Add Any Other Expense</option>
+                            </select>
+                            <div class="custom-category" style="display:none;">
+                                <label for="custom-category">Custom Category:</label>
+                                <input type="text" name="custom-category" placeholder="Specify custom category">
+                            </div>
+                            <label for="actual-expense">Amount:</label>
+                            <input type="number" name="actual-expense" step="0.01" required>
+                            <label for="expense-date">Date:</label>
+                            <input type="date" name="expense-date" required>
+                            <button type="button" onclick="removeExpense(this)">Remove Expense</button>
                         </div>
-                        <label for="actual-expense">Amount:</label>
-                        <input type="number" name="actual-expense" step="0.01" required>
-                        <button type="button" onclick="removeExpense(this)">Remove</button>
                     </div>
                 </div>
 
@@ -347,8 +381,10 @@
                 <div class="error">
                     <h3>Errors:</h3>
                     <ul>
-                        {% for error in errors %}
-                            <li>{{ error }}</li>
+                        {% for field_errors in errors.values %}
+                            {% for error in field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
                         {% endfor %}
                     </ul>
                 </div>

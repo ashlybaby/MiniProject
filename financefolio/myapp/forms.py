@@ -5,18 +5,10 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import date
 from django.contrib.auth.hashers import make_password
-from django import forms
-from django.core.exceptions import ValidationError
-
-from .models import User
-from datetime import date
-
-from django import forms
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from datetime import date
-from django.contrib.auth.hashers import make_password
-from .models import User
+
+
+
 
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, label="Password", min_length=6)
@@ -98,16 +90,12 @@ class UserChangeForm(BaseUserChangeForm):
 
 from django.contrib.auth import authenticate
 from django import forms
-from .models import User
-
-from django import forms
-from django.contrib.auth import authenticate
-from .models import User  # Adjust the import based on your User model
+from .models import User # Adjust the import based on your User model
 
 class UserLoginForm(forms.Form):
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput)
-
+    email = forms.EmailField(widget=forms.TextInput(attrs={'id': 'emailid', 'placeholder': 'Email'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'id': 'passwords', 'placeholder': 'Password'}))
+    
     def clean(self):
         cleaned_data = super().clean()
         email = cleaned_data.get('email')
@@ -349,15 +337,11 @@ from .models import Budget, Expense
 from django.core.exceptions import ValidationError
 import re
 from decimal import Decimal
+from django.core.validators import MinValueValidator
+from .models import Budget
 
-from django import forms
-from django.core.validators import MinValueValidator
-from decimal import Decimal
-from .models import Budget
-from django import forms
-from django.core.validators import MinValueValidator
-from decimal import Decimal
-from .models import Budget
+
+
 
 def validate_positive(value):
     if value < 0:
@@ -442,10 +426,14 @@ class BudgetForm(forms.ModelForm):
 
 
 
-
+# forms.py
 from decimal import Decimal
 from django import forms
 from .models import Expense, Budget
+
+def validate_positive(value):
+    if value < 0:
+        raise forms.ValidationError("Value must be positive.")
 
 class ExpenseForm(forms.ModelForm):
     # Field for custom category, which is optional unless 'custom' is selected
@@ -469,10 +457,19 @@ class ExpenseForm(forms.ModelForm):
             'min': '0',
         })
     )
+    
+    # New Date Field for Expense
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control',
+        }),
+        input_formats=['%Y-%m-%d']  # Adjust the format as needed
+    )
 
     class Meta:
         model = Expense
-        fields = ['budget', 'category', 'custom_category', 'actual_expense']
+        fields = ['budget', 'category', 'custom_category', 'actual_expense', 'date']
         widgets = {
             'budget': forms.Select(attrs={'class': 'form-control'}),
             'category': forms.Select(attrs={'class': 'form-control', 'id': 'category-select'}),
@@ -490,6 +487,7 @@ class ExpenseForm(forms.ModelForm):
         category = cleaned_data.get('category')
         custom_category = cleaned_data.get('custom_category')
         actual_expense = cleaned_data.get('actual_expense')
+        date = cleaned_data.get('date')
 
         # Validate that a custom category is provided if 'custom' is selected
         if category == 'custom' and not custom_category:
@@ -498,6 +496,17 @@ class ExpenseForm(forms.ModelForm):
         # Ensure that the actual expense is provided if a valid category is selected
         if category and not actual_expense:
             self.add_error('actual_expense', "Please provide an expense amount.")
+        
+        # Ensure that the date falls within the selected budget month
+        budget = cleaned_data.get('budget')
+        if budget and date:
+            if not (budget.month.year == date.year and budget.month.month == date.month):
+                self.add_error('date', "Expense date must be within the selected budget month.")
+
+        # Optional: Prevent future dates
+        from datetime import date as date_today
+        if date and date > date_today.today():
+            self.add_error('date', "Expense date cannot be in the future.")
 
         return cleaned_data
 

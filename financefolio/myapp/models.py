@@ -202,7 +202,8 @@ class Expense(models.Model):
     )
     category = models.CharField(max_length=100, choices=CATEGORIES)
     actual_expense = models.DecimalField(max_digits=12, decimal_places=2)
+    date = models.DateField()
 
     def __str__(self):
-        return f"{self.category} - Actual: {self.actual_expense}"
+        return f"{self.category} - Actual: {self.actual_expense} on {self.date}"
 
