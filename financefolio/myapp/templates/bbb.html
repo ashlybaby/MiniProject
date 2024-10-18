@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Personal Finance Management{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+    <div class="header-content">
+        <h1>Personal Finance Management</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- Sidebar -->
+<aside>
+    <ul class="sidebar-menu">
+        <li><a href="#" id="budgeting-menu">Budgeting</a></li>
+        <li><a href="#" id="history-menu">History & Chart</a></li>
+        <li><a href="#" id="goal-tracking-menu">Goal Tracking</a></li>
+        <li><a href="#" id="goal-progress-menu">Goal Progress</a></li>
+        <li><a href="#" id="alerts-menu">Alerts</a></li>
+        <li><a href="#" id="announcements-menu">Announcements</a></li>
+        <li><a href="#" id="tutorials-menu">Tutorials</a></li>
+        <li><a href="#" id="queries-menu">Queries</a></li>
+        <li><a href="#" id="articles-menu">Articles</a></li>
+    </ul>
+</aside>
+
+<!-- Main Content -->
+<main id="mainContent">
+    {% block content %}
+    <!-- Content will be injected here -->
+    {% endblock %}
+</main>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; 2024 Personal Finance Management. All Rights Reserved.</p>
+</footer>
+
+<!-- Modals and Scripts -->
+<div id="feedbackModal" class="modal">
+    <div class="modal-content">
+        <span id="closeFeedbackModal" class="close">&times;</span>
+        <h2>Feedback</h2>
+        <form id="feedbackForm" method="post">
+            {% csrf_token %}
+            <label for="feedback">Your Feedback:</label>
+            <textarea name="feedback" required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <span id="closeProfileModal" class="close">&times;</span>
+        <h2>Your Profile</h2>
+        <!-- Profile details go here -->
+    </div>
+</div>
+
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <span id="closeEditProfileModal" class="close">&times;</span>
+        <h2>Edit Profile</h2>
+        <form id="editProfileForm" method="post" action="#">
+            {% csrf_token %}
+            <label for="name">Name:</label>
+            <input type="text" name="name" required>
+            <label for="email">Email:</label>
+            <input type="email" name="email" required>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

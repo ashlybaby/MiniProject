@@ -43,6 +43,8 @@ urlpatterns = [
     path('goal_view/',views.goal_view,name='goal_view'),
     path('add-goal/', views.add_goal, name='add_goal'),
     path('get-current-amount/', views.get_current_amount, name='get_current_amount'),
+    path('edit_goal/', views.edit_goal, name='edit_goal'),
+    path('delete_goal/<int:goal_id>/', views.delete_goal, name='delete_goal'),
 ]
 
   

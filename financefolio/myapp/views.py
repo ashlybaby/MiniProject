@@ -735,3 +735,54 @@ def get_current_amount(request):
 
         # Return the result as JSON
         return JsonResponse({'current_amount': total_spent})
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Goal  # Make sure to import your Goal model
+from .forms import GoalForm  # Import your GoalForm if you have one
+
+# View for editing an existing goal
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Goal  # Ensure your Goal model is imported
+from .forms import GoalForm  # Ensure your GoalForm is imported
+
+# View for editing an existing goal
+def edit_goal(request):
+    if request.method == 'POST':
+        goal_id = request.POST.get('id')
+        print("Received goal ID:", goal_id)  # Debugging: Check received goal ID
+        goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+        
+        form = GoalForm(request.POST, instance=goal)
+
+        print("Form data:", request.POST)
+        print("Goal object before update:", goal)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Goal updated successfully!')
+            return redirect('user_dashboard')
+        else:
+            print("Form errors:", form.errors)  # Print errors if the form is invalid
+
+    return redirect('user_dashboard')
+
+
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Goal  # Make sure to import your Goal model
+
+
+
+def delete_goal(request, goal_id):  # Accepts 'goal_id'
+    if request.method == 'POST':
+        goal = get_object_or_404(Goal, id=goal_id, user=request.user)  # Uses goal_id
+        goal.delete()
+        messages.success(request, 'Goal deleted successfully!')
+        return redirect('user_dashboard')
+
+    return redirect('user_dashboard')  # Handle other request methods

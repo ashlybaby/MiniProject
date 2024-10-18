@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,12 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Goal Tracking</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        nav a:hover {
+            background-color: #0056b3;
         }
 
         .container {
@@ -109,9 +139,64 @@
             display: flex;
             gap: 10px;
         }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 60px; 
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+
+<header>
+    <h1>My Finance App</h1>
+    <nav>
+        <a href="{% url 'user_dashboard' %}">Dashboard</a>
+        <a href="{% url 'logout' %}">Logout</a>
+    </nav>
+</header>
 
 <div class="container">
     <h2>Goal Tracking</h2>
@@ -142,8 +227,15 @@
                 <li>
                     <span>{{ goal.name }} - {{ goal.target_amount }} by {{ goal.deadline }} ({{ goal.category }})</span>
                     <div class="goal-actions">
-                        <button><i class="fas fa-edit"></i></button> <!-- Edit goal -->
-                        <button><i class="fas fa-trash"></i></button> <!-- Delete goal -->
+                        <button class="edit-btn" data-id="{{ goal.id }}" data-name="{{ goal.name }}" data-category="{{ goal.category }}" data-target="{{ goal.target_amount }}" data-deadline="{{ goal.deadline }}">
+                            <i class="fas fa-edit"></i>
+                        </button> <!-- Edit goal -->
+                        <form method="POST" action="{% url 'delete_goal' goal.id %}">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none; border:none;">
+                                <i class="fas fa-trash"></i> <!-- Delete goal -->
+                            </button>
+                        </form>
                     </div>
                 </li>
             {% empty %}
@@ -153,10 +245,39 @@
     </div>
 </div>
 
-<!-- JavaScript to dynamically change the goal name and fetch current amount -->
+<!-- Edit Goal Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Goal</h2>
+        <form method="POST" action="{% url 'edit_goal' %}">
+            {% csrf_token %}
+            <input type="hidden" id="editGoalId" name="id">
+            <input type="text" id="editGoalName" name="name" placeholder="Goal Name" required>
+            <select id="editCategorySelect" name="category" required>
+                <option value="">Select Category</option>
+                {% for category in form.category.field.choices %}
+                    <option value="{{ category.0 }}">{{ category.1 }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" id="editTargetAmount" name="target_amount" placeholder="Target Amount" step="0.01" required>
+            <input type="date" id="editDeadline" name="deadline" required>
+            <button type="submit">Update Goal</button>
+        </form>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; {{ current_year }} My Finance App. All rights reserved.</p>
+    <p>Contact us: support@myfinanceapp.com</p>
+</footer>
+
+<!-- JavaScript to handle the edit button click and AJAX for current amount -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
+        // Update the goal name suggestion based on category
         $('#categorySelect').change(function() {
             const category = this.value;
             const goalNameInput = $('#goalName');
@@ -166,48 +287,54 @@
                 'rent': 'Save for Rent',
                 'food': 'Monthly Grocery Savings',
                 'travel': 'Vacation Savings',
-                'entertainment': 'Entertainment Budget',
-                'electricity': 'Electricity Bill Savings',
-                'medicine': 'Emergency Medical Fund',
-                'groceries': 'Weekly Groceries Savings',
-                'bills': 'Utility Bills Savings',
-                'loan': 'Loan Repayment Fund',
-                'insurance': 'Insurance Premium Fund',
-                'transport': 'Transport Expense Savings',
-                'subscriptions': 'Subscription Renewals Fund',
-                'clothing': 'Clothing Budget',
-                'household_supplies': 'Household Supplies Budget',
-                'dining_out': 'Dining Out Fund',
-                'gifts': 'Gifts Savings Fund',
-                'miscellaneous': 'Miscellaneous Expense Fund',
-                'charity': 'Charity Donation Fund',
-                'education': 'Education Savings',
-                'dress': 'Dress Budget',
-                'gym': 'Gym Membership Fund',
-                'custom': ''
+                'entertainment': 'Entertainment Fund',
+                'emergency': 'Emergency Fund'
             };
 
-            // Set the goal name based on selected category
             goalNameInput.val(goalSuggestions[category] || '');
 
-            // Fetch current amount based on category
+            // If a category is selected, fetch the current amount via AJAX
             if (category) {
                 $.ajax({
-                    url: "{% url 'get_current_amount' %}",
+                    url: "{% url 'get_current_amount' %}",  // URL to your view
+                    type: "GET",
                     data: {
                         'category': category
                     },
-                    dataType: 'json',
                     success: function(data) {
+                        // Set the current amount field with the fetched value
                         $('#current_amount').val(data.current_amount);
                     },
-                    error: function(xhr, errmsg, err) {
-                        console.error(xhr.status + ": " + xhr.responseText);
+                    error: function(xhr, status, error) {
+                        console.log("Error fetching current amount:", error);
                     }
                 });
             } else {
-                $('#current_amount').val(0); // Reset if no category is selected
+                // Clear the current amount if no category is selected
+                $('#current_amount').val('');
             }
+        });
+
+        // Modal handling for edit button
+        $('.edit-btn').click(function() {
+            const goalId = $(this).data('id');
+            const goalName = $(this).data('name');
+            const goalCategory = $(this).data('category');
+            const goalTarget = $(this).data('target');
+            const goalDeadline = $(this).data('deadline');
+
+            $('#editGoalId').val(goalId);
+            $('#editGoalName').val(goalName);
+            $('#editCategorySelect').val(goalCategory);
+            $('#editTargetAmount').val(goalTarget);
+            $('#editDeadline').val(goalDeadline);
+
+            $('#editModal').show();
+        });
+
+        // Close modal when the 'X' is clicked
+        $('.close').click(function() {
+            $('#editModal').hide();
         });
     });
 </script>
