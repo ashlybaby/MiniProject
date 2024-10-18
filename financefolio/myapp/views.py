@@ -343,41 +343,17 @@ from django.shortcuts import render, redirect
 from decimal import Decimal
 from .forms import BudgetForm
 from .models import Budget, Expense
-
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
-from decimal import Decimal
-from .forms import BudgetForm
-from .models import Budget, Expense
-
 from django.shortcuts import render, get_object_or_404
-from .models import Budget, Expense
 from .forms import BudgetForm, ExpenseForm
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from decimal import Decimal
-from django.utils.dateparse import parse_date
-
-from django.shortcuts import render, get_object_or_404
-from .models import Budget, Expense
-from .forms import BudgetForm, ExpenseForm
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-from decimal import Decimal
 from django.utils.dateparse import parse_date
 from django.utils import timezone
-
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_date
-from .forms import BudgetForm, ExpenseForm
-from .models import Budget, Expense
 
 @login_required
 @csrf_exempt  # Use with caution; consider using CSRF tokens for production
@@ -667,70 +643,6 @@ def toggle_user_activation(request, user_id):
 
 
 
-
-# from django.shortcuts import redirect, get_object_or_404
-# from django.http import HttpResponseRedirect
-# from .models import CustomUser
-
-# def toggle_active_status(request, user_id):
-#     user = get_object_or_404(CustomUser, id=user_id)
-    
-#     if request.method == 'POST':
-#         status = request.POST.get('status')
-#         current_table = request.POST.get('current_table')  # Get the current table (users or service providers)
-        
-#         if status == 'deactivate':
-#             user.is_active = False
-#         elif status == 'activate':
-#             user.is_active = True
-#         user.save()
-
-#         # Redirect back to the same page with the correct table
-#         if current_table == 'users':
-#             return HttpResponseRedirect('/admin_dashboard?show=users')
-#         elif current_table == 'service_providers':
-#             return HttpResponseRedirect('/admin_dashboard? show=service_providers')
-    
-#     return redirect('view_users')  # Fallback if something goes wrong
-
-
-# views.py
-# from django.http import JsonResponse, HttpResponse
-# from django.views.decorators.csrf import csrf_exempt
-# from .models import Feedback  # Assuming you have a Feedback model
-# from django.contrib.auth.models import User
-
-# def feedback_list(request):
-#     if request.method == 'GET':
-#         feedbacks = Feedback.objects.select_related('user').all()
-#         feedback_data = [
-#             {
-#                 'id': fb.id,
-#                 'user': {
-#                     'first_name': fb.user.first_name,
-#                     'last_name': fb.user.last_name,
-#                 },
-#                 'feedback_text': fb.feedback_text,
-#             }
-#             for fb in feedbacks
-#         ]
-#         return JsonResponse(feedback_data, safe=False)
-
-# @csrf_exempt
-# def delete_feedback(request, feedback_id):
-#     if request.method == 'DELETE':
-#         try:
-#             feedback = Feedback.objects.get(id=feedback_id)
-#             feedback.delete()
-#             return HttpResponse(status=204)
-#         except Feedback.DoesNotExist:
-#             return JsonResponse({'error': 'Feedback not found'}, status=404)
-#     return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-
-
- # views.py
-
 # views.py
 from django.http import JsonResponse
 from .models import Feedback
@@ -750,3 +662,76 @@ def feedback_list(request):
     print("Feedback Data:", feedback_data)  # Log the data being returned
 
     return JsonResponse(feedback_data, safe=False)
+
+
+
+ 
+from django.shortcuts import render
+from .forms import GoalForm
+
+def goal_view(request):
+    form = GoalForm()  # Create an instance of the form
+    return render(request, 'goal_tracking.html', {'form': form})  # Pass the form to the template
+
+
+
+
+from django.shortcuts import render, redirect
+from .forms import GoalForm
+from .models import Budget, Expense
+from django.shortcuts import render, redirect
+from .forms import GoalForm
+from .models import Budget, Expense
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import GoalForm
+from .models import Budget
+
+@login_required  # Ensure that the user is logged in
+def add_goal(request):
+    if request.method == 'POST':
+        form = GoalForm(request.POST)
+        if form.is_valid():
+            goal = form.save(commit=False)
+            goal.user = request.user  # Attach the goal to the current logged-in user
+
+            # Select the most recent budget for the current user
+            budget = Budget.objects.filter(user=request.user).order_by('-created_at').first()
+
+            if not budget:
+                # Handle the case where the user has no budget
+                print("No budget found for the current user.")
+                return render(request, 'goal_tracking.html', {'form': form, 'error': 'No budget found.'})
+
+            # Associate the goal with the most recent budget
+            goal.budget = budget
+            goal.save()  # Save the goal in the database
+
+            print("Goal saved successfully!")  # Debug message
+            return redirect('user_dashboard')  # Redirect to dashboard
+        else:
+            print("Form is not valid:", form.errors)  # Debug invalid form
+    else:
+        form = GoalForm()
+
+    return render(request, 'goal_tracking.html', {'form': form})
+
+
+# views.py
+from django.http import JsonResponse
+from .models import Expense, Budget
+
+def get_current_amount(request):
+    if request.method == "GET":
+        category = request.GET.get('category')
+        user = request.user
+
+        # Get user's budgets
+        user_budgets = Budget.objects.filter(user=user)
+
+        # Calculate total expenses for the selected category
+        total_spent = Expense.objects.filter(budget__in=user_budgets, category=category).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0
+
+        # Return the result as JSON
+        return JsonResponse({'current_amount': total_spent})

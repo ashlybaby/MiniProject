@@ -319,29 +319,9 @@ class CustomUserChangeForm(UserChangeForm):
 #........................................................................................................#
 from django import forms
 from .models import Budget, Expense
-
-#class BudgetForm(forms.ModelForm):
-    #month = forms.DateField(
-        #widget=forms.DateInput(attrs={'type': 'month'}),
-        #input_formats=['%Y-%m']  # Accepts YYYY-MM format
-    #)
-    #class Meta:
-        #model = Budget
-        #fields = ['month', 'planned_income']
-
-#class ExpenseForm(forms.ModelForm):
-    #class Meta:
-        ##fields = ['category', 'planned_expense', 'actual_expense']
-from django import forms
-from .models import Budget, Expense
 from django.core.exceptions import ValidationError
-import re
 from decimal import Decimal
 from django.core.validators import MinValueValidator
-from .models import Budget
-
-
-
 
 def validate_positive(value):
     if value < 0:
@@ -385,48 +365,10 @@ class BudgetForm(forms.ModelForm):
             # Add any additional fields you want to autofill
         except Budget.DoesNotExist:
             pass  # No existing budget for this month
-
-
-# class ExpenseForm(forms.ModelForm):
-#     category = forms.CharField(validators=[validate_category])
-#     planned_expense = forms.DecimalField(validators=[validate_positive])
-#     actual_expense = forms.DecimalField(validators=[validate_positive])
-
-#     class Meta:
-#         model = Expense
-#         fields = ['category', 'planned_expense', 'actual_expense']
-
-#     def __init__(self, *args, actual_income=None, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.actual_income = actual_income
-
-#     def clean(self):
-#         cleaned_data = super().clean()
-#         planned_expense = cleaned_data.get('planned_expense')
-#         actual_expense = cleaned_data.get('actual_expense')
-#         category = cleaned_data.get('category')
-
-#         # Validate that actual income is not zero
-#         if self.actual_income is not None and self.actual_income <= Decimal('0.00'):
-#             raise ValidationError("You cannot add expenses because your received income is 0.")
-
-#         # Validate that planned_expense is positive
-#         if planned_expense is not None and planned_expense < Decimal('0.00'):
-#             self.add_error('planned_expense', "Planned expense cannot be negative.")
-
-#         # Validate that actual_expense is positive
-#         if actual_expense is not None and actual_expense < Decimal('0.00'):
-#             self.add_error('actual_expense', "Actual expense cannot be negative.")
-
-#         # Validate category (if needed)
-#         if category and category.isdigit():
-#             self.add_error('category', "Category cannot be a number.")
-
-#         return cleaned_data
-
-
-
 # forms.py
+from decimal import Decimal
+from django import forms
+from .models import Expense, Budget
 from decimal import Decimal
 from django import forms
 from .models import Expense, Budget
@@ -436,35 +378,33 @@ def validate_positive(value):
         raise forms.ValidationError("Value must be positive.")
 
 class ExpenseForm(forms.ModelForm):
-    # Field for custom category, which is optional unless 'custom' is selected
     custom_category = forms.CharField(
-        max_length=100, 
-        required=False, 
+        max_length=100,
+        required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter custom category',
         })
     )
-    
-    # Field for actual expense, to be rendered dynamically in the template
+
     actual_expense = forms.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
-        required=False, 
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        validators=[validate_positive],  # Ensure that expense is positive
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter amount',
             'min': '0',
         })
     )
-    
-    # New Date Field for Expense
+
     date = forms.DateField(
         widget=forms.DateInput(attrs={
             'type': 'date',
             'class': 'form-control',
         }),
-        input_formats=['%Y-%m-%d']  # Adjust the format as needed
+        input_formats=['%Y-%m-%d']
     )
 
     class Meta:
@@ -477,9 +417,7 @@ class ExpenseForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Ensure that the queryset for budget includes all Budget instances
         self.fields['budget'].queryset = Budget.objects.all()
-        # Use CATEGORIES defined in the Expense model for the category field
         self.fields['category'].choices = Expense.CATEGORIES
 
     def clean(self):
@@ -489,21 +427,29 @@ class ExpenseForm(forms.ModelForm):
         actual_expense = cleaned_data.get('actual_expense')
         date = cleaned_data.get('date')
 
-        # Validate that a custom category is provided if 'custom' is selected
+        # Ensure at least one of actual_expense or custom_category is provided for new entries
+        if not self.instance.pk:  # Only check for new entries
+            if not actual_expense and not custom_category:
+                self.add_error(None, "At least one expense entry (actual expense or custom category) is required.")
+
+        # Allow editing with empty fields
+        if self.instance.pk:  # Check if an instance of Expense is being edited
+            if not actual_expense and not custom_category:  # Both can be empty during editing
+                return cleaned_data  # Skip further validation
+
+        # Custom category validation
         if category == 'custom' and not custom_category:
             self.add_error('custom_category', "Please provide a custom category.")
 
-        # Ensure that the actual expense is provided if a valid category is selected
+        # Actual expense validation
         if category and not actual_expense:
             self.add_error('actual_expense', "Please provide an expense amount.")
-        
-        # Ensure that the date falls within the selected budget month
+
         budget = cleaned_data.get('budget')
         if budget and date:
             if not (budget.month.year == date.year and budget.month.month == date.month):
                 self.add_error('date', "Expense date must be within the selected budget month.")
 
-        # Optional: Prevent future dates
         from datetime import date as date_today
         if date and date > date_today.today():
             self.add_error('date', "Expense date cannot be in the future.")
@@ -515,6 +461,7 @@ class ExpenseForm(forms.ModelForm):
         if actual_expense is not None and actual_expense <= 0:
             raise forms.ValidationError("Expense must be greater than zero.")
         return actual_expense
+
 
 
 #...............................................................................................#
@@ -552,3 +499,61 @@ class FeedbackForm(forms.ModelForm):
             raise forms.ValidationError('Please rate us before submitting.')
 
         return cleaned_data
+    
+
+#Goal Section#
+from django import forms
+from .models import Goal
+
+# Define your categories here
+CATEGORIES = [
+    ('rent', 'Rent'),
+    ('food', 'Food'),
+    ('travel', 'Travel'),
+    ('entertainment', 'Entertainment'),
+    ('electricity', 'Electricity'),
+    ('medicine', 'Medicine'),
+    ('groceries', 'Groceries'),
+    ('bills', 'Bills'),
+    ('loan', 'Loan'),
+    ('insurance', 'Insurance'),
+    ('transport', 'Transport'),
+    ('subscriptions', 'Subscriptions'),
+    ('clothing', 'Clothing'),
+    ('household_supplies', 'Household Supplies'),
+    ('dining_out', 'Dining Out'),
+    ('gifts', 'Gifts'),
+    ('miscellaneous', 'Miscellaneous'),
+    ('charity', 'Charity'),
+    ('education', 'Education'),
+    ('dress', 'Dress'),
+    ('gym', 'Gym'),
+    ('custom', 'Add Any Other Expense'),
+]
+
+from django import forms
+from django.utils import timezone
+from .models import Goal
+
+from django import forms
+from django.utils import timezone
+from .models import Goal
+
+class GoalForm(forms.ModelForm):
+    class Meta:
+        model = Goal
+        fields = ['name', 'category', 'target_amount', 'deadline']  # Exclude current_amount
+
+    # Ensure target amount is positive
+    def clean_target_amount(self):
+        target_amount = self.cleaned_data.get('target_amount')
+        if target_amount <= 0:
+            raise forms.ValidationError("Target amount must be greater than 0.")
+        return target_amount
+
+    # Ensure deadline is in the future
+    def clean_deadline(self):
+        deadline = self.cleaned_data.get('deadline')
+        if deadline <= timezone.now().date():
+            raise forms.ValidationError("Deadline must be a future date.")
+        return deadline

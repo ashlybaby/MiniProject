@@ -8,141 +8,170 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Basic styles for the header, footer, and budgeting content */
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f8ff; /* Light blue background */
-            background: url('{% static "img/i.jpg" %}') no-repeat center center fixed;
-            background-size: cover;
-        }
-        header {
-            background-color: #2c3e50; /* Darker blue color */
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        nav ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            background-color: #2980b9; /* Button blue */
-        }
-        nav ul li {
-            margin: 0 15px;
-        }
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            padding: 14px 20px;
-            display: block;
-            transition: background-color 0.3s;
-        }
-        nav ul li a:hover {
-            background-color: #3498db; /* Lighter hover color */
-        }
-        main {
-            padding: 20px;
-            max-width: 900px;
-            margin: 40px auto; /* Added margin for spacing */
-            background: rgba(255, 255, 255, 0.9); /* Light background for the main section */
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        .budget-card {
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .budget-card h2, .budget-card h3 {
-            margin-top: 0;
-            color: #2980b9; /* Blue heading */
-        }
-        .budget-card label {
-            display: block;
-            margin-top: 10px;
-            font-weight: 500; /* Slightly bolder for emphasis */
-        }
-        .budget-card input, .budget-card select {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #bdc3c7; /* Lighter border */
-            border-radius: 4px;
-            transition: border-color 0.3s;
-        }
-        .budget-card input:focus, .budget-card select:focus {
-            border-color: #2980b9; /* Focus color */
-            outline: none; /* Remove outline */
-        }
-        .budget-card button {
-            margin-top: 10px;
-            padding: 10px 15px;
-            background-color: #2980b9;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .budget-card button:hover {
-            background-color: #3498db;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 1px solid #f5c6cb;
-        }
-        footer {
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            position: fixed; /* Make footer fixed */
-            width: 100%; /* Full width */
-            bottom: 0; /* Position it at the bottom */
-        }
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f8ff; /* Light blue background */
+    background: url('{% static "img/login1.jpg" %}') no-repeat center center fixed;
+    background-size: cover;
+}
 
-        /* Media queries for responsive design */
-        @media (max-width: 600px) {
-            nav ul {
-                flex-direction: column; /* Stack links on small screens */
-            }
-            nav ul li {
-                margin: 5px 0;
-            }
-        }
+header {
+    background-color: #2c3e50; /* Darker blue color */
+    color: white;
+    padding: 0.1rem;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 
-        /* Styles for Autofill Section */
-        #autofill-data {
-            margin-top: 30px;
-            padding: 15px;
-            background-color: #e8f6f3;
-            border-radius: 8px;
-        }
-        #autofill-data h3 {
-            color: #16a085;
-        }
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    background-color: #2980b9; /* Button blue */
+}
 
-        /* Additional Styles for Expense Entries */
-        .expense-entry {
-            border: 1px solid #bdc3c7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background-color: #ecf0f1;
-        }
-        .expense-entry button {
-            background-color: #c0392b;
-        }
-        .expense-entry button:hover {
-            background-color: #e74c3c;
-        }
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 14px 20px;
+    display: block;
+    transition: background-color 0.3s;
+}
+
+nav ul li a:hover {
+    background-color: #3498db; /* Lighter hover color */
+}
+
+main {
+    padding: 20px;
+    max-width: 900px;
+    margin: 40px auto; /* Added margin for spacing */
+    background: rgba(255, 255, 255, 0.9); /* Light background for the main section */
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for the Budget Form */
+.budget-card {
+    background: #ffffff; /* White background for card */
+    padding: 30px;
+    border-radius: 15px; /* Round corners */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Strong shadow for depth */
+    margin-bottom: 20px; /* Spacing between cards */
+    transition: transform 0.2s; /* Transition for hover effect */
+}
+
+.budget-card:hover {
+    transform: scale(1.02); /* Slightly enlarge on hover */
+}
+
+.budget-card h2, .budget-card h3 {
+    margin-top: 0;
+    color: #2980b9; /* Blue heading */
+}
+
+.budget-card label {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500; /* Slightly bolder for emphasis */
+}
+
+.budget-card input, .budget-card select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #bdc3c7; /* Lighter border */
+    border-radius: 8px; /* Round input corners */
+    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+}
+
+.budget-card input:focus, .budget-card select:focus {
+    border-color: #2980b9; /* Focus color */
+    box-shadow: 0 0 5px rgba(41, 128, 185, 0.5); /* Add glow effect on focus */
+}
+
+.budget-card button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 8px; /* Round button corners */
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+}
+
+.budget-card button:hover {
+    background-color: #3498db;
+    transform: translateY(-2px); /* Lift button on hover */
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 20px;
+    border: 1px solid #f5c6cb;
+}
+
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed; /* Make footer fixed */
+    width: 100%; /* Full width */
+    bottom: 0; /* Position it at the bottom */
+}
+
+/* Media queries for responsive design */
+@media (max-width: 600px) {
+    nav ul {
+        flex-direction: column; /* Stack links on small screens */
+    }
+    nav ul li {
+        margin: 5px 0;
+    }
+}
+
+/* Styles for Autofill Section */
+#autofill-data {
+    margin-top: 30px;
+    padding: 15px;
+    background-color: #e8f6f3;
+    border-radius: 8px;
+}
+
+#autofill-data h3 {
+    color: #16a085;
+}
+
+/* Additional Styles for Expense Entries */
+.expense-entry {
+    border: 1px solid #bdc3c7;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background-color: #ecf0f1;
+}
+
+.expense-entry button {
+    background-color: #c0392b;
+}
+
+.expense-entry button:hover {
+    background-color: #e74c3c;
+}
+
     </style>
     <script>
         function addExpense() {
@@ -176,7 +205,7 @@
         function removeExpense(button) {
             const expenseEntry = button.closest('.expense-entry');
             const expenseContainer = document.getElementById('expense-container');
-            if (expenseContainer.children.length > 1) {
+            if (expenseContainer.children.length > 0) {
                 expenseEntry.remove();
             } else {
                 alert('At least one expense entry is required.');
@@ -338,7 +367,7 @@
                 <input type="month" id="month-picker" name="month" required>
                 
                 <!-- Planned Income -->
-                <label for="planned-income">Planned Income:</label>
+                <label for="planned-income">Planned Income</label>
                 <input type="number" name="planned_income" step="0.01" required>
                 
                 <!-- Actual Income -->

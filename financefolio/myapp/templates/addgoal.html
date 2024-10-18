@@ -1,0 +1,13 @@
+<!-- templates/goals/add_goal.html -->
+
+{% extends 'basegoal.html' %}
+
+{% block content %}
+<h2>Add New Goal</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Save Goal</button>
+    <a href="{% url 'goal_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

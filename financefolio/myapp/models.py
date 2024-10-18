@@ -207,3 +207,75 @@ class Expense(models.Model):
     def __str__(self):
         return f"{self.category} - Actual: {self.actual_expense} on {self.date}"
 
+
+# models.py
+
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+from django.db.models import Sum
+from .models import Expense, Budget
+
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+from django.db.models import Sum
+from .models import Expense, Budget
+
+class Goal(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='goals'
+    )
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, choices=Expense.CATEGORIES)
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    current_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.00
+    )
+    deadline = models.DateField()
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Optional: Link to a specific Budget if needed
+    budget = models.ForeignKey(
+        Budget,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='goals'
+    )
+
+    def __str__(self):
+        return f"{self.name} - {self.target_amount} by {self.deadline} ({self.category})"
+
+    def save(self, *args, **kwargs):
+        # Sum all expenses for the user's budgets in the selected category
+        user_budgets = Budget.objects.filter(user=self.user)
+        total_spent = Expense.objects.filter(budget__in=user_budgets, category=self.category).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0
+
+        # Update current amount with the total expenses for that category
+        self.current_amount = total_spent
+
+        # Automatically update status based on current_amount and deadline
+        if self.current_amount >= self.target_amount:
+            self.status = 'completed'
+        elif timezone.now().date() > self.deadline:
+            self.status = 'failed'
+
+        # Save the goal
+        super().save(*args, **kwargs)

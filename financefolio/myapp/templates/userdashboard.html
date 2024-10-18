@@ -586,6 +586,8 @@
                     <li><a href="#" id="goal-tracking-menu"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
                     <li><a href="#" id="goal-progress-menu"><i class="fas fa-chart-pie"></i> <span>Goal Progress</span></a></li>
                     <li><a href="#" id="alerts-menu"><i class="fas fa-bell"></i> <span>Alerts</span></a></li>
+                    <a href="#" class="btn btn-primary">Track Your Goals</a>
+
                 </ul>
             </div>
             <div class="secondary-menu">
@@ -610,10 +612,13 @@
                     <h3>Track Expenses</h3>
                     <button onclick="window.location.href="#">Track Now</button>
                 </div>
+                
                 <div class="function-box">
-                    <h3>Set Goals</h3>
-                    <button onclick="window.location.href="#">Set Goals</button>
+                 <h3>Set Goals</h3>
+                 <button onclick="window.location.href='{% url 'goal_view' %}'">Set Goals</button>
                 </div>
+
+
                 <div class="function-box">
                     <h3>View Alerts</h3>
                     <button onclick="window.location.href="#">Check Alerts</button>

@@ -40,8 +40,10 @@ urlpatterns = [
     path('feedback/', views.submit_feedback, name='submit_feedback'),
     path('feedback/list', views.feedback_list, name='feedback-list'),
     path('toggle_user_activation/<int:user_id>/', views.toggle_user_activation, name='toggle_user_activation'),
+    path('goal_view/',views.goal_view,name='goal_view'),
+    path('add-goal/', views.add_goal, name='add_goal'),
+    path('get-current-amount/', views.get_current_amount, name='get_current_amount'),
 ]
-
 
   
 
