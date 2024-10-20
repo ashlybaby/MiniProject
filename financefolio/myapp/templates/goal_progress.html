@@ -40,7 +40,7 @@
         .container {
             max-width: 1200px;
             margin: 100px auto 20px; /* Added more space for the fixed header */
-            padding: 20px;
+            padding: 40px 20px 20px; 
             flex: 1; /* Ensures that content area takes remaining space */
         }
 
@@ -66,6 +66,13 @@
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             flex: 1 1 300px; /* Allow flexible width */
+            transition: background-color 0.3s; /* Smooth background color change */
+        }
+
+        /* Change background color based on goal status */
+        .goal-container.failed {
+            background-color: #f8d7da; /* Light red background for failed goals */
+            border-color: #f5c6cb; /* Red border */
         }
 
         .goal-header {
@@ -81,6 +88,13 @@
             text-align: center;
         }
 
+        .goal-deadline {
+            font-size: 14px;
+            margin: 5px 0;
+            text-align: center;
+            color: #555; /* Slightly darker color for deadline */
+        }
+
         .progress-bar {
             background-color: #e0e0e0;
             border-radius: 8px;
@@ -91,10 +105,15 @@
             margin-bottom: 10px;
         }
 
+        /* New CSS class for failed progress fill */
         .progress-fill {
-            background-color: #4caf50;
             height: 100%;
             transition: width 0.5s;
+            background-color: #4caf50; /* Default green color */
+        }
+
+        .progress-fill.failed {
+            background-color: #dc3545; /* Red color for failed goals */
         }
 
         .chart-container {
@@ -149,6 +168,34 @@
             width: 100%;
             margin-top: auto; /* Ensures footer sticks to bottom */
         }
+        
+        .logout-button {
+            background-color: #d9534f; /* Bootstrap danger color */
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            display: flex; /* Use flexbox to center icon and text */
+            align-items: center; /* Center vertically */
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .logout-button i {
+            margin-right: 5px; /* Space between icon and text */
+        }
+        
+        .logout-button:hover {
+            background-color: #c9302c; /* Darker shade on hover */
+            transform: scale(1.05);
+        }
+        
+        .logout-button:active {
+            transform: scale(0.95);
+        }
+        
     </style>
 </head>
 <body>
@@ -172,18 +219,21 @@
 
         <div class="goal-list">
             {% for data in progress_data %}
-            <div class="goal-container">
+            <div class="goal-container {% if data.status == 'failed' %}failed{% endif %}">
                 <div class="goal-header">
                     <strong>{{ data.goal.name }}</strong> ({{ data.goal.category }})
                 </div>
                 <div class="goal-status">
                     <span>Target: {{ data.goal.target_amount }}</span> | 
                     <span>Current: {{ data.goal.current_amount }}</span> | 
-                    <span>Status: <strong>{{ data.goal.status }}</strong></span>
+                    <span>Status: <strong>{{ data.status|capfirst }}</strong></span>
+                </div>
+                <div class="goal-deadline">
+                    <span>Deadline: {{ data.goal.deadline }}</span>  <!-- Display the deadline -->
                 </div>
 
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: {{ data.progress }}%;"></div>
+                    <div class="progress-fill {% if data.status == 'failed' %}failed{% endif %}" style="width: {{ data.progress }}%;"></div>
                 </div>
 
                 <div class="chart-container">
@@ -229,11 +279,6 @@
                 },
             });
         });
-
-        
     </script>
-
-   
-
 </body>
 </html>

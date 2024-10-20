@@ -216,11 +216,7 @@ from django.utils import timezone
 from django.db.models import Sum
 from .models import Expense, Budget
 
-from django.db import models
-from django.conf import settings
-from django.utils import timezone
-from django.db.models import Sum
-from .models import Expense, Budget
+
 
 class Goal(models.Model):
     STATUS_CHOICES = [

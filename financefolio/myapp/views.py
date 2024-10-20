@@ -346,13 +346,13 @@ from .models import Budget, Expense
 from django.shortcuts import render, get_object_or_404
 from .forms import BudgetForm, ExpenseForm
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
+
 from django.utils.dateparse import parse_date
 from django.utils import timezone
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+
 from django.utils.dateparse import parse_date
 
 from decimal import Decimal
@@ -364,6 +364,164 @@ from django.utils.dateparse import parse_date
 from .forms import BudgetForm, ExpenseForm
 from .models import Budget, Expense
 
+# @login_required
+# @csrf_exempt  # Use with caution; consider using CSRF tokens for production
+# def budget_view(request):
+#     expense_form = ExpenseForm()  # Instantiate the ExpenseForm here
+
+#     if request.method == 'POST':
+#         budget_form = BudgetForm(request.POST)
+#         actual_income = request.POST.get('actual-income')
+#         summary = None  # Initialize summary to avoid UnboundLocalError
+
+#         if budget_form.is_valid():
+#             # Extract the selected month from the form
+#             selected_month = budget_form.cleaned_data['month']
+
+#             # Check if a budget for this month already exists
+#             budget, created = Budget.objects.get_or_create(
+#                 user=request.user,
+#                 month=selected_month,
+#                 defaults={'planned_income': budget_form.cleaned_data['planned_income']}
+#             )
+
+#             if not created:
+#                 # If the budget already exists, update the planned_income if needed
+#                 budget.planned_income = budget_form.cleaned_data['planned_income']
+#                 budget.save()
+
+#                 # Optionally, update actual_income if provided
+#                 if actual_income:
+#                     budget.actual_income = Decimal(actual_income)
+#                     budget.save()
+#             else:
+#                 # If a new budget was created, set the actual_income if provided
+#                 if actual_income:
+#                     budget.actual_income = Decimal(actual_income)
+#                     budget.save()
+
+#             # Handle expense entries
+#             expense_categories = request.POST.getlist('expense-category')
+#             actual_expenses = request.POST.getlist('actual-expense')
+#             custom_categories = request.POST.getlist('custom-category')
+#             expense_dates = request.POST.getlist('expense-date')  # New: Get list of dates
+
+#             # Clear existing expenses if editing an existing budget
+#             if not created:
+#                 budget.expenses.all().delete()
+
+#             for i in range(len(expense_categories)):
+#                 category = expense_categories[i]
+#                 expense_value = Decimal(actual_expenses[i]) if actual_expenses[i] else 0
+#                 expense_date_str = expense_dates[i] if i < len(expense_dates) else None
+
+#                 # Parse the date string into a date object
+#                 if expense_date_str:
+#                     expense_date = parse_date(expense_date_str)
+#                 else:
+#                     expense_date = None
+
+#                 if category == 'custom' and custom_categories[i]:
+#                     category = custom_categories[i]
+
+#                 # Validation to ensure the expense date is within the budget month and is not in the future
+#                 if category and actual_expenses[i] and expense_date:
+#                     if not (expense_date.year == selected_month.year and expense_date.month == selected_month.month):
+#                         budget_form.add_error('month', "Expense date must be within the selected budget month.")
+#                         break  # Exit the loop if validation fails
+
+#                     # Check if the expense date is in the future
+#                     from datetime import date as date_today
+#                     if expense_date > date_today.today():
+#                         budget_form.add_error('month', "Expense date cannot be in the future.")
+#                         break  # Exit the loop if validation fails
+
+#                     Expense.objects.create(
+#                         budget=budget,
+#                         category=category,
+#                         actual_expense=expense_value,
+#                         date=expense_date  # Set the date field
+#                     )
+
+#             # Calculate summary details only if there are no validation errors
+#             if not budget_form.errors:
+#                 planned_income = budget.planned_income
+#                 actual_income_decimal = Decimal(actual_income) if actual_income else 0
+#                 total_actual_expenses = budget.total_actual_expenses()
+#                 remaining_balance = actual_income_decimal - total_actual_expenses
+
+#                 summary = {
+#                     'planned_income': planned_income,
+#                     'actual_income': actual_income_decimal,
+#                     'total_actual_expenses': total_actual_expenses,
+#                     'remaining_balance': remaining_balance
+#                 }
+
+#             # Render with form errors if there were validation issues
+#             if budget_form.errors:
+#                 return render(request, 'budget.html', {
+#                     'form': budget_form,
+#                     'expense_form': expense_form,  # Pass expense form
+#                     'errors': budget_form.errors
+#                 })
+
+#             return render(request, 'budget.html', {
+#                 'form': BudgetForm(initial={'month': selected_month, 'planned_income': planned_income}),
+#                 'expense_form': expense_form,  # Pass expense form
+#                 'summary': summary,
+#                 'success_message': 'Budget added/updated successfully!'
+#             })
+
+#         # If the budget form is not valid, render the page with errors
+#         return render(request, 'budget.html', {
+#             'form': budget_form,
+#             'expense_form': expense_form,  # Pass expense form even when budget form fails
+#             'errors': budget_form.errors
+#         })
+
+#     elif request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#         # Handle AJAX request to fetch existing budget data
+#         month = request.GET.get('month')
+#         if month:
+#             try:
+#                 # Parse the month from 'YYYY-MM' format
+#                 selected_month = parse_date(f"{month}-01")
+#                 if not selected_month:
+#                     raise ValueError
+
+#                 budget = Budget.objects.get(user=request.user, month=selected_month)
+#                 expenses = Expense.objects.filter(budget=budget)
+
+#                 expenses_data = []
+#                 for expense in expenses:
+#                     expenses_data.append({
+#                         'category': expense.category,
+#                         'actual_expense': float(expense.actual_expense),
+#                         'date': expense.date.strftime('%Y-%m-%d') if expense.date else ''
+#                     })
+               
+#                 summary = {
+#                     'planned_income': float(budget.planned_income),
+#                     'actual_income': float(budget.actual_income) if budget.actual_income else 0,
+#                     'total_actual_expenses': float(budget.total_actual_expenses()),
+#                     'remaining_balance': float(budget.remaining_balance_actual()) if budget.remaining_balance_actual() is not None else 0
+#                 }
+
+#                 data = {
+#                     'summary': summary,
+#                     'expenses': expenses_data
+#                 }
+
+#                 return JsonResponse(data, safe=False)
+#             except (Budget.DoesNotExist, ValueError):
+#                 return JsonResponse({'error': 'No budget found for the selected month.'}, status=404)
+
+#     # Handle standard GET request
+#     return render(request, 'budget.html', {
+#         'form': BudgetForm(),
+#         'expense_form': expense_form  # Pass expense form on GET request
+#     })
+
 @login_required
 @csrf_exempt  # Use with caution; consider using CSRF tokens for production
 def budget_view(request):
@@ -372,6 +530,7 @@ def budget_view(request):
     if request.method == 'POST':
         budget_form = BudgetForm(request.POST)
         actual_income = request.POST.get('actual-income')
+        summary = None  # Initialize summary to avoid UnboundLocalError
 
         if budget_form.is_valid():
             # Extract the selected month from the form
@@ -423,12 +582,19 @@ def budget_view(request):
                 if category == 'custom' and custom_categories[i]:
                     category = custom_categories[i]
 
-                # Validation to ensure the expense date is within the budget month
+                # Validation to ensure the expense date is within the budget month and is not in the future
                 if category and actual_expenses[i] and expense_date:
                     if not (expense_date.year == selected_month.year and expense_date.month == selected_month.month):
                         budget_form.add_error('month', "Expense date must be within the selected budget month.")
                         break  # Exit the loop if validation fails
-                        
+
+                    # Check if the expense date is in the future
+                    from datetime import date as date_today
+                    if expense_date > date_today.today():
+                        budget_form.add_error('month', "Expense date cannot be in the future.")
+                        break  # Exit the loop if validation fails
+
+                    # Create the expense
                     Expense.objects.create(
                         budget=budget,
                         category=category,
@@ -436,18 +602,27 @@ def budget_view(request):
                         date=expense_date  # Set the date field
                     )
 
-            # Calculate summary details
-            planned_income = budget.planned_income
-            actual_income_decimal = Decimal(actual_income) if actual_income else 0
-            total_actual_expenses = budget.total_actual_expenses()
-            remaining_balance = actual_income_decimal - total_actual_expenses
+                    # Update the Goal current_amount based on the new expense
+                    goals = Goal.objects.filter(user=request.user, category=category)
+                    for goal in goals:
+                        goal.current_amount += expense_value
+                        if goal.current_amount >= goal.target_amount:
+                            goal.status = 'completed'
+                        goal.save()
 
-            summary = {
-                'planned_income': planned_income,
-                'actual_income': actual_income_decimal,
-                'total_actual_expenses': total_actual_expenses,
-                'remaining_balance': remaining_balance
-            }
+            # Calculate summary details only if there are no validation errors
+            if not budget_form.errors:
+                planned_income = budget.planned_income
+                actual_income_decimal = Decimal(actual_income) if actual_income else 0
+                total_actual_expenses = budget.total_actual_expenses()
+                remaining_balance = actual_income_decimal - total_actual_expenses
+
+                summary = {
+                    'planned_income': planned_income,
+                    'actual_income': actual_income_decimal,
+                    'total_actual_expenses': total_actual_expenses,
+                    'remaining_balance': remaining_balance
+                }
 
             # Render with form errors if there were validation issues
             if budget_form.errors:
@@ -711,6 +886,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import GoalForm
 from .models import Budget
 
+from django.contrib import messages  # Import messages
+
 @login_required  # Ensure that the user is logged in
 def add_goal(request):
     if request.method == 'POST':
@@ -723,15 +900,14 @@ def add_goal(request):
             budget = Budget.objects.filter(user=request.user).order_by('-created_at').first()
 
             if not budget:
-                # Handle the case where the user has no budget
-                print("No budget found for the current user.")
-                return render(request, 'goal_tracking.html', {'form': form, 'error': 'No budget found.'})
+                messages.error(request, 'No budget found.')  # Use messages to display error
+                return render(request, 'goal_tracking.html', {'form': form})
 
             # Associate the goal with the most recent budget
             goal.budget = budget
             goal.save()  # Save the goal in the database
 
-            print("Goal saved successfully!")  # Debug message
+            messages.success(request, 'Goal saved successfully!')  # Success message
             return redirect('user_dashboard')  # Redirect to dashboard
         else:
             print("Form is not valid:", form.errors)  # Debug invalid form
@@ -740,30 +916,50 @@ def add_goal(request):
 
     return render(request, 'goal_tracking.html', {'form': form})
 
-
 # views.py
 from django.http import JsonResponse
 from .models import Expense, Budget
+
+from django.utils import timezone
+from django.db.models import Sum
+from django.http import JsonResponse
+from .models import Budget, Expense
 
 def get_current_amount(request):
     if request.method == "GET":
         category = request.GET.get('category')
         user = request.user
 
+        # Get the current month and year
+        now = timezone.now()
+        current_month = now.month
+        current_year = now.year
+
         # Get user's budgets
         user_budgets = Budget.objects.filter(user=user)
 
-        # Calculate total expenses for the selected category
-        total_spent = Expense.objects.filter(budget__in=user_budgets, category=category).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0
+        # Calculate total expenses for the selected category in the current month
+        total_spent_current_month = Expense.objects.filter(
+            budget__in=user_budgets,
+            category=category,
+            date__year=current_year,
+            date__month=current_month
+        ).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0
+
+        # Calculate total expenses for the selected category for the entire period
+        total_spent_entire = Expense.objects.filter(
+            budget__in=user_budgets,
+            category=category
+        ).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0
 
         # Return the result as JSON
-        return JsonResponse({'current_amount': total_spent})
+        return JsonResponse({
+            'current_amount': total_spent_current_month,
+            'total_expense': total_spent_entire,
+            'message': "Click here to see total expenses for this category"
+        })
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Goal  # Make sure to import your Goal model
-from .forms import GoalForm  # Import your GoalForm if you have one
 
 # View for editing an existing goal
 from django.shortcuts import render, redirect, get_object_or_404
@@ -826,10 +1022,16 @@ def goal_progress(request):
     # Prepare goal progress data
     progress_data = []
     for goal in goals:
+        # Calculate progress as a percentage
         progress = (goal.current_amount / goal.target_amount) * 100 if goal.target_amount > 0 else 0
+        
+        # Check if the goal has failed
+        is_failed = goal.current_amount > goal.target_amount
+
         progress_data.append({
             'goal': goal,
-            'progress': progress
+            'progress': progress,
+            'status': 'failed' if is_failed else 'ongoing'  # Add status based on condition
         })
 
     context = {
@@ -837,6 +1039,7 @@ def goal_progress(request):
     }
 
     return render(request, 'goal_progress.html', context)
+
 
 from django.shortcuts import render
 from django.http import JsonResponse

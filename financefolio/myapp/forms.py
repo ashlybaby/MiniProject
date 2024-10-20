@@ -366,9 +366,8 @@ class BudgetForm(forms.ModelForm):
         except Budget.DoesNotExist:
             pass  # No existing budget for this month
 # forms.py
-from decimal import Decimal
-from django import forms
-from .models import Expense, Budget
+
+
 from decimal import Decimal
 from django import forms
 from .models import Expense, Budget
@@ -535,14 +534,10 @@ from django import forms
 from django.utils import timezone
 from .models import Goal
 
-from django import forms
-from django.utils import timezone
-from .models import Goal
-
 class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
-        fields = ['name', 'category', 'target_amount', 'deadline']  # Exclude current_amount
+        fields = ['name', 'category', 'target_amount', 'deadline']
 
     # Ensure target amount is positive
     def clean_target_amount(self):
