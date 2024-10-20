@@ -355,6 +355,15 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_date
 
+from decimal import Decimal
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.utils.dateparse import parse_date
+from .forms import BudgetForm, ExpenseForm
+from .models import Budget, Expense
+
 @login_required
 @csrf_exempt  # Use with caution; consider using CSRF tokens for production
 def budget_view(request):
@@ -414,7 +423,12 @@ def budget_view(request):
                 if category == 'custom' and custom_categories[i]:
                     category = custom_categories[i]
 
+                # Validation to ensure the expense date is within the budget month
                 if category and actual_expenses[i] and expense_date:
+                    if not (expense_date.year == selected_month.year and expense_date.month == selected_month.month):
+                        budget_form.add_error('month', "Expense date must be within the selected budget month.")
+                        break  # Exit the loop if validation fails
+                        
                     Expense.objects.create(
                         budget=budget,
                         category=category,
@@ -434,6 +448,14 @@ def budget_view(request):
                 'total_actual_expenses': total_actual_expenses,
                 'remaining_balance': remaining_balance
             }
+
+            # Render with form errors if there were validation issues
+            if budget_form.errors:
+                return render(request, 'budget.html', {
+                    'form': budget_form,
+                    'expense_form': expense_form,  # Pass expense form
+                    'errors': budget_form.errors
+                })
 
             return render(request, 'budget.html', {
                 'form': BudgetForm(initial={'month': selected_month, 'planned_income': planned_income}),
@@ -491,6 +513,7 @@ def budget_view(request):
         'form': BudgetForm(),
         'expense_form': expense_form  # Pass expense form on GET request
     })
+
 
 
 
@@ -786,3 +809,70 @@ def delete_goal(request, goal_id):  # Accepts 'goal_id'
         return redirect('user_dashboard')
 
     return redirect('user_dashboard')  # Handle other request methods
+
+
+# views.py
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Goal
+from django.db.models import Sum
+
+@login_required
+def goal_progress(request):
+    user = request.user
+    goals = Goal.objects.filter(user=user)  # Get all the user's goals
+
+    # Prepare goal progress data
+    progress_data = []
+    for goal in goals:
+        progress = (goal.current_amount / goal.target_amount) * 100 if goal.target_amount > 0 else 0
+        progress_data.append({
+            'goal': goal,
+            'progress': progress
+        })
+
+    context = {
+        'progress_data': progress_data,
+    }
+
+    return render(request, 'goal_progress.html', context)
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Budget, Expense
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Budget, Expense
+
+def history_views(request):
+    budgets = Budget.objects.all()
+    history_data = []
+
+    for budget in budgets:
+        expenses = Expense.objects.filter(budget=budget)
+       
+        total_actual_expenses = sum(exp.actual_expense for exp in expenses)
+
+        history_data.append({
+            'month': budget.month,  # Assuming you have a month field in Budget
+            'planned_income': budget.planned_income,
+            'actual_income': budget.actual_income,
+            'expenses': total_actual_expenses,  # Updated to show total actual expenses
+            'balance': budget.remaining_balance_actual(),  # Adjust this if needed
+        })
+    
+    # Prepare data for the chart
+    labels = [data['month'] for data in history_data]
+    planned_income_data = [data['planned_income'] for data in history_data]
+    actual_income_data = [data['actual_income'] for data in history_data]
+    expenses_data = [data['expenses'] for data in history_data]
+
+    return render(request, 'history.html', {
+        'history_data': history_data,
+        'labels': labels,
+        'planned_income_data': planned_income_data,
+        'actual_income_data': actual_income_data,
+        'expenses_data': expenses_data,
+    })  # Render the HTML template

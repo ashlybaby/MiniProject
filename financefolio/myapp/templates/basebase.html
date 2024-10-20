@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}User Dashboard{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: #35424a;
+            color: white;
+            padding: 15px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .navbar-menu {
+            list-style: none;
+            display: flex;
+        }
+
+        .navbar-menu li {
+            margin-left: 15px;
+        }
+
+        .navbar-menu a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar {
+            background: #2c3e50;
+            color: white;
+            width: 250px;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 10px 0;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        #main-content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        footer {
+            background: #35424a;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js for charts -->
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <h1>Your App Name</h1>
+                </div>
+                <ul class="navbar-menu">
+                    <li><a href="{% url 'user_dashboard' %}">Home</a></li>
+                    <li><a href="#" id="alerts-menu">Alerts</a></li>
+                    <li><a href="#" id="announcements-menu">Announcements</a></li>
+                    <li><a href="#" id="tutorials-menu">Tutorials</a></li>
+                    <li><a href="#" id="queries-menu">Queries</a></li>
+                    <li><a href="#" id="articles-menu">Articles</a></li>
+                    <li><a href="#" id="logout">Logout</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <aside class="sidebar">
+            <h2>Dashboard Menu</h2>
+            <ul>
+                <li><a href="#" id="load-history">History</a></li>
+                <li><a href="#" id="load-goal-tracking">Goal Tracking</a></li>
+                <li><a href="#" id="load-goal-progress">Goal Progress</a></li>
+                <li><a href="#" id="load-alerts">Alerts</a></li>
+                <li><a href="#" id="load-announcements">Announcements</a></li>
+                <li><a href="#" id="load-queries">Queries</a></li>
+                <li><a href="#" id="load-articles">Articles</a></li>
+            </ul>
+        </aside>
+
+        <main id="main-content">
+            {% block content %}
+            <!-- Main content will be loaded here -->
+            {% endblock %}
+        </main>
+
+        <footer>
+            <p>&copy; {{ current_year }} Your Company Name. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="{% static 'js/dashboard.js' %}"></script> <!-- Link to your JS -->
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

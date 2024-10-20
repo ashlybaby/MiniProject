@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -56,48 +57,7 @@
             color: #333;
         }
 
-        .goal-category {
-            margin-bottom: 30px;
-        }
-
-        .goal-category h3 {
-            color: #007bff;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-        }
-
-        .goal-list {
-            margin-top: 10px;
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .goal-list li {
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .goal-list li button {
-            border: none;
-            background-color: #fff;
-            cursor: pointer;
-        }
-
-        .goal-list li button i {
-            color: #007bff;
-            font-size: 18px;
-        }
-
-        .goal-list li button:hover i {
-            color: #0056b3;
-        }
-
+        /* Add Goal Form */
         .add-goal {
             margin-top: 20px;
             display: flex;
@@ -135,19 +95,78 @@
             background-color: #0056b3;
         }
 
+        /* Goal Section */
+        .goal-category {
+            margin-bottom: 30px;
+        }
+
+        .goal-category h3 {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+
+        /* Button to toggle goals */
+        .toggle-goals-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            width: 200px;
+        }
+
+        .toggle-goals-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Goal List (hidden initially) */
+        .goal-list {
+            display: none;
+            margin-top: 10px;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .goal-list li {
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .goal-list li:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Goal Actions */
         .goal-actions {
             display: flex;
             gap: 10px;
         }
 
-        footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            position: relative;
-            bottom: 0;
-            width: 100%;
+        .goal-actions button {
+            border: none;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        .goal-actions button i {
+            color: #007bff;
+            font-size: 18px;
+        }
+
+        .goal-actions button:hover i {
+            color: #0056b3;
         }
 
         /* Modal Styles */
@@ -186,6 +205,7 @@
             text-decoration: none;
             cursor: pointer;
         }
+       
     </style>
 </head>
 <body>
@@ -219,9 +239,11 @@
         </form>
     </div>
 
-    <!-- Goal Categories -->
+    <!-- Toggle Goals Button -->
+    <button class="toggle-goals-btn" onclick="toggleGoals()">View Goals</button>
+
+    <!-- Goal Categories (Hidden by default) -->
     <div class="goal-category">
-        <h3>Goals</h3>
         <ul class="goal-list">
             {% for goal in user.goals.all %}
                 <li>
@@ -262,81 +284,43 @@
             </select>
             <input type="number" id="editTargetAmount" name="target_amount" placeholder="Target Amount" step="0.01" required>
             <input type="date" id="editDeadline" name="deadline" required>
-            <button type="submit">Update Goal</button>
+            <button type="submit">Save Changes</button>
         </form>
     </div>
 </div>
 
-<!-- Footer -->
-<footer>
-    <p>&copy; {{ current_year }} My Finance App. All rights reserved.</p>
-    <p>Contact us: support@myfinanceapp.com</p>
-</footer>
-
-<!-- JavaScript to handle the edit button click and AJAX for current amount -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // Update the goal name suggestion based on category
-        $('#categorySelect').change(function() {
-            const category = this.value;
-            const goalNameInput = $('#goalName');
+    // Toggle Goal Visibility
+    function toggleGoals() {
+        const goalList = document.querySelector('.goal-list');
+        goalList.style.display = goalList.style.display === 'none' ? 'block' : 'none';
+    }
 
-            // Predefined goal names based on categories
-            const goalSuggestions = {
-                'rent': 'Save for Rent',
-                'food': 'Monthly Grocery Savings',
-                'travel': 'Vacation Savings',
-                'entertainment': 'Entertainment Fund',
-                'emergency': 'Emergency Fund'
-            };
+    // Handle Modal Open/Close
+    const editBtns = document.querySelectorAll('.edit-btn');
+    const modal = document.getElementById("editModal");
+    const span = document.getElementsByClassName("close")[0];
 
-            goalNameInput.val(goalSuggestions[category] || '');
-
-            // If a category is selected, fetch the current amount via AJAX
-            if (category) {
-                $.ajax({
-                    url: "{% url 'get_current_amount' %}",  // URL to your view
-                    type: "GET",
-                    data: {
-                        'category': category
-                    },
-                    success: function(data) {
-                        // Set the current amount field with the fetched value
-                        $('#current_amount').val(data.current_amount);
-                    },
-                    error: function(xhr, status, error) {
-                        console.log("Error fetching current amount:", error);
-                    }
-                });
-            } else {
-                // Clear the current amount if no category is selected
-                $('#current_amount').val('');
-            }
-        });
-
-        // Modal handling for edit button
-        $('.edit-btn').click(function() {
-            const goalId = $(this).data('id');
-            const goalName = $(this).data('name');
-            const goalCategory = $(this).data('category');
-            const goalTarget = $(this).data('target');
-            const goalDeadline = $(this).data('deadline');
-
-            $('#editGoalId').val(goalId);
-            $('#editGoalName').val(goalName);
-            $('#editCategorySelect').val(goalCategory);
-            $('#editTargetAmount').val(goalTarget);
-            $('#editDeadline').val(goalDeadline);
-
-            $('#editModal').show();
-        });
-
-        // Close modal when the 'X' is clicked
-        $('.close').click(function() {
-            $('#editModal').hide();
+    editBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            modal.style.display = "block";
+            document.getElementById('editGoalId').value = btn.dataset.id;
+            document.getElementById('editGoalName').value = btn.dataset.name;
+            document.getElementById('editCategorySelect').value = btn.dataset.category;
+            document.getElementById('editTargetAmount').value = btn.dataset.target;
+            document.getElementById('editDeadline').value = btn.dataset.deadline;
         });
     });
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
 </script>
 
 </body>

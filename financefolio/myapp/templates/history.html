@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income and Expense History</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .chart-container {
+            max-width: 600px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Income and Expense History</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Planned Income</th>
+                <th>Actual Income</th>
+                <th>Expenses</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in history_data %}
+            <tr>
+                <td>{{ data.month }}</td>
+                <td>{{ data.planned_income }}</td>
+                <td>{{ data.actual_income }}</td>
+                <td>{{ data.expenses }}</td>
+                <td>{{ data.balance }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="chart-container">
+        <canvas id="incomeExpenseChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Prepare data for the chart
+    const labels = {{ labels|safe }};
+    const plannedIncomeData = {{ planned_income_data|safe }};
+    const actualIncomeData = {{ actual_income_data|safe }};
+    const expensesData = {{ expenses_data|safe }};
+
+    const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+    const incomeExpenseChart = new Chart(ctx, {
+        type: 'bar', // Chart type
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Planned Income',
+                    data: plannedIncomeData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                },
+                {
+                    label: 'Actual Income',
+                    data: actualIncomeData,
+                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                },
+                {
+                    label: 'Expenses',
+                    data: expensesData,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Income and Expense Overview'
+                },
+                tooltip: {
+                    enabled: true
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Amount ($)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Months'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

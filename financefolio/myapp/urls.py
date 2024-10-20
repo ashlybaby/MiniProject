@@ -45,6 +45,8 @@ urlpatterns = [
     path('get-current-amount/', views.get_current_amount, name='get_current_amount'),
     path('edit_goal/', views.edit_goal, name='edit_goal'),
     path('delete_goal/<int:goal_id>/', views.delete_goal, name='delete_goal'),
+    path('goal-progress/', views.goal_progress, name='goal_progress'),
+    path('history/', views.history_views, name='history_views'),
 ]
 
   

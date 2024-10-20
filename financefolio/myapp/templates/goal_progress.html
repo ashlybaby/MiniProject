@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Progress</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Ensure body and html take full height */
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #283e4a;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #1a2a33;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 100px auto 20px; /* Added more space for the fixed header */
+            padding: 20px;
+            flex: 1; /* Ensures that content area takes remaining space */
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Flexbox for alignment */
+        .goal-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-evenly;
+        }
+
+        .goal-container {
+            width: 100%;
+            max-width: 350px; /* Restrict the width of each goal box */
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex: 1 1 300px; /* Allow flexible width */
+        }
+
+        .goal-header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .goal-status {
+            font-size: 16px;
+            margin: 5px 0;
+            text-align: center;
+        }
+
+        .progress-bar {
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            height: 20px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background-color: #4caf50;
+            height: 100%;
+            transition: width 0.5s;
+        }
+
+        .chart-container {
+            max-width: 100%;
+            height: 250px;
+            margin-top: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: 250px;
+        }
+
+        .tooltip {
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            position: absolute;
+            z-index: 1000;
+            display: none;
+        }
+
+        .dashboard-button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .dashboard-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .dashboard-button:active {
+            transform: scale(0.95);
+        }
+
+        footer {
+            background-color: #283e4a;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            width: 100%;
+            margin-top: auto; /* Ensures footer sticks to bottom */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-left">
+            <a href="{% url 'user_dashboard' %}" class="dashboard-button">Dashboard</a>
+        </div>
+        
+        <div class="nav-right">
+            <div class="dropdown">
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Goal Progress</h2>
+
+        <div class="goal-list">
+            {% for data in progress_data %}
+            <div class="goal-container">
+                <div class="goal-header">
+                    <strong>{{ data.goal.name }}</strong> ({{ data.goal.category }})
+                </div>
+                <div class="goal-status">
+                    <span>Target: {{ data.goal.target_amount }}</span> | 
+                    <span>Current: {{ data.goal.current_amount }}</span> | 
+                    <span>Status: <strong>{{ data.goal.status }}</strong></span>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ data.progress }}%;"></div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="chart-{{ forloop.counter }}"></canvas>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Finance Folio. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const progressData = {{ progress_data|safe }};
+        progressData.forEach((data, index) => {
+            const ctx = document.getElementById(`chart-${index+1}`).getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Spent', 'Remaining'],
+                    datasets: [{
+                        data: [data.goal.current_amount, data.goal.target_amount - data.goal.current_amount],
+                        backgroundColor: ['#4caf50', '#f44336'],
+                        hoverBackgroundColor: ['#66bb6a', '#e57373'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                                }
+                            }
+                        }
+                    }
+                },
+            });
+        });
+
+        
+    </script>
+
+   
+
+</body>
+</html>

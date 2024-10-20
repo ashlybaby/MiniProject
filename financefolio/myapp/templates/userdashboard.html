@@ -606,11 +606,11 @@
             <div class="functions-container">
                 <div class="function-box">
                     <h3>Budget Overview</h3>
-                    <button onclick="window.location.href='{% url 'budget_view' %}'">View Budget</button>
+                    <button onclick="window.location.href='{% url 'history_views' %}'">View Budget</button>
                 </div>
                 <div class="function-box">
                     <h3>Track Expenses</h3>
-                    <button onclick="window.location.href="#">Track Now</button>
+                    <button onclick="window.location.href='{% url 'budget_view' %}'">Track Now</button>
                 </div>
                 
                 <div class="function-box">
@@ -620,8 +620,8 @@
 
 
                 <div class="function-box">
-                    <h3>View Alerts</h3>
-                    <button onclick="window.location.href="#">Check Alerts</button>
+                    <h3>Goal Progress</h3>
+                    <button onclick="window.location.href='{% url 'goal_progress' %}'">Goal Progress</button>
                 </div>
             </div>
             
