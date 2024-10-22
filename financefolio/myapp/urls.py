@@ -47,7 +47,16 @@ urlpatterns = [
     path('delete_goal/<int:goal_id>/', views.delete_goal, name='delete_goal'),
     path('goal-progress/', views.goal_progress, name='goal_progress'),
     path('history/', views.history_views, name='history_views'),
+    path('goals_overview/', views.goals_overview, name='goals_overview'),
+    path('reports/all/', views.financial_report_all_users, name='financial_report_all_users'),
+    path('recommendations_view/', views.recommendations_view, name='recommendations_view'),
 ]
+    
+
+
+    
+
+
 
   
 

@@ -581,9 +581,9 @@
             <button class="sidebar-toggle"><i class="fas fa-chevron-left"></i></button>
             <div class="main-menu">
                 <ul>
-                    <li><a href="{% url 'budget_view' %}" id="budgeting-menu"><i class="fas fa-wallet"></i> <span>Budgeting</span></a></li>
+                    <li><a href="{% url 'budget_view' %}" id="budgeting-menu"><i class="fas fa-wallet"></i> <span>Track Expense</span></a></li>
                     <li><a href="#" id="history-menu"><i class="fas fa-chart-line"></i> <span>History & Chart</span></a></li>
-                    <li><a href="#" id="goal-tracking-menu"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
+                    <li><a href="{% url 'budget_view' %}" id="goal-tracking-menu"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
                     <li><a href="#" id="goal-progress-menu"><i class="fas fa-chart-pie"></i> <span>Goal Progress</span></a></li>
                     <li><a href="#" id="alerts-menu"><i class="fas fa-bell"></i> <span>Alerts</span></a></li>
                    
@@ -605,8 +605,8 @@
             <!-- Function Boxes -->
             <div class="functions-container">
                 <div class="function-box">
-                    <h3>Budget Overview</h3>
-                    <button onclick="window.location.href='{% url 'history_views' %}'">View Budget</button>
+                    <h3>Recommandation</h3>
+                    <button onclick="window.location.href='{% url 'recommendations_view' %}'">Check it out</button>
                 </div>
                 <div class="function-box">
                     <h3>Track Expenses</h3>

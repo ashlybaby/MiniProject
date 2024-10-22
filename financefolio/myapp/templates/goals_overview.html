@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Goals Overview</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .status {
+            font-weight: bold;
+            color: #ff5722; /* Default color for failed status */
+        }
+        .status.success {
+            color: #4CAF50; /* Color for successful status */
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+        }
+        .progress-bar {
+            height: 100%;
+            text-align: center;
+            color: white;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Goals Overview</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>User Email</th>
+                <th>Goal Name</th>
+                <th>Target Amount</th>
+                <th>Current Amount</th>
+                <th>Status</th>
+                <th>Deadline</th>
+                <th>Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for goal in goal_summary %}
+                <tr>
+                    <td>{{ goal.user_email }}</td>
+                    <td>{{ goal.goal_name }}</td>
+                    <td>${{ goal.target_amount }}</td>
+                    <td>${{ goal.current_amount }}</td>
+                    <td class="status {% if goal.current_amount >= goal.target_amount %}success{% endif %}">
+                        {% if goal.current_amount >= goal.target_amount %}
+                            Achieved
+                        {% else %}
+                            Failed
+                        {% endif %}
+                    </td>
+                    <td>{{ goal.deadline }}</td>
+                    <td>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: {{ goal.progress_percentage }}%; background-color: {{ goal.progress_color }};">
+                                {{ goal.progress_percentage }}%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

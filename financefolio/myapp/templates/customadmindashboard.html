@@ -347,8 +347,9 @@
         <div class="brand">Admin Dashboard</div>
         <ul class="sidebar-menu">
             <li><a href="#">Budgets</a></li>
-            <li><a href="#">Goals</a></li>
-            <li><a href="#">Charts</a></li>
+            <li><a href="{% url 'goals_overview' %}">Goals</a></li>
+            {% comment %} <li><a href="{% url 'financial_report' %}">Reports</a></li> {% endcomment %}
+            <li><a href="{% url 'financial_report_all_users' %}">Reports</a></li>
             <li><a href="#">Ratings</a></li>
             <li><a href="#">Queries</a></li>
             <li><a href="#">Articles</a></li>

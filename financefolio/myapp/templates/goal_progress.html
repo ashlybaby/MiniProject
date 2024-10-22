@@ -13,6 +13,33 @@
             display: flex;
             flex-direction: column;
         }
+        .dashboard-button {
+            background-color: #28a745; /* Green background */
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s, transform 0.2s;
+            text-decoration: none;
+        }
+
+        .dashboard-button i {
+            margin-right: 5px; /* Space between icon and text */
+        }
+
+        .dashboard-button:hover {
+            background-color: #218838; /* Darker green on hover */
+            transform: scale(1.05);
+        }
+
+        .dashboard-button:active {
+            transform: scale(0.95);
+        }
 
         body {
             font-family: Arial, sans-serif;
@@ -39,9 +66,9 @@
 
         .container {
             max-width: 1200px;
-            margin: 100px auto 20px; /* Added more space for the fixed header */
+            margin: 100px auto 20px; /* Added space for the fixed header */
             padding: 40px 20px 20px; 
-            flex: 1; /* Ensures that content area takes remaining space */
+            flex: 1; /* Takes remaining space */
         }
 
         h2 {
@@ -59,7 +86,7 @@
 
         .goal-container {
             width: 100%;
-            max-width: 350px; /* Restrict the width of each goal box */
+            max-width: 350px; /* Restrict width of each goal box */
             padding: 15px;
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -75,6 +102,16 @@
             border-color: #f5c6cb; /* Red border */
         }
 
+        .goal-container.completed {
+            background-color: #d4edda; /* Light green background for completed goals */
+            border-color: #c3e6cb; /* Green border */
+        }
+
+        .goal-container.ongoing {
+            background-color: #fff3cd; /* Light yellow background for ongoing goals */
+            border-color: #ffeeba; /* Yellow border */
+        }
+
         .goal-header {
             font-size: 20px;
             font-weight: bold;
@@ -82,17 +119,17 @@
             text-align: center;
         }
 
-        .goal-status {
+        .goal-status, .goal-deadline {
             font-size: 16px;
             margin: 5px 0;
             text-align: center;
+            color: #555; /* Slightly darker color for deadline */
         }
 
-        .goal-deadline {
-            font-size: 14px;
-            margin: 5px 0;
-            text-align: center;
-            color: #555; /* Slightly darker color for deadline */
+        .status-indicator {
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: capitalize; /* Capitalize first letter */
         }
 
         .progress-bar {
@@ -101,7 +138,6 @@
             height: 20px;
             width: 100%;
             overflow: hidden;
-            position: relative;
             margin-bottom: 10px;
         }
 
@@ -109,11 +145,19 @@
         .progress-fill {
             height: 100%;
             transition: width 0.5s;
-            background-color: #4caf50; /* Default green color */
+            background-color: #4caf50; /* Default green color for success */
         }
 
         .progress-fill.failed {
             background-color: #dc3545; /* Red color for failed goals */
+        }
+
+        .progress-fill.completed {
+            background-color: #28a745; /* Green color for completed goals */
+        }
+
+        .progress-fill.ongoing {
+            background-color: #ffc107; /* Yellow color for ongoing goals */
         }
 
         .chart-container {
@@ -127,46 +171,13 @@
             height: 250px;
         }
 
-        .tooltip {
-            background-color: #333;
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            position: absolute;
-            z-index: 1000;
-            display: none;
-        }
-
-        .dashboard-button {
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        .dashboard-button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
-        }
-
-        .dashboard-button:active {
-            transform: scale(0.95);
-        }
-
         footer {
             background-color: #283e4a;
             color: #fff;
             text-align: center;
             padding: 15px;
             width: 100%;
-            margin-top: auto; /* Ensures footer sticks to bottom */
+            margin-top: auto; /* Sticks footer to bottom */
         }
         
         .logout-button {
@@ -178,7 +189,7 @@
             cursor: pointer;
             font-size: 16px;
             text-align: center;
-            display: flex; /* Use flexbox to center icon and text */
+            display: flex; /* Flexbox for centering icon and text */
             align-items: center; /* Center vertically */
             transition: background-color 0.3s, transform 0.2s;
         }
@@ -195,6 +206,8 @@
         .logout-button:active {
             transform: scale(0.95);
         }
+       
+        
         
     </style>
 </head>
@@ -205,12 +218,10 @@
         </div>
         
         <div class="nav-right">
-            <div class="dropdown">
-                <form action="{% url 'logout' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </form>
-            </div>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </form>
         </div>
     </header>
 
@@ -219,25 +230,47 @@
 
         <div class="goal-list">
             {% for data in progress_data %}
-            <div class="goal-container {% if data.status == 'failed' %}failed{% endif %}">
+            <div class="goal-container {% if data.status == 'failed' %}failed{% elif data.status == 'completed' %}completed{% elif data.status == 'ongoing' %}ongoing{% endif %}">
                 <div class="goal-header">
                     <strong>{{ data.goal.name }}</strong> ({{ data.goal.category }})
                 </div>
                 <div class="goal-status">
                     <span>Target: {{ data.goal.target_amount }}</span> | 
-                    <span>Current: {{ data.goal.current_amount }}</span> | 
-                    <span>Status: <strong>{{ data.status|capfirst }}</strong></span>
+                    <span>Current: {{ data.goal.current_amount }}</span>
+                </div>
+                <div class="goal-status">
+                    <span>Status: <span class="status-indicator">{{ data.status|capfirst }}</span></span> <!-- Display the status -->
                 </div>
                 <div class="goal-deadline">
                     <span>Deadline: {{ data.goal.deadline }}</span>  <!-- Display the deadline -->
                 </div>
 
                 <div class="progress-bar">
-                    <div class="progress-fill {% if data.status == 'failed' %}failed{% endif %}" style="width: {{ data.progress }}%;"></div>
+                    <div class="progress-fill {% if data.status == 'failed' %}failed{% elif data.status == 'completed' %}completed{% elif data.status == 'ongoing' %}ongoing{% endif %}" style="width: {{ data.progress }}%;"></div>
                 </div>
 
                 <div class="chart-container">
-                    <canvas id="chart-{{ forloop.counter }}"></canvas>
+                    <canvas id="chart-{{ forloop.counter }}" width="400" height="200"></canvas>
+                    <script>
+                        const ctx = document.getElementById('chart-{{ forloop.counter }}').getContext('2d');
+                        const myChart = new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Current Amount', 'Remaining Amount'],
+                                datasets: [{
+                                    label: 'Goal Progress',
+                                    data: [{{ data.goal.current_amount }}, {{ data.goal.target_amount|add:'-'|add:data.goal.current_amount }}],
+                                    backgroundColor: ['#4caf50', '#e0e0e0'],
+                                    borderColor: ['#fff', '#fff'],
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                            }
+                        });
+                    </script>
                 </div>
             </div>
             {% endfor %}
@@ -245,40 +278,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2024 Finance Folio. All rights reserved.</p>
+        <p>&copy; {{ current_year }} Your Company Name. All Rights Reserved.</p>
     </footer>
-
-    <script>
-        const progressData = {{ progress_data|safe }};
-        progressData.forEach((data, index) => {
-            const ctx = document.getElementById(`chart-${index+1}`).getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Spent', 'Remaining'],
-                    datasets: [{
-                        data: [data.goal.current_amount, data.goal.target_amount - data.goal.current_amount],
-                        backgroundColor: ['#4caf50', '#f44336'],
-                        hoverBackgroundColor: ['#66bb6a', '#e57373'],
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return tooltipItem.label + ': ' + tooltipItem.raw;
-                                }
-                            }
-                        }
-                    }
-                },
-            });
-        });
-    </script>
 </body>
 </html>
