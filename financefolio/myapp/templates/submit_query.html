@@ -1,0 +1,6 @@
+<h2>Submit a Query</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Query</button>
+</form>

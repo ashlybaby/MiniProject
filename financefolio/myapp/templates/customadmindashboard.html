@@ -4,118 +4,96 @@
 
 <head>
     <meta charset="UTF-8">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Custom Admin Dashboard"> 
+    <meta name="description" content="Custom Admin Dashboard">
     <meta name="author" content="Your Name">
     <title>Admin Dashboard</title>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Embedded CSS Styles -->
     <style>
-
-        /* General button styles */
-        /* Button Styles */
-        .activate-deactivate-btn {
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-            font-size: 14px;
-        }
-        
-        /* Active User Button (Green) */
-        .active-btn {
-            background-color: green;
-        }
-        
-        .active-btn:hover {
-            background-color: darkgreen;
-        }
-        
-        /* Inactive User Button (Red) */
-        .inactive-btn {
-            background-color: red;
-        }
-        
-        .inactive-btn:hover {
-            background-color: darkred;
-        }
-        
         /* General Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-    
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f4f7f6;
-            color: #2c3e50;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
             display: flex;
             min-height: 100vh;
         }
-    
+
         a {
             text-decoration: none;
+            color: inherit;
         }
-    
+
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background-color: #374D5A;
-            padding: 20px;
+            background-color: #2c3e50;
+            padding: 30px 20px;
             position: fixed;
             top: 0;
             left: 0;
-            height: 100vh; /* Changed to 100vh for better alignment */
-            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
-    
+
         .brand {
-            font-size: 2em;
-            font-weight: bold;
+            font-size: 1.8em;
+            font-weight: 700;
             color: #ecf0f1;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             text-align: center;
         }
-    
+
         .admin-icon {
-            font-size: 4em;
+            font-size: 3em;
             color: #ecf0f1;
             text-align: center;
-            margin-bottom: 20px;
-            margin-top: 50px;
+            margin-bottom: 30px;
         }
-    
+
         .sidebar-menu {
             list-style: none;
-            padding: 0;
-            margin: 0;
         }
-    
+
         .sidebar-menu li {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-    
+
         .sidebar-menu li a {
             color: #ecf0f1;
-            font-size: 1.2em;
+            font-size: 1.1em;
             padding: 12px 20px;
-            border-radius: 6px;
-            display: block;
-            transition: background-color 0.3s;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
         }
-    
+
+        .sidebar-menu li a i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
         .sidebar-menu li a:hover {
             background-color: #34495e;
+            transform: translateX(5px);
         }
-    
+
         .logout-button {
             background-color: #e74c3c;
             border: none;
@@ -123,253 +101,319 @@
             color: #ecf0f1;
             font-size: 1.1em;
             cursor: pointer;
-            border-radius: 6px;
-            margin-top: auto;
-            text-align: center;
+            border-radius: 8px;
+            margin-top: 30px;
+            width: 100%;
+            transition: all 0.3s ease;
         }
-    
+
         .logout-button:hover {
             background-color: #c0392b;
         }
-    
+
         /* Main Content */
         .main-content {
-            margin-left: 280px; /* Sidebar width */
+            margin-left: 280px;
             padding: 40px;
             width: calc(100% - 280px);
-            background-color: #4B6D7A;
             min-height: 100vh;
-            padding-bottom: 60px; /* Added padding to ensure content is not hidden by footer */
-            margin-top: 0; /* Ensure it starts directly below header */
-            margin-right: 0; /* Remove margin on right */
+            background-color: #f0f2f5;
+            transition: all 0.3s ease;
         }
-    
+
         /* Header Styles */
         .header {
-            background-color: #1a242f;
+            background-color: #3498db;
             color: white;
-            padding: 20px;
-            text-align: center;
+            padding: 20px 40px;
             font-size: 1.8em;
-            margin-bottom: 20px;
-            position: fixed; 
-            top: 0; 
-            left: 0; /* Changed to left: 0 */
-            right: 0; 
-            z-index: 1000; 
-            height: 80px; /* Set a fixed height for the header */
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-    
+
         /* Section Header */
         .section-header {
-            margin-bottom: 20px;
-            padding-top: 80px; /* Ensure content does not hide behind header */
+            margin-bottom: 30px;
         }
-    
+
         .section-header h1 {
             font-size: 2.5em;
             font-weight: 700;
-            color: #34495e;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
-    
+
         .section-header p {
             font-size: 1.2em;
             color: #7f8c8d;
         }
-    
+
         /* Function Boxes */
         #function-boxes {
-            display: flex; 
-            justify-content: space-around; 
-            flex-wrap: wrap; /* Allow boxes to wrap on smaller screens */
-            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
         }
-    
+
         .function-box {
             background-color: #fff;
-            border-radius: 6px;
-            padding: 20px;
-            margin: 10px; /* Add margin between boxes */
-            width: 180px; /* Fixed width for each box */
+            border-radius: 10px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
-    
+
+        .function-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .function-box div {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+
         .function-box h3 {
-            margin-bottom: 10px;
-            color: #34495e;
+            margin-bottom: 15px;
+            color: #2c3e50;
         }
-    
+
         .function-box a {
             background-color: #3498db;
-            color: #ecf0f1;
+            color: #fff;
             padding: 10px 20px;
             border-radius: 5px;
             transition: background-color 0.3s;
+            display: inline-block;
         }
-    
+
         .function-box a:hover {
             background-color: #2980b9;
         }
-    
+
         /* User Management Table Styles */
         #user-management {
-            display: none; /* Hide by default */
-            margin-top: 20px;
+            display: none;
+            margin-top: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-    
+
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0 10px;
         }
-    
+
         th, td {
-            padding: 12px;
+            padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
         }
-    
+
         th {
             background-color: #3498db;
             color: #fff;
+            font-weight: 600;
         }
-    
+
         td {
-            background-color: #fff;
-            color: #34495e;;
+            background-color: #f8f9fa;
         }
-    
-        /* Close Button Styles */
-        .close-button {
+
+        tr {
+            transition: all 0.3s ease;
+        }
+
+        tr:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Button Styles */
+        .activate-deactivate-btn {
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .active-btn {
+            background-color: #2ecc71;
+        }
+
+        .active-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .inactive-btn {
             background-color: #e74c3c;
+        }
+
+        .inactive-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .close-button {
+            background-color: #95a5a6;
             color: #fff;
             border: none;
             padding: 10px 20px;
-            margin: 10px 0;
+            margin: 20px 0;
             cursor: pointer;
             border-radius: 5px;
+            transition: all 0.3s ease;
         }
-    
+
         .close-button:hover {
-            background-color: #c0392b;
+            background-color: #7f8c8d;
         }
-    
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 60%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #2c3e50;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
         /* Footer */
         footer {
-            background-color: #1a242f; 
+            background-color: #2c3e50;
             color: #ecf0f1;
-            text-align: center; 
-            padding: 10px;
+            text-align: center;
+            padding: 15px;
             position: fixed;
             bottom: 0;
-            left: 0; /* Changed to left: 0 */
-            right: 0; 
+            left: 280px;
+            right: 0;
+            font-size: 0.9em;
         }
-    
+
         /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-left: 220px;
+                width: calc(100% - 220px);
+            }
+
+            footer {
+                left: 220px;
+            }
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 height: auto;
                 position: relative;
             }
-    
+
             .main-content {
                 margin-left: 0;
                 width: 100%;
-                padding-bottom: 60px; 
             }
-    
-            .header {
-                position: relative; 
-                left: 0;
-                right: 0;
-            }
-    
+
             footer {
-                margin-left: 0;
+                left: 0;
             }
-            .delete-icon {
-                background: none; /* Remove background */
-                border: none; /* Remove border */
-                cursor: pointer; /* Change cursor on hover */
+
+            #function-boxes {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
-            
-            .delete-icon img {
-                width: 20px; /* Adjust size as needed */
-                height: 20px; /* Adjust size as needed */
-            }
-            
         }
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; 
-            z-index: 1; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgb(0,0,0); 
-            background-color: rgba(0,0,0,0.4); 
-        }
-        
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; 
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; 
-        }
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        
-        .close-btn:hover,
-        .close-btn:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        
     </style>
-    
 </head>
 
 <body>
     <!-- Sidebar Section -->
     <div class="sidebar">
-        <div class="admin-icon">👤</div> 
-        <div class="brand">Admin Dashboard</div>
+        <div class="admin-icon"><i class="fas fa-user-shield"></i></div>
+        <div class="brand">Finance Folio</div>
         <ul class="sidebar-menu">
-            <li><a href="#">Budgets</a></li>
-            <li><a href="{% url 'goals_overview' %}">Goals</a></li>
-            {% comment %} <li><a href="{% url 'financial_report' %}">Reports</a></li> {% endcomment %}
-            <li><a href="{% url 'financial_report_all_users' %}">Reports</a></li>
-            <li><a href="#">Ratings</a></li>
-            <li><a href="#">Queries</a></li>
-            <li><a href="#">Articles</a></li>
-            <li><a href="#" id="feedback-btn">Feedback</a></li>
-
-            <li><a href="#">Tutorials</a></li>
+            <li><a href="#"><i class="fas fa-chart-pie"></i> Budgets</a></li>
+            <li><a href="{% url 'goals_overview' %}"><i class="fas fa-bullseye"></i> Goals</a></li>
+            <li><a href="{% url 'financial_report_all_users' %}"><i class="fas fa-file-alt"></i> Reports</a></li>
+            <li><a href="#"><i class="fas fa-star"></i> Ratings</a></li>
+            <li><a href="{% url 'query_list' %}"><i class="fas fa-question-circle"></i> Queries</a></li>
+            <li><a href="{% url 'add_article' %}"><i class="fas fa-newspaper"></i> Articles</a></li>
+            <li><a href="#" id="feedback-btn"><i class="fas fa-comments"></i> Feedback</a></li>
+            <li><a href="#"><i class="fas fa-graduation-cap"></i> Tutorials</a></li>
         </ul>
         <form action="{% url 'logout' %}" method="post" class="logout-form">
             {% csrf_token %}
-            <button type="submit" class="logout-button">Logout</button>
+            <button type="submit" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
     </div>
 
     <!-- Main Content Section -->
     <div class="main-content">
-        <div class="header">Admin dashboard</div>
+        <div class="header">Admin Dashboard</div>
         <header class="section-header">
             <h1>{{ section_title }}</h1>
             <p>{{ data }}</p>
         </header>
+
+        <!-- Function Boxes -->
+        <section id="function-boxes">
+            <div class="function-box">
+                <div><i class="fas fa-users"></i></div>
+                <h3>Manage Users</h3>
+                <a href="#" id="manage-users-btn">Users</a>
+            </div>
+            <div class="function-box">
+                <div><i class="fas fa-comments"></i></div>
+                <h3>View Feedback</h3>
+                <a href="#" id="feedbackBtn">Feedback</a>
+            </div>
+            <div class="function-box">
+                <div><i class="fas fa-bullhorn"></i></div>
+                <h3>Announcement</h3>
+                <a href="{% url 'create_announcement'%}" id="announcement">Announcements</a>
+            </div>
+        </section>
 
         <!-- User Management Section -->
         <div id="user-management">
@@ -391,62 +435,20 @@
             </table>
         </div>
 
-        <!-- Feedback Section -->
-<div id="feedback-section" style="display: none;">
-    <button class="close-button" id="close-feedback-section">Close</button>
-    <h2>Feedback</h2>
-    <table id="feedback-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Feedback</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Feedback data will be inserted here -->
-        </tbody>
-    </table>
-</div>
-
-
-        <!-- Function Boxes -->
-        <section id="function-boxes">
-            <div class="function-box">
-                <div>👤</div> <!-- Human Icon -->
-                <h3>Manage Users</h3>
-                <a href="#" id="manage-users-btn"> Users</a>
+        <!-- Feedback Modal -->
+        <div id="feedbackModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>User Feedback</h2>
+                <div id="feedbackContainer"></div>
             </div>
-            <div class="function-box">
-                <div>📊</div> <!-- Reports Icon -->
-                <h3>View Feedback</h3>
-                <a href="#" id="feedbackBtn">Feedback</a>
-            </div>
-            <div class="function-box">
-                <div>⚙️</div> <!-- Settings Icon -->
-                <h3>Settings</h3>
-                <a href="#">Settings</a>
-            </div>
-            <div class="function-box">
-                <div>📢</div> <!-- Announcement Icon -->
-                <h3>Announcement</h3>
-                <a href="#">View Announcements</a>
-            </div>
-
-            <div id="feedbackModal" class="modal">
-                <div class="modal-content">
-                    <span class="close-btn">&times;</span>
-                    <h2>User Feedback</h2>
-                    <div id="feedbackContainer"></div>
-                </div>
-            </div>
-        </section>
+        </div>
 
         <footer>
-            © 2024 Finance Folio
+            © 2024 Finance Folio. All rights reserved.
         </footer>
     </div>
+
     <script>
         // Get references to DOM elements
         const manageUsersBtn = document.getElementById('manage-users-btn');
@@ -500,7 +502,7 @@
         closeUserManagementBtn.addEventListener('click', function () {
             // Hide user management section and show function boxes
             userManagementSection.style.display = 'none';
-            functionBoxes.style.display = 'flex'; // Adjust the display property to match the original layout
+            functionBoxes.style.display = 'grid'; // Adjust the display property to match the original layout
         });
     
         // Function to attach activate/deactivate handlers to buttons
@@ -658,10 +660,7 @@
                 }
             });
         });
-        
     </script>
-        
-        
 </body>
 
 </html>

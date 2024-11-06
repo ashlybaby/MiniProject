@@ -6,9 +6,9 @@ from django.utils import timezone
 from datetime import date
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import gettext_lazy as _
-
-
-
+from .models import Query
+from .models import Article
+from django.contrib.auth import authenticate
 
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, label="Password", min_length=6)
@@ -88,9 +88,7 @@ class UserChangeForm(BaseUserChangeForm):
         fields = ['first_name', 'last_name', 'email', 'gender', 'address', 'city', 'state', 'is_active', 'is_staff']
 
 
-from django.contrib.auth import authenticate
-from django import forms
-from .models import User # Adjust the import based on your User model
+
 
 class UserLoginForm(forms.Form):
     email = forms.EmailField(widget=forms.TextInput(attrs={'id': 'emailid', 'placeholder': 'Email'}))
@@ -125,9 +123,9 @@ class UserLoginForm(forms.Form):
 
 
 
-from django import forms
+
 from django.contrib.auth import authenticate
-from .models import User  # Replace with the path to your custom User model
+  # Replace with the path to your custom User model
 
 class AdminLoginForm(forms.Form):
     email = forms.EmailField()
@@ -168,11 +166,8 @@ from django import forms
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-
-from django import forms
-from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import PasswordResetForm
-from django.contrib.auth import get_user_model
+
 
 User = get_user_model()
 
@@ -191,9 +186,9 @@ class CustomPasswordResetForm(PasswordResetForm):
         return super().save(*args, **kwargs)
 
 
-from django import forms
+
 from django.contrib.auth.forms import SetPasswordForm
-from django.core.exceptions import ValidationError
+
 
 class CustomSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(
@@ -552,3 +547,69 @@ class GoalForm(forms.ModelForm):
         if deadline <= timezone.now().date():
             raise forms.ValidationError("Deadline must be a future date.")
         return deadline
+
+
+
+from .models import Announcement
+import re
+
+class AnnouncementForm(forms.ModelForm):
+    class Meta:
+        model = Announcement
+        fields = ['title', 'message']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'message': forms.Textarea(attrs={'class': 'form-control'}),
+        }
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if not title:
+            raise forms.ValidationError("Title is required.")
+        if len(title) < 5:
+            raise forms.ValidationError("Title must be at least 5 characters long.")
+        if not re.match(r'^[a-zA-Z\s]+$', title):
+            raise forms.ValidationError("Title should only contain letters and spaces.")
+        return title
+
+    def clean_message(self):
+        message = self.cleaned_data.get('message')
+        if not message:
+            raise forms.ValidationError("Message is required.")
+        if len(message) < 5:
+            raise forms.ValidationError("Message must be at least 5 characters long.")
+        return message
+
+    def clean(self):
+        cleaned_data = super().clean()
+        title = cleaned_data.get('title')
+        message = cleaned_data.get('message')
+
+        if message and not re.match(r'^[a-zA-Z0-9\s.,!?]+$', message):
+            raise forms.ValidationError({
+                'message': "Message should only contain letters, numbers, spaces, and basic punctuation (.,!?)."
+            })
+
+        if title and message:
+            if title == message:
+                raise forms.ValidationError("Title and message cannot be identical.")
+
+        return cleaned_data
+    
+
+
+
+
+class ArticleForm(forms.ModelForm):
+    class Meta:
+        model = Article
+        fields = ['title', 'content', 'category']
+
+class QueryForm(forms.ModelForm):
+    class Meta:
+        model = Query
+        fields = ['title', 'description']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter query title'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe your query'}),
+        }

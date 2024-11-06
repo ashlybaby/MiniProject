@@ -291,7 +291,7 @@ footer {
             </div>
 
             <div class="form-group">
-                <input type="number" name="target_amount" placeholder="Target Amount" step="0.01" required>
+                <input type="number" name="target_amount" id="target_amount" placeholder="Target Amount" step="0.01" required>
                 {% if form.target_amount.errors %}
                     <ul class="errorlist">
                         {% for error in form.target_amount.errors %}
@@ -315,7 +315,7 @@ footer {
 
             <div class="form-group">
                 <label for="deadline">Target Deadline (Month)</label>
-                <input type="date" name="deadline" required>
+                <input type="date" id="deadline" name="deadline" required>
                 {% if form.deadline.errors %}
                     <ul class="errorlist">
                         {% for error in form.deadline.errors %}
@@ -326,7 +326,7 @@ footer {
             </div>
             
 
-            <button type="submit">Add Goal</button>
+            <button type="submit" id="add-goal-button">Add Goal</button>
         </form>
     </div>
 </div>

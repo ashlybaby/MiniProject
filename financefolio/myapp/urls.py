@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from .views import user_dashboard
 from .views import CustomPasswordResetView, CustomPasswordResetConfirmView, CustomPasswordResetCompleteView
+from django.conf.urls import include
 
 urlpatterns = [
     path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
@@ -50,7 +51,26 @@ urlpatterns = [
     path('goals_overview/', views.goals_overview, name='goals_overview'),
     path('reports/all/', views.financial_report_all_users, name='financial_report_all_users'),
     path('recommendations_view/', views.recommendations_view, name='recommendations_view'),
+    path('announcements/', views.announcement_list, name='announcement_list'),
+    path('create-announcement/', views.create_announcement, name='create_announcement'),
+    path('edit_announcement/<int:announcement_id>/', views.edit_announcement, name='edit_announcement'),
+    path('delete_announcement/<int:announcement_id>/',views.delete_announcement, name='delete_announcement'),
+    path('category/<str:category>/', views.category_detail, name='category_detail'),
+    path('api/announcements/', views.get_announcements, name='get_announcements'),
+    path('oauth/', include('social_django.urls', namespace='social')),
+    path('articles/', views.admin_articles_list, name='admin_articles_list'),
+    path('articles/add/', views.add_article, name='add_article'),
+    path('articles/<int:article_id>/edit/', views.edit_article, name='edit_article'),
+    path('articles/<int:article_id>/delete/', views.delete_article, name='delete_article'),
+    path('submit-query/', views.submit_query, name='submit_query'),
+    path('queries/', views.query_list, name='query_list'),
+    path('admin/queries/', views.admin_query_list, name='admin_query_list'),
+    path('admin/queries/<int:query_id>/update/', views.admin_update_query_status, name='admin_update_query_status'),
 ]
+
+
+
+
     
 
 

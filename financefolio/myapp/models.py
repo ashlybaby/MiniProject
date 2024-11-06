@@ -1,17 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
+from django.contrib.auth.models import BaseUserManager
+
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, first_name, last_name, password=None, gender=None, age=None, address=None, city=None, state=None):
+    def create_user(self, email, password=None, first_name=None, last_name=None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
-        if not first_name:
-            raise ValueError('The First Name field must be set')
-        if not last_name:
-            raise ValueError('The Last Name field must be set')
-
         email = self.normalize_email(email)
-        user = self.model(email=email, first_name=first_name, last_name=last_name, gender=gender, age=age, address=address, city=city, state=state)
+        user = self.model(
+            email=email,
+            first_name=first_name or '',
+            last_name=last_name or '',
+            **extra_fields
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -31,9 +33,9 @@ class User(AbstractBaseUser):
         ('O', 'Other'),
     ]
 
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
     age = models.PositiveIntegerField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
@@ -59,55 +61,6 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
-#............................................................#
-# from django.db import models
-# from django.conf import settings  # To reference the CustomUser model
-
-# class Budget(models.Model):
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name='budgets'
-#     )
-#     month = models.DateField()
-#     planned_income = models.DecimalField(max_digits=12, decimal_places=2)
-#     actual_income = models.DecimalField(
-#         max_digits=12,
-#         decimal_places=2,
-#         null=True,
-#         blank=True
-#     )
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     def total_planned_expenses(self):
-#         return self.expenses.aggregate(models.Sum('planned_expense'))['planned_expense__sum'] or 0
-
-#     def total_actual_expenses(self):
-#         return self.expenses.aggregate(models.Sum('actual_expense'))['actual_expense__sum'] or 0
-
-#     def remaining_balance_planned(self):
-#         return self.planned_income - self.total_planned_expenses()
-
-#     def remaining_balance_actual(self):
-#         if self.actual_income is not None:
-#             return self.actual_income - self.total_actual_expenses()
-#         return None
-
-#     def __str__(self):
-#         return f"{self.user.email} - {self.month.strftime('%B %Y')}"
-
-# class Expense(models.Model):
-#     budget = models.ForeignKey(
-#         Budget,
-#         on_delete=models.CASCADE,
-#         related_name='expenses'
-#     )
-#     category = models.CharField(max_length=100)
-#     planned_expense = models.DecimalField(max_digits=12, decimal_places=2)
-#     actual_expense = models.DecimalField(max_digits=12, decimal_places=2)
-
-#     def __str__(self):
-#         return f"{self.category} - Planned: {self.planned_expense}, Actual: {self.actual_expense}"
 
 from django.db import models
 from django.conf import settings  # To reference the CustomUser model
@@ -275,3 +228,63 @@ class Goal(models.Model):
 
         # Save the goal
         super().save(*args, **kwargs)
+
+
+#announcement section#
+from django.db import models
+from django.conf import settings  # For referencing the CustomUser model
+
+class Announcement(models.Model):
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    # Optional: allow only admin to create announcements
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='announcements'
+    )
+
+    def __str__(self):
+        return f"{self.title} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+from django.db import models
+from django.conf import settings
+
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    category = models.CharField(max_length=100, choices=[
+        ('tips', 'Tips'),
+        ('financial_planning', 'Financial Planning'),
+        ('budgeting', 'Budgeting')
+    ])
+    date_posted = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+
+from django.db import models
+from django.conf import settings
+
+class Query(models.Model):
+    STATUS_CHOICES = [
+        ('P', 'Pending'),
+        ('R', 'Resolved'),
+        ('C', 'Closed'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='queries')
+    title = models.CharField(max_length=255)  # Short title for the query
+    description = models.TextField()  # Detailed description of the query
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.user.email}"

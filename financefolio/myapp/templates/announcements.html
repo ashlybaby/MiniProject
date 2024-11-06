@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Announcements</h2>
+<div class="announcement-section">
+    {% for announcement in announcements %}
+        <div class="announcement">
+            <h3>{{ announcement.title }}</h3>
+            <p>{{ announcement.message }}</p>
+            <small>Posted on: {{ announcement.created_at|date:"F d, Y H:i" }}</small>
+        </div>
+        <hr>
+    {% empty %}
+        <p>No announcements available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

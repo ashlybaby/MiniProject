@@ -1,0 +1,275 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Articles</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a242f 0%, #2c3e50 100%);
+            color: #ffffff;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin: 0;
+            padding-left: 100px;
+            font-weight: 600;
+        }
+
+        .icon-links {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            z-index: 1001;
+        }
+
+        .dashboard-icon, .home-icon {
+            color: #ffffff;
+            font-size: 1.8em;
+            margin-right: 15px;
+            text-decoration: none;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .dashboard-icon:hover, .home-icon:hover {
+            color: #3498db;
+            transform: scale(1.1);
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 100px 2rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+        }
+
+        form {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        input[type="text"], 
+        input[type="url"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        input[type="text"]:focus, 
+        input[type="url"]:focus, 
+        textarea:focus, 
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+            background-color: #ffffff;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .help-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        button, 
+        .article-options .button {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+        }
+
+        button:hover, 
+        .article-options .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+            background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+        }
+
+        .article-options {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .article-options .button {
+            display: inline-block;
+            text-decoration: none;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            max-width: 400px;
+        }
+
+        .article-options .button:hover {
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            background: linear-gradient(135deg, #2980b9 0%, #2472a4 100%);
+        }
+
+        footer {
+            background: linear-gradient(135deg, #1a242f 0%, #2c3e50 100%);
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+            font-size: 1em;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+                padding-left: 70px;
+            }
+
+            main {
+                padding: 80px 1rem 1rem;
+            }
+
+            form {
+                padding: 20px;
+            }
+
+            .icon-links {
+                top: 12px;
+                left: 15px;
+            }
+
+            .dashboard-icon, 
+            .home-icon {
+                font-size: 1.5em;
+                margin-right: 10px;
+            }
+
+            h2 {
+                font-size: 2em;
+            }
+
+            button, 
+            .article-options .button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="icon-links">
+            <a href="{% url 'index' %}" class="dashboard-icon" title="Dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+            </a>
+            <a href="{% url 'index' %}" class="home-icon" title="Home">
+                <i class="fas fa-home"></i>
+            </a>
+        </div>
+        <h1>Manage Articles</h1>
+    </header>
+
+    <main>
+        <h2>Add or Manage Articles</h2>
+        <form method="post" action="{% url 'add_article' %}">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help-text">{{ field.help_text }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit">Add or Upload Article</button>
+        </form>
+
+        <div class="article-options">
+            <a href="{% url 'admin_articles_list' %}" class="button">View, Edit, and Delete Articles</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>© {% now "Y" %} Finance Folio. All rights reserved.</p>
+    </footer>
+</body>
+</html>

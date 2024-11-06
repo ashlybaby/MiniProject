@@ -12,6 +12,9 @@ from datetime import date
 from .forms import RegistrationForm
 from decimal import Decimal
 from django.views.decorators.cache import never_cache
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Query
+from django.contrib.auth.decorators import user_passes_test
 
 
 @never_cache
@@ -82,25 +85,7 @@ def register(request):
 
     return render(request, 'register.html', {'form': form})
 
-# def user_login(request):
-#     if request.method == 'POST':
-#         form = UserLoginForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data.get('email')
-#             password = form.cleaned_data.get('password')
-#             user = authenticate(email=email, password=password)
-#             if user is not None:
-#                 if user.is_active:
-#                     auth_login(request, user)
-#                     return redirect(reverse('user_dashboard'))  # Redirect to home or another appropriate page
-#                 else:
-#                     messages.error(request, 'Your account is disabled.')
-#             else:
-#                 messages.error(request, 'Invalid email or password.')
-#     else:
-#         form = UserLoginForm()
 
-#     return render(request, 'user_login.html', {'form': form})
 from django.views.decorators.cache import never_cache
 #new change user login#
 @never_cache
@@ -215,8 +200,7 @@ def profile_view(request):
     }
     return render(request, 'profile.html', context)
 
-#def profile_edit(request):
-    #return redirect('profile.html')
+
 
 
 from django.shortcuts import render
@@ -266,247 +250,17 @@ from .forms import BudgetForm, ExpenseForm
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .models import Budget, Expense
-from .forms import BudgetForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-
-
-# @login_required
-# @csrf_exempt  # Use with caution; consider using CSRF tokens for production
-# def budget_view(request):
-#     if request.method == 'POST':
-#         budget_form = BudgetForm(request.POST)
-#         actual_income = request.POST.get('actual-income')
-
-#         if budget_form.is_valid():
-#             # Create budget instance but don't save yet
-#             budget = budget_form.save(commit=False)
-#             budget.user = request.user  # Assign the logged-in user
-
-#             # Validate and convert actual_income to Decimal if necessary
-#             if actual_income:
-#                 try:
-#                     budget.actual_income = Decimal(actual_income)
-#                 except ValueError:
-#                     budget.actual_income = None  # Handle invalid input
-
-#             # Save the budget
-#             budget.save()
-
-#             # Handle expense entries
-#             expense_categories = request.POST.getlist('expense-category')
-#             planned_expenses = request.POST.getlist('planned-expense')
-#             actual_expenses = request.POST.getlist('actual-expense')
-
-#             for i in range(len(expense_categories)):
-#                 Expense.objects.create(
-#                     budget=budget,
-#                     category=expense_categories[i],
-#                     planned_expense=planned_expenses[i],
-#                     actual_expense=actual_expenses[i]
-#                 )
-
-#             # Prepare the summary
-#             summary = {
-#                 'planned_income': budget.planned_income,
-#                 'actual_income': budget.actual_income,
-#                 'total_planned_expenses': budget.total_planned_expenses(),
-#                 'total_actual_expenses': budget.total_actual_expenses(),
-#                 'remaining_balance_planned': budget.remaining_balance_planned(),
-#                 'remaining_balance_actual': budget.remaining_balance_actual()
-#             }
-
-#             return render(request, 'budget.html', {
-#                 'form': BudgetForm(), 
-#                 'summary': summary, 
-#                 'success_message': 'Budget added successfully!'
-#             })
-
-#         # If the form is not valid, re-render with errors
-#         return render(request, 'budget.html', {
-#             'form': budget_form, 
-#             'errors': budget_form.errors
-#         })
-
-#     # For GET requests, render the empty form
-#     return render(request, 'budget.html', {'form': BudgetForm()})
-
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt  # Consider removing this in production
-from django.shortcuts import render, redirect
-from .forms import BudgetForm
-from .models import Budget, Expense
 from django.shortcuts import render, get_object_or_404
-from .forms import BudgetForm, ExpenseForm
 from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
 from decimal import Decimal
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
-from django.http import JsonResponse
 from django.utils.dateparse import parse_date
 from .forms import BudgetForm, ExpenseForm
-
-
-# @login_required
-# @csrf_exempt  # Use with caution; consider using CSRF tokens for production
-# def budget_view(request):
-#     expense_form = ExpenseForm()  # Instantiate the ExpenseForm here
-
-#     if request.method == 'POST':
-#         budget_form = BudgetForm(request.POST)
-#         actual_income = request.POST.get('actual-income')
-#         summary = None  # Initialize summary to avoid UnboundLocalError
-
-#         if budget_form.is_valid():
-#             # Extract the selected month from the form
-#             selected_month = budget_form.cleaned_data['month']
-
-#             # Check if a budget for this month already exists
-#             budget, created = Budget.objects.get_or_create(
-#                 user=request.user,
-#                 month=selected_month,
-#                 defaults={'planned_income': budget_form.cleaned_data['planned_income']}
-#             )
-
-#             if not created:
-#                 # If the budget already exists, update the planned_income if needed
-#                 budget.planned_income = budget_form.cleaned_data['planned_income']
-#                 budget.save()
-
-#                 # Optionally, update actual_income if provided
-#                 if actual_income:
-#                     budget.actual_income = Decimal(actual_income)
-#                     budget.save()
-#             else:
-#                 # If a new budget was created, set the actual_income if provided
-#                 if actual_income:
-#                     budget.actual_income = Decimal(actual_income)
-#                     budget.save()
-
-#             # Handle expense entries
-#             expense_categories = request.POST.getlist('expense-category')
-#             actual_expenses = request.POST.getlist('actual-expense')
-#             custom_categories = request.POST.getlist('custom-category')
-#             expense_dates = request.POST.getlist('expense-date')  # New: Get list of dates
-
-#             # Clear existing expenses if editing an existing budget
-#             if not created:
-#                 budget.expenses.all().delete()
-
-#             for i in range(len(expense_categories)):
-#                 category = expense_categories[i]
-#                 expense_value = Decimal(actual_expenses[i]) if actual_expenses[i] else 0
-#                 expense_date_str = expense_dates[i] if i < len(expense_dates) else None
-
-#                 # Parse the date string into a date object
-#                 if expense_date_str:
-#                     expense_date = parse_date(expense_date_str)
-#                 else:
-#                     expense_date = None
-
-#                 if category == 'custom' and custom_categories[i]:
-#                     category = custom_categories[i]
-
-#                 # Validation to ensure the expense date is within the budget month and is not in the future
-#                 if category and actual_expenses[i] and expense_date:
-#                     if not (expense_date.year == selected_month.year and expense_date.month == selected_month.month):
-#                         budget_form.add_error('month', "Expense date must be within the selected budget month.")
-#                         break  # Exit the loop if validation fails
-
-#                     # Check if the expense date is in the future
-#                     from datetime import date as date_today
-#                     if expense_date > date_today.today():
-#                         budget_form.add_error('month', "Expense date cannot be in the future.")
-#                         break  # Exit the loop if validation fails
-
-#                     Expense.objects.create(
-#                         budget=budget,
-#                         category=category,
-#                         actual_expense=expense_value,
-#                         date=expense_date  # Set the date field
-#                     )
-
-#             # Calculate summary details only if there are no validation errors
-#             if not budget_form.errors:
-#                 planned_income = budget.planned_income
-#                 actual_income_decimal = Decimal(actual_income) if actual_income else 0
-#                 total_actual_expenses = budget.total_actual_expenses()
-#                 remaining_balance = actual_income_decimal - total_actual_expenses
-
-#                 summary = {
-#                     'planned_income': planned_income,
-#                     'actual_income': actual_income_decimal,
-#                     'total_actual_expenses': total_actual_expenses,
-#                     'remaining_balance': remaining_balance
-#                 }
-
-#             # Render with form errors if there were validation issues
-#             if budget_form.errors:
-#                 return render(request, 'budget.html', {
-#                     'form': budget_form,
-#                     'expense_form': expense_form,  # Pass expense form
-#                     'errors': budget_form.errors
-#                 })
-
-#             return render(request, 'budget.html', {
-#                 'form': BudgetForm(initial={'month': selected_month, 'planned_income': planned_income}),
-#                 'expense_form': expense_form,  # Pass expense form
-#                 'summary': summary,
-#                 'success_message': 'Budget added/updated successfully!'
-#             })
-
-#         # If the budget form is not valid, render the page with errors
-#         return render(request, 'budget.html', {
-#             'form': budget_form,
-#             'expense_form': expense_form,  # Pass expense form even when budget form fails
-#             'errors': budget_form.errors
-#         })
-
-#     elif request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-#         # Handle AJAX request to fetch existing budget data
-#         month = request.GET.get('month')
-#         if month:
-#             try:
-#                 # Parse the month from 'YYYY-MM' format
-#                 selected_month = parse_date(f"{month}-01")
-#                 if not selected_month:
-#                     raise ValueError
-
-#                 budget = Budget.objects.get(user=request.user, month=selected_month)
-#                 expenses = Expense.objects.filter(budget=budget)
-
-#                 expenses_data = []
-#                 for expense in expenses:
-#                     expenses_data.append({
-#                         'category': expense.category,
-#                         'actual_expense': float(expense.actual_expense),
-#                         'date': expense.date.strftime('%Y-%m-%d') if expense.date else ''
-#                     })
-               
-#                 summary = {
-#                     'planned_income': float(budget.planned_income),
-#                     'actual_income': float(budget.actual_income) if budget.actual_income else 0,
-#                     'total_actual_expenses': float(budget.total_actual_expenses()),
-#                     'remaining_balance': float(budget.remaining_balance_actual()) if budget.remaining_balance_actual() is not None else 0
-#                 }
-
-#                 data = {
-#                     'summary': summary,
-#                     'expenses': expenses_data
-#                 }
-
-#                 return JsonResponse(data, safe=False)
-#             except (Budget.DoesNotExist, ValueError):
-#                 return JsonResponse({'error': 'No budget found for the selected month.'}, status=404)
-
-#     # Handle standard GET request
-#     return render(request, 'budget.html', {
-#         'form': BudgetForm(),
-#         'expense_form': expense_form  # Pass expense form on GET request
-#     })
-
 from django.contrib import messages
 from django.db.models import Sum
 from django.http import JsonResponse
@@ -791,8 +545,6 @@ def financial_management_videos(request):
 #feedback
 from django.shortcuts import render, redirect
 from .forms import FeedbackForm
-from django.contrib import messages
-
 from django.http import JsonResponse
 from django.contrib import messages
 
@@ -926,18 +678,14 @@ def add_goal(request):
     return render(request, 'goal_tracking.html', {'form': form})
 
 # views.py
-from django.http import JsonResponse
+
 from .models import Expense, Budget
-
-from django.utils import timezone
-from django.db.models import Sum
-from django.http import JsonResponse
-from .models import Budget, Expense
-
-from django.http import JsonResponse
-from django.utils import timezone
 from django.db.models import Sum
 from .models import Budget, Expense
+from django.http import JsonResponse
+from django.utils import timezone
+
+
 
 def get_current_amount(request):
     if request.method == "GET":
@@ -1035,58 +783,32 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Goal
 from django.db.models import Sum
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.db.models import Sum
 from .models import Goal, Expense  # Make sure to import Expense model
-
+from django.utils import timezone
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from django.utils import timezone
-from .models import Goal, Expense  # Adjust the import based on your project structure
+from .models import Expense, Goal
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from django.utils import timezone
-from .models import Goal, Expense  # Adjust the import based on your project structure
-
-
-from django.shortcuts import render
-from django.utils import timezone
-from .models import Goal, Expense
-from django.db.models import Sum
-
-from django.shortcuts import render
-from django.utils import timezone
-from .models import Goal, Expense
-from django.db.models import Sum
-
-from django.shortcuts import render
-from django.db.models import Sum
-from django.utils import timezone
-from .models import Goal, Expense  # Ensure you import your models
-
-from django.shortcuts import render
-from django.db.models import Sum
-from django.utils import timezone
-from .models import Goal, Expense
-
-from django.utils import timezone
-from django.db.models import Sum
-from .models import Goal, Expense
-
+@login_required
 def goal_progress(request):
+    # Get the current date to filter expenses by the current month and year
+    current_date = timezone.now()
+    current_month = current_date.month
+    current_year = current_date.year
+    
+    # Fetch the user's goals
     goals = Goal.objects.filter(user=request.user)
     progress_data = []
 
     for goal in goals:
-        # Calculate total spent for the goal's category
-        total_spent = Expense.objects.filter(budget__user=request.user, category=goal.category).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0
+        # Calculate total spent for the goal's category in the current month
+        total_spent = Expense.objects.filter(
+            budget__user=request.user,
+            category=goal.category,
+            date__year=current_year,  # Filter by the current year
+            date__month=current_month  # Filter by the current month
+        ).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0
         
-        # Update current_amount with the total spent
+        # Update the current_amount with the total spent for the current month
         goal.current_amount = total_spent
 
         # Calculate progress percentage
@@ -1098,8 +820,8 @@ def goal_progress(request):
         # Determine the status of the goal
         if goal.current_amount >= goal.target_amount:
             goal_status = 'failed'  # Goal has been achieved
-        elif timezone.now().date() > goal.deadline:
-            goal_status = 'completed'  # Goal has not been achieved and deadline passed
+        elif current_date.date() > goal.deadline:
+            goal_status = 'completed'  # Goal has not been achieved, and the deadline passed
         else:
             goal_status = 'ongoing'  # Goal is ongoing
 
@@ -1113,18 +835,12 @@ def goal_progress(request):
     context = {
         'progress_data': progress_data
     }
+
     return render(request, 'goal_progress.html', context)
 
 
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Budget, Expense
-
-from django.shortcuts import render
-from django.http import JsonResponse
-from .models import Budget, Expense
-
-from django.shortcuts import render
 from .models import Budget, Expense
 from django.db.models import Sum
 
@@ -1169,40 +885,67 @@ def history_views(request):
 
 # views.py
 # views.py
-from django.shortcuts import render
-from .models import Goal
-from django.contrib.auth.decorators import user_passes_test
-
 
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render
 from .models import Goal  # Ensure you import the Goal model correctly
+from django.utils import timezone
+from django.db.models import Sum
+from django.contrib.auth.decorators import user_passes_test
+from .models import Goal, Expense
+
 
 @user_passes_test(lambda u: u.is_superuser)
 def goals_overview(request):
-    goals = Goal.objects.all()  # Fetch all goals
+    # Get the current date and time
+    current_date = timezone.now()
+    current_month_start = current_date.replace(day=1)  # Get the start of the current month
+
+    # Fetch all goals
+    goals = Goal.objects.all()
     goal_summary = []
 
     for goal in goals:
+        # Calculate total spent for the goal's category in the current month
+        total_spent_in_current_month = Expense.objects.filter(
+            budget__user=goal.user,  # Filter by the user who owns the goal
+            category=goal.category,  # Filter by the goal's category
+            date__gte=current_month_start  # Only include expenses from the current month onwards
+        ).aggregate(Sum('actual_expense'))['actual_expense__sum'] or 0  # Set to 0 if no expenses found
+
+        # Update the current amount for the goal
+        goal.current_amount = total_spent_in_current_month
+
+        # Calculate the progress percentage
         progress_percentage = 0
         if goal.target_amount > 0:  # Prevent division by zero
             progress_percentage = (goal.current_amount / goal.target_amount) * 100
 
-        # Determine the progress color
-        progress_color = '#4CAF50' if goal.current_amount >= goal.target_amount else '#ff5722'
+        # Determine the goal status
+        if goal.current_amount >= goal.target_amount:
+            goal_status = 'completed'  # Goal has been completed
+        elif current_date.date() > goal.deadline:
+            goal_status = 'failed'  # Goal deadline has passed without achieving the target
+        else:
+            goal_status = 'ongoing'  # Goal is still in progress
 
+        # Determine the progress bar color based on goal completion
+        progress_color = '#4CAF50' if goal_status == 'completed' else '#ff5722'
+
+        # Build the summary data for each goal
         summary = {
             'user_email': goal.user.email,
             'goal_name': goal.name,
             'target_amount': float(goal.target_amount),  # Convert to float for JSON serialization
             'current_amount': float(goal.current_amount),  # Convert to float for JSON serialization
-            'status': goal.status,
+            'status': goal_status,  # Updated status (ongoing, completed, or failed)
             'deadline': goal.deadline,
             'progress_percentage': round(progress_percentage, 1),  # Round to 1 decimal place
             'progress_color': progress_color,  # Added color for progress bar
         }
         goal_summary.append(summary)
 
+    # Render the goals overview page with the updated data
     return render(request, 'goals_overview.html', {
         'goal_summary': goal_summary,
     })
@@ -1216,36 +959,14 @@ from django.contrib.auth import get_user_model
 User = get_user_model()  # Get the custom user model
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import render
 from .models import User, Budget, Expense, Goal  # Ensure you have the correct imports
-
-# This view ensures only admins can access the all-user reports
-from django.db.models import Sum
-from django.contrib.auth.decorators import user_passes_test
 from django.core import serializers
 from django.shortcuts import render
 from .models import User, Budget, Expense, Goal  # Adjust import to match your models
-import json
-
-from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal
-
-
-from django.core.serializers.json import DjangoJSONEncoder
-from decimal import Decimal
-
-
-from django.db.models import Sum
-from django.shortcuts import render
-
-
-from django.core.serializers.json import DjangoJSONEncoder
-
-
-from django.db.models import Sum
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from django.shortcuts import render
+
 
 def financial_report_all_users(request):
     if request.user.is_authenticated:
@@ -1320,41 +1041,42 @@ def financial_report_all_users(request):
 
 
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from .models import Expense, Goal
 from django.db.models import Sum
-
-
-from django.shortcuts import render
-from django.db.models import Sum
 from .models import Expense, Budget, Goal
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Expense, Goal, Budget
+from django.db.models import Sum
+
 @login_required
 def recommendations_view(request):
-    # Ensure the user is authenticated
     if not request.user.is_authenticated:
-        return redirect('login')  # Redirect unauthenticated users to login page
+        return redirect('login')
 
-    # Fetch all budgets and expenses for the logged-in user
     user_budgets = Budget.objects.filter(user=request.user)
-    
-    # Calculate total spending per category for the user
     category_expenses = Expense.objects.filter(budget__in=user_budgets).values('category').annotate(total_spent=Sum('actual_expense'))
-
-    # Fetch active goals for the user
     user_goals = Goal.objects.filter(user=request.user, status='active')
 
-    # Prepare recommendations based on spending and goal progress
     recommendations = []
     for goal in user_goals:
-        # Get the total spent for the goal's category
         total_spent_in_category = next((expense['total_spent'] for expense in category_expenses if expense['category'] == goal.category), 0)
 
-        # If user has spent too much in the goal's category, recommend adjusting their budget or limiting spending
         if total_spent_in_category >= goal.target_amount:
-            recommendations.append(f"Consider limiting spending in {goal.category} to meet your goal for {goal.name}.")
+            recommendation = {
+                'title': f"Limit Spending in {goal.category}",
+                'description': f"Consider limiting spending in {goal.category} to meet your goal for {goal.name}.",
+                'category': goal.category
+            }
         else:
             remaining = goal.target_amount - total_spent_in_category
-            recommendations.append(f"You're on track to meet your goal for {goal.name}. You can spend up to {remaining} more in {goal.category}.")
+            recommendation = {
+                'title': f"On Track for {goal.name}",
+                'description': f"You're on track to meet your goal for {goal.name}. You can spend up to ${remaining:.2f} more in {goal.category}.",
+                'category': goal.category
+            }
+        recommendations.append(recommendation)
 
     context = {
         'category_expenses': category_expenses,
@@ -1363,3 +1085,267 @@ def recommendations_view(request):
     }
 
     return render(request, 'recommendations.html', context)
+
+
+#announcement#
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Announcement
+
+def announcement_list(request):
+    announcements = Announcement.objects.all().order_by('-created_at')
+    context = {
+        'announcements': announcements,
+    }
+    return render(request, 'create_announcement.html', context)
+
+
+
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import redirect
+from .forms import AnnouncementForm
+
+# Check if user is admin
+def is_admin(user):
+    return user.is_admin
+
+from django.shortcuts import redirect, render
+from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import render, redirect
+from .models import Announcement
+from django.contrib import messages
+from .forms import AnnouncementForm
+
+def is_admin(user):
+    return user.is_superuser  # Update this to match your admin check logic
+
+def is_admin(user):
+    return user.is_staff or user.is_superuser
+
+@user_passes_test(is_admin)
+def create_announcement(request):
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST)
+        if form.is_valid():
+            announcement = form.save(commit=False)
+            announcement.created_by = request.user
+            announcement.save()
+            messages.success(request, 'Announcement created successfully!')
+            return redirect('create_announcement')  # Stay on the same page to show the success message
+        else:
+            print(form.errors)  # Output validation errors to console
+    else:
+        form = AnnouncementForm()
+
+    # Fetch all announcements to display when the view is loaded
+    announcements = Announcement.objects.all().order_by('-created_at')
+
+    return render(request, 'create_announcement.html', {'form': form, 'announcements': announcements})
+
+
+@user_passes_test(is_admin)
+def edit_announcement(request, announcement_id):
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, instance=announcement)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Announcement updated successfully!')
+            return redirect('create_announcement')
+    else:
+        form = AnnouncementForm(instance=announcement)
+
+    announcements = Announcement.objects.all().order_by('-created_at')
+    return render(request, 'create_announcement.html', {
+        'form': form,
+        'announcements': announcements,
+        'edit_mode': True,
+        'announcement_to_edit': announcement_id
+  
+  })
+from django.views.decorators.http import require_POST
+
+@require_POST
+@user_passes_test(is_admin)
+def delete_announcement(request, announcement_id):
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+    announcement.delete()
+    messages.success(request, 'Announcement deleted successfully!')
+    return redirect('create_announcement')
+
+
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Expense
+from django.db.models.functions import TruncMonth
+from .models import Expense, Budget, Goal
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+
+@login_required
+def category_detail(request, category):
+    # Get all budgets for the user
+    user_budgets = Budget.objects.filter(user=request.user)
+    
+    # Get all expenses for the user in the specified category
+    expenses = Expense.objects.filter(budget__in=user_budgets, category=category).order_by('-date')
+    
+    # Calculate total for the year
+    current_year = timezone.now().year
+    yearly_total = expenses.filter(date__year=current_year).aggregate(total=Sum('actual_expense'))['total'] or 0
+
+    # Calculate monthly totals for the current year
+    monthly_totals = expenses.filter(date__year=current_year)\
+        .annotate(month=TruncMonth('date'))\
+        .values('month')\
+        .annotate(total=Sum('actual_expense'))\
+        .order_by('-month')
+
+    # Get related goals
+    related_goals = Goal.objects.filter(user=request.user, category=category)
+
+    # Get category display name
+    category_display = dict(Expense.CATEGORIES).get(category, category)
+
+    context = {
+        'category': category,
+        'category_display': category_display,
+        'expenses': expenses,
+        'yearly_total': yearly_total,
+        'monthly_totals': monthly_totals,
+        'related_goals': related_goals,
+    }
+    return render(request, 'category_detail.html', context)
+
+from django.http import JsonResponse
+from .models import Announcement
+
+def get_announcements(request):
+    announcements = Announcement.objects.all().order_by('-created_at')
+    data = [
+        {
+            'title': ann.title,
+            'content': ann.message,
+            'date_created': ann.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        for ann in announcements
+    ]
+    return JsonResponse({'announcements': data})
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Article
+from .forms import ArticleForm  # Create an ArticleForm in your forms.py
+
+def is_admin(user):
+    return user.is_staff or user.is_superuser# Adjust this based on your custom admin role check
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect
+from .forms import ArticleForm
+
+@login_required
+@user_passes_test(is_admin)
+def add_article(request):
+    if request.method == 'POST':
+        form = ArticleForm(request.POST)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.author = request.user
+            article.save()
+            return redirect('admin_articles_list')
+    else:
+        form = ArticleForm()
+    return render(request, 'admin_add_article.html', {'form': form})
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Article
+from .forms import ArticleForm
+
+@login_required
+@user_passes_test(is_admin)
+def admin_articles_list(request):
+    articles = Article.objects.order_by('-date_posted')
+    article_forms = [ArticleForm(instance=article) for article in articles]
+    return render(request, 'admin_articles_list.html', {'article_forms': article_forms})
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Article
+from .forms import ArticleForm
+
+@login_required
+@user_passes_test(is_admin)
+def edit_article(request, article_id):
+    article = get_object_or_404(Article, id=article_id)
+    if request.method == 'POST':
+        form = ArticleForm(request.POST, instance=article)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Article "{article.title}" has been updated successfully.')
+            return redirect('admin_articles_list')
+    else:
+        form = ArticleForm(instance=article)
+    return render(request, 'edit_article.html', {'form': form, 'article': article})
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+
+
+@login_required
+@user_passes_test(is_admin)
+def delete_article(request, article_id):
+    article = get_object_or_404(Article, id=article_id)
+    if request.method == 'POST':
+        title = article.title  # Store title before deletion
+        article.delete()
+        messages.success(request, f'Article "{title}" has been deleted successfully.')
+        return redirect('admin_articles_list')
+    return render(request, 'admin_confirm_delete_article.html', {'article': article})
+
+
+from .models import Query
+from .forms import QueryForm
+
+@login_required
+def submit_query(request):
+    if request.method == 'POST':
+        form = QueryForm(request.POST)
+        if form.is_valid():
+            query = form.save(commit=False)
+            query.user = request.user
+            query.save()
+            return redirect('query_list')
+    else:
+        form = QueryForm()
+    return render(request, 'submit_query.html', {'form': form})
+
+@login_required
+def query_list(request):
+    queries = Query.objects.filter(user=request.user)
+    return render(request, 'query_list.html', {'queries': queries})
+
+def admin_required(user):
+    return user.is_authenticated and user.is_admin
+
+@user_passes_test(admin_required)
+def admin_query_list(request):
+    queries = Query.objects.all().order_by('-created_at')
+    return render(request, 'admin/query_list.html', {'queries': queries})
+
+@user_passes_test(admin_required)
+def admin_update_query_status(request, query_id):
+    query = get_object_or_404(Query, id=query_id)
+
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status in dict(Query.STATUS_CHOICES):  # Check if the status is valid
+            query.status = status
+            query.save()
+            return redirect('admin_query_list')
+
+    return render(request, 'admin/update_query_status.html', {'query': query, 'status_choices': Query.STATUS_CHOICES})
+

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,18 +39,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
+    'social_django', 
     
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'myapp.middleware.NoCacheMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
    
 ]
 
@@ -78,19 +82,31 @@ WSGI_APPLICATION = 'financefolio.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'financefolio',  # Replace with your actual database name
+#         'USER': 'root',  # Replace with your MySQL username (default is 'root')  
+#         'PASSWORD': '',  # Replace with your MySQL password (default is empty)
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+       
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'financefolio',  # Replace with your actual database name
-        'USER': 'root',  # Replace with your MySQL username (default is 'root')  
-        'PASSWORD': '',  # Replace with your MySQL password (default is empty)
-        'HOST': 'localhost',
-        'PORT': '3306',
-       
+        'NAME': 'financefolio_payamonggo',
+        'USER': 'financefolio_payamonggo',
+        'PASSWORD': '4e81f69461ecb342f5d55fb87f18d2f87f9e58d5',
+        'HOST': 'qnkvb.h.filess.io',
+        'PORT': '3307',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
-
-
 
 
 # Password validation
@@ -158,7 +174,34 @@ LOGOUT_REDIRECT_URL = 'index/'
 
 
 # settings.py
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',  
+    'social_core.pipeline.social_auth.social_uid',      
+    'social_core.pipeline.social_auth.auth_allowed',    
+    'social_core.pipeline.social_auth.social_user',     
+    'social_core.pipeline.user.get_username',          
+    'social_core.pipeline.user.create_user',                               
+    'social_core.pipeline.social_auth.associate_user',  
+    'social_core.pipeline.social_auth.load_extra_data', 
+    'social_core.pipeline.user.user_details',          
+)
+
+LOGIN_REDIRECT_URL = 'user_dashboard'
+LOGOUT_REDIRECT_URL = 'home'
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('Client_id')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('Client_secret')
 
 
 

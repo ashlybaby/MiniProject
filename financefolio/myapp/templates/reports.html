@@ -7,192 +7,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Users Financial Reports</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --border-color: #bdc3c7;
+        }
+
         body {
-            background-color: #f4f7f6;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
             margin: 0;
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Ensure the body is at least 100% of the viewport height */
+            min-height: 100vh;
         }
-        
+
+        header, footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
         header {
-            /* Add header styles if needed */
-        }
-        
-        main {
-            flex-grow: 1; /* This makes the content area take up the remaining space */
-            padding-bottom: 50px; /* Prevent content from overlapping the footer */
-        }
-        
-        table {
+            position: fixed;
+            top: 0;
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .report-details {
-            display: none;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 10px;
-        }
-        .download-button, .close-button {
-            margin-top: 10px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         footer {
-            background-color: #1a242f;
-            color: #ecf0f1;
-            text-align: center;
-            padding: 10px;
+            margin-top: auto;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 6rem 2rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
-            position: absolute; /* Ensure footer is at the bottom */
-            bottom: 0; /* Stick footer to the bottom */
-            left: 0;
-            right: 0;
-        }
-
-        .header {
-            background-color: #1a242f;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            height: 30px; /* Set a fixed height for the header */
-        }
-
-        .section-header {
-            margin-bottom: 10px;
-            padding-top: 80px; /* Ensure content does not hide behind header */
-        }
-
-        .section-header h1 {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #34495e;
-        }
-
-        .section-header p {
-            font-size: 1.2em;
-            color: #7f8c8d;
-        }
-
-        .dashboard-icon {
-            position: absolute; /* Position relative to the header */
-            left: 10px;
-            top: 15px;
-            color: white;
-            font-size: 1.5em;
-            text-decoration: none; /* Remove underline from link */
-        }
-
-        #report-list {
-            display: block;
         }
 
         .container {
-            margin-top: 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .report-details {
+            display: none;
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .home-icon {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            color: white;
+            font-size: 1.5em;
+            text-decoration: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
-    
 </head>
-<div class="main-content">
-    <div class="header">
-        <a href="{% url 'index' %}" class="dashboard-icon" title="Dashboard">
-            <i class="fas fa-tachometer-alt"></i> <!-- Dashboard icon -->
-        </a>
-        Admin Dashboard
-    </div>
-    <header class="section-header">
-        <h1>{{ section_title }}</h1>
-        <p>{{ data }}</p>
-    </header>
 <body>
-    
-    <div class="container" id="report">
-        <!-- User Reports List -->
-        <div id="report-list">
-            <h1>Financial Reports for All Users</h1>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>User Name</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for report in user_reports %}
-                    <tr>
-                        <td>{{ report.user_name }}</td>
-                        <td>
-                            <button onclick="toggleReport('{{ report.user_name }}')">See Report</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <header>
+        <a href="{% url 'index' %}" class="home-icon" title="Home">
+            <i class="fas fa-home"></i>
+        </a>
+        <h1>{{ section_title }}</h1>
+    </header>
+    <main>
+        <div class="container" id="report">
+            <section id="report-list" class="fade-in">
+                <h2>Financial Reports for All Users</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in user_reports %}
+                        <tr>
+                            <td>{{ report.user_name }}</td>
+                            <td>
+                                <button class="btn" onclick="toggleReport('{{ report.user_name }}')">See Report</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+            <section id="report-details" class="report-details fade-in">
+                <h2 id="report-user-name"></h2>
+                <div class="report-summary">
+                    <h3>Summary</h3>
+                    <p><strong>Total Actual Income:</strong> $<span id="total-actual-income"></span></p>
+                    <p><strong>Total Expenses:</strong> $<span id="total-expenses"></span></p>
+                </div>
+                <div class="report-goals">
+                    <h3>Goals Summary</h3>
+                    <table id="goals-table">
+                        <thead>
+                            <tr>
+                                <th>Goal Name</th>
+                                <th>Target Amount</th>
+                                <th>Current Amount</th>
+                                <th>Status</th>
+                                <th>Deadline</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="report-actions">
+                    <button class="btn" onclick="downloadPDF()">Download as PDF</button>
+                    <button class="btn btn-secondary" onclick="closeReport()">Close Report</button>
+                </div>
+            </section>
         </div>
-
-        <!-- Report Details Section -->
-        <div id="report-details" class="report-details">
-            <h3 id="report-user-name"></h3>
-
-            <table>
-                <tr>
-                    <th>Income</th>
-                    <td><strong>Total Actual Income:</strong> $<span id="total-actual-income"></span></td>
-                </tr>
-                <tr>
-                    <th>Expenses</th>
-                    <td colspan="2"><strong>Total Expenses:</strong> $<span id="total-expenses"></span></td>
-                </tr>
-            </table>
-
-            <h4>Goals Summary</h4>
-            <table id="goals-table">
-                <thead>
-                    <tr>
-                        <th>Goal Name</th>
-                        <th>Target Amount</th>
-                        <th>Current Amount</th>
-                        <th>Status</th>
-                        <th>Deadline</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-
-            <!-- Buttons for downloading and closing -->
-            <button class="download-button" onclick="downloadPDF()">Download as PDF</button>
-            <button class="close-button" onclick="closeReport()">Close Report</button>
-        </div>
-
-    </div>
-
-    <!-- Include html2pdf library -->
+    </main>
+    <footer>
+        © 2024 Finance Folio
+    </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-
-    <!-- Parse the user reports into JavaScript -->
     <script>
         const userReports = JSON.parse('{{ user_reports_json|escapejs }}');
 
-        // Function to toggle the visibility of report details and hide user report list
         function toggleReport(userName) {
             const reportDetails = document.getElementById('report-details');
             const reportUserName = document.getElementById('report-user-name');
@@ -201,18 +213,15 @@
             const goalsTableBody = document.querySelector('#goals-table tbody');
             const reportList = document.getElementById('report-list');
 
-            // Clear previous data
             goalsTableBody.innerHTML = '';
 
-            // Find the report corresponding to the userName
             const report = userReports.find(r => r.user_name === userName);
 
             if (report) {
-                reportUserName.textContent = `Financial Report for ${report.user_name} - ${report.month_year}`; // Include month and year
-                totalActualIncome.textContent = report.total_actual_income; // Updated to reflect the change
+                reportUserName.textContent = `Financial Report for ${report.user_name} - ${report.month_year}`;
+                totalActualIncome.textContent = report.total_actual_income;
                 totalExpenses.textContent = report.total_expenses;
 
-                // Populate the goals table
                 report.goals.forEach(goal => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -225,30 +234,25 @@
                     goalsTableBody.appendChild(row);
                 });
 
-                // Hide the user report list and show the report details section
                 reportList.style.display = 'none';
                 reportDetails.style.display = 'block';
+                reportDetails.classList.add('fade-in');
             }
         }
 
-        // Function to close the report and show the user report list again
         function closeReport() {
             const reportDetails = document.getElementById('report-details');
             const reportList = document.getElementById('report-list');
 
-            // Hide the report details and show the user report list
             reportDetails.style.display = 'none';
             reportList.style.display = 'block';
+            reportList.classList.add('fade-in');
         }
 
-        // Function to download the report as a PDF
         function downloadPDF() {
             const element = document.getElementById('report-details');
             html2pdf().from(element).save('financial_report.pdf');
         }
     </script>
-    <footer>
-        © 2024 Finance Folio
-    </footer>
 </body>
 </html>

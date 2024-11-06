@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Goals Overview</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,6 +15,28 @@
             color: #333;
             margin: 0;
             padding: 20px;
+        }
+        .header {
+            background-color: #1a242f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 30px; /* Set a fixed height for the header */
+        }
+        .home-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 1.1em;
         }
         h1 {
             text-align: center;
@@ -39,10 +63,15 @@
         }
         .status {
             font-weight: bold;
-            color: #ff5722; /* Default color for failed status */
         }
-        .status.success {
-            color: #4CAF50; /* Color for successful status */
+        .status.completed {
+            color: #4CAF50; /* Color for completed status */
+        }
+        .status.failed {
+            color: #ff5722; /* Color for failed status */
+        }
+        .status.ongoing {
+            color: #ffa500; /* Color for ongoing status */
         }
         .progress-container {
             width: 100%;
@@ -57,8 +86,29 @@
             color: white;
             transition: width 0.3s;
         }
+        footer {
+            background-color: #1a242f;
+            color: #ecf0f1;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            position: absolute; /* Ensure footer is at the bottom */
+            bottom: 0; /* Stick footer to the bottom */
+            left: 0;
+            right: 0;
+        }
     </style>
 </head>
+<div class="main-content">
+    <div class="header">
+        <a href="{% url 'index' %}" class="home-icon" title="Home">
+            <i class="fas fa-home"></i> <!-- Home icon -->
+        </a>
+    </div>
+    <header class="section-header">
+        <h1>{{ section_title }}</h1>
+        <p>{{ data }}</p>
+    </header>
 <body>
     <h1>User Goals Overview</h1>
     <table>
@@ -67,7 +117,7 @@
                 <th>User Email</th>
                 <th>Goal Name</th>
                 <th>Target Amount</th>
-                <th>Current Amount</th>
+                <th>Current Month Amount</th>
                 <th>Status</th>
                 <th>Deadline</th>
                 <th>Progress</th>
@@ -80,11 +130,13 @@
                     <td>{{ goal.goal_name }}</td>
                     <td>${{ goal.target_amount }}</td>
                     <td>${{ goal.current_amount }}</td>
-                    <td class="status {% if goal.current_amount >= goal.target_amount %}success{% endif %}">
-                        {% if goal.current_amount >= goal.target_amount %}
+                    <td class="status {{ goal.status }}">
+                        {% if goal.status == 'completed' %}
                             Achieved
-                        {% else %}
+                        {% elif goal.status == 'failed' %}
                             Failed
+                        {% else %}
+                            Ongoing
                         {% endif %}
                     </td>
                     <td>{{ goal.deadline }}</td>
@@ -100,4 +152,7 @@
         </tbody>
     </table>
 </body>
+<footer>
+    © 2024 Finance Folio
+</footer>
 </html>

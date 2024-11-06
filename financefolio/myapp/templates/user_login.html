@@ -288,7 +288,8 @@
                 </div>
                 
                 <button type="submit" id="login" class="btn">Login</button>
-                <button type="button" class="btn btn-google">Sign in with Google</button>
+                <a href="{% url 'social:begin' 'google-oauth2' %}">
+                <button type="button" class="btn btn-google">Sign in with Google</button></a>
                 
                 <div class="form-footer">
                     <a href="{% url 'register' %}">Don't have an account? Register</a>

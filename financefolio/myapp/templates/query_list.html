@@ -1,0 +1,11 @@
+<h2>Your Queries</h2>
+<ul>
+    {% for query in queries %}
+        <li>
+            <strong>{{ query.title }}</strong> - {{ query.get_status_display }}
+            <p>{{ query.description }}</p>
+            <small>Submitted on: {{ query.created_at }}</small>
+            <hr>
+        </li>
+    {% endfor %}
+</ul>

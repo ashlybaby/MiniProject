@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ category_display }} Expense Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            
+
+        }
+        main {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 80px 20px 60px;
+            flex: 1;
+        }
+        h1, h2 {
+            color: #283e4a;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 1.5em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #283e4a;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .summary {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .back-button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            font-size: 1em;
+        }
+        .back-button:hover {
+            background-color: #218838;
+        }
+        header {
+            background-color: #283e4a;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        footer {
+            background-color: #283e4a;
+            color: #fff;
+            text-align: center;
+            padding: 10px 20px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        .dashboard-button, .logout-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .logout-button {
+            background-color: #d9534f;
+        }
+        .dashboard-button:hover, .logout-button:hover {
+            opacity: 0.9;
+        }
+        .content-section {
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .no-data {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{% url 'user_dashboard' %}" class="dashboard-button">Dashboard</a>
+        <form action="{% url 'logout' %}" method="post" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
+    </header>
+    
+    <main>
+        <h1>{{ category_display }} Expense Details</h1>
+        
+        <div class="grid-container">
+            <div class="content-section summary">
+                <h2>Summary</h2>
+                <p><strong>Total Spent This Year:</strong> ${{ yearly_total|floatformat:2 }}</p>
+            </div>
+
+            <div class="content-section">
+                <h2>Monthly Breakdown (Current Year)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for monthly_total in monthly_totals %}
+                        <tr>
+                            <td>{{ monthly_total.month|date:"F Y" }}</td>
+                            <td>${{ monthly_total.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="no-data">No monthly data available</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="content-section">
+                <h2>Related Goals</h2>
+                {% if related_goals %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Goal Name</th>
+                            <th>Target Amount</th>
+                            <th>Current Amount</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for goal in related_goals %}
+                        <tr>
+                            <td>{{ goal.name }}</td>
+                            <td>${{ goal.target_amount|floatformat:2 }}</td>
+                            <td>${{ goal.current_amount|floatformat:2 }}</td>
+                            <td>{{ goal.deadline|date:"Y-m-d" }}</td>
+                            <td>{{ goal.get_status_display }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="no-data">No related goals found for this category.</p>
+                {% endif %}
+            </div>
+
+            <div class="content-section">
+                <h2>Detailed Expenses</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td>{{ expense.date|date:"Y-m-d" }}</td>
+                            <td>${{ expense.actual_expense|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="no-data">No expenses recorded</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <a href="{% url 'recommendations_view' %}" class="back-button">Back to Recommendations</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 FinanceFolio. All rights reserved.</p>
+    </footer>
+</body>
+</html>

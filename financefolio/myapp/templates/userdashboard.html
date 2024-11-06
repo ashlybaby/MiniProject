@@ -551,6 +551,33 @@
             background: #eaeaea; /* Light gray background */
             border-top: 1px solid #ddd; /* Subtle border on top */
         }
+        .announcements-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .announcement {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .announcement h3 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+        
+        .announcement p {
+            margin-bottom: 10px;
+        }
+        
+        .announcement small {
+            color: #777;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -592,10 +619,10 @@
             </div>
             <div class="secondary-menu">
                 <ul>
-                    <li><a href="#" id="announcements-menu"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
+                    <li><a href="{% url 'get_announcements' %}" id="announcements-menu"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
                     <li><a href="#" id="tutorials-menu"><i class="fas fa-book-open"></i> <span>Tutorials</span></a></li>
                     <li><a href="#" id="feedback-menu"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a></li>
-                    <li><a href="#" id="queries-menu"><i class="fas fa-question-circle"></i> <span>Queries</span></a></li>
+                    <li><a href="{% url 'query_list' %}" id="queries-menu"><i class="fas fa-question-circle"></i> <span>Queries</span></a></li>
                     <li><a href="#" id="articles-menu"><i class="fas fa-newspaper"></i> <span>Articles</span></a></li>
                 </ul>
             </div>
@@ -615,8 +642,10 @@
                 
                 <div class="function-box">
                  <h3>Set Goals</h3>
-                 <button onclick="window.location.href='{% url 'goal_view' %}'">Set Goals</button>
+                 <button onclick="window.location.href='{% url 'goal_view' %}'" id="goal-button">Set Goals</button>
                 </div>
+
+              
 
 
                 <div class="function-box">
@@ -655,9 +684,9 @@
         <input type="radio" id="star4" name="rating" value="4">
         <label for="star4" class="star"><i class="fas fa-star"></i></label>
         <input type="radio" id="star5" name="rating" value="5" required>
-        <label for="star5" class="star"><i class="fas fa-star"></i></label>
+        <label for="star5" id="star5" class="star"><i class="fas fa-star"></i></label>
     </div>
-    <button type="submit" class="btn btn-success">Submit Feedback</button>
+    <button type="submit" class="btn btn-success" id="submit">Submit Feedback</button>
 </form>
 
                 </div>
@@ -1062,9 +1091,50 @@ document.addEventListener('DOMContentLoaded', () => {
         mainContent.innerHTML = '<h2>Goal Tracking Section Coming Soon...</h2>';
     }
 
-    function loadGoalProgress() {
-        mainContent.innerHTML = '<h2>Goal Progress Section Coming Soon...</h2>';
+      // Function to load Announcements
+async function loadAnnouncements() {
+    try {
+        const response = await fetch('{% url "get_announcements" %}');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const announcements = await response.json();
+        renderAnnouncements(announcements);
+    } catch (error) {
+        console.error('Error fetching announcements:', error);
+        mainContent.innerHTML = '<h2>Error loading announcements. Please try again later.</h2>';
     }
+}
+
+function renderAnnouncements(announcements) {
+    let announcementsHTML = `
+        <h2>Announcements</h2>
+        <div class="announcements-container">
+    `;
+
+    if (announcements.length === 0) {
+        announcementsHTML += '<p>No announcements at this time.</p>';
+    } else {
+        announcements.forEach(announcement => {
+            announcementsHTML += `
+                <div class="announcement">
+                    <h3>${announcement.title}</h3>
+                    <p>${announcement.content}</p>
+                    <small>Posted on: ${new Date(announcement.date_posted).toLocaleDateString()}</small>
+                </div>
+            `;
+        });
+    }
+
+    announcementsHTML += '</div>';
+    mainContent.innerHTML = announcementsHTML;
+}
+
+// Update the event listener for the announcements menu
+document.getElementById('announcements-menu').addEventListener('click', (event) => {
+    event.preventDefault();
+    loadAnnouncements();
+});
 
     function loadAlerts() {
         mainContent.innerHTML = '<h2>Alerts Section Coming Soon...</h2>';
@@ -1075,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadQueries() {
-        mainContent.innerHTML = '<h2>Queries Section Coming Soon...</h2>';
+        window.location.href = "{% url 'admin_query_list' %}";
     }
 
     function loadArticles() {
@@ -1179,6 +1249,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return cookieValue;
     }
+});
+
+async function loadAnnouncements() {
+    try {
+        const response = await fetch('{% url "get_announcements" %}');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        renderAnnouncements(data.announcements);
+    } catch (error) {
+        console.error('Error fetching announcements:', error);
+        mainContent.innerHTML = '<h2>Error loading announcements. Please try again later.</h2>';
+    }
+}
+
+function renderAnnouncements(announcements) {
+    let announcementsHTML = `
+        <h2>Announcements</h2>
+        <div class="announcements-container">
+    `;
+
+    if (announcements.length === 0) {
+        announcementsHTML += '<p>No announcements at this time.</p>';
+    } else {
+        announcements.forEach(announcement => {
+            announcementsHTML += `
+                <div class="announcement">
+                    <h3>${announcement.title}</h3>
+                    <p>${announcement.content}</p>
+                    <small>Posted on: ${new Date(announcement.date_created).toLocaleDateString()}</small>
+                </div>
+            `;
+        });
+    }
+
+    announcementsHTML += '</div>';
+    mainContent.innerHTML = announcementsHTML;
+}
+
+// Update the event listener for the announcements menu
+document.getElementById('announcements-menu').addEventListener('click', (event) => {
+    event.preventDefault();
+    loadAnnouncements();
 });
 </script>
 
