@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-xfu3a2bt601^(49+6$@nbyzt9l21hn4006o1)5&60kdl&_#l2&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -97,10 +97,10 @@ WSGI_APPLICATION = 'financefolio.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'financefolio_payamonggo',
-        'USER': 'financefolio_payamonggo',
-        'PASSWORD': '4e81f69461ecb342f5d55fb87f18d2f87f9e58d5',
-        'HOST': 'qnkvb.h.filess.io',
+        'NAME': 'financefolio_fullcastat',
+        'USER': 'financefolio_fullcastat',
+        'PASSWORD': '1fd9d3f843bac9926296dfe0e8eac30505008942',
+        'HOST': 'd25xr.h.filess.io',
         'PORT': '3307',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
