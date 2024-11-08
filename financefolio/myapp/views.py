@@ -738,6 +738,11 @@ from .models import Goal  # Ensure your Goal model is imported
 from .forms import GoalForm  # Ensure your GoalForm is imported
 
 # View for editing an existing goal
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .forms import GoalForm
+from .models import Goal
+
 def edit_goal(request):
     if request.method == 'POST':
         goal_id = request.POST.get('id')
@@ -745,7 +750,6 @@ def edit_goal(request):
         goal = get_object_or_404(Goal, id=goal_id, user=request.user)
         
         form = GoalForm(request.POST, instance=goal)
-
         print("Form data:", request.POST)
         print("Goal object before update:", goal)
 
@@ -756,7 +760,13 @@ def edit_goal(request):
         else:
             print("Form errors:", form.errors)  # Print errors if the form is invalid
 
-    return redirect('user_dashboard')
+    else:  # If the request method is GET, we load the form with the goal data.
+        goal_id = request.GET.get('id')
+        goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+        form = GoalForm(instance=goal)
+
+    return render(request, 'edit_goal.html', {'form': form})
+
 
 
 
@@ -967,6 +977,12 @@ from decimal import Decimal
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
+from decimal import Decimal
+import json
+from django.shortcuts import render
+from django.db.models import Sum
+from django.core.serializers.json import DjangoJSONEncoder
+from .models import User, Budget, Expense, Goal
 
 def financial_report_all_users(request):
     if request.user.is_authenticated:
@@ -1026,7 +1042,7 @@ def financial_report_all_users(request):
                     'message': 'User has not tracked anything yet',  # Custom message
                 })
 
-        # Convert report data to JSON
+        # Convert report data to JSON (if needed for JavaScript use)
         user_reports_json = json.dumps(user_reports, cls=DjangoJSONEncoder)
 
         # Prepare the context data for the template
@@ -1349,3 +1365,35 @@ def admin_update_query_status(request, query_id):
 
     return render(request, 'admin/update_query_status.html', {'query': query, 'status_choices': Query.STATUS_CHOICES})
 
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def add_goal(request):
+    if request.method == 'POST':
+        form = GoalForm(request.POST)
+        if form.is_valid():
+            goal = form.save(commit=False)
+            goal.user = request.user  # Attach the goal to the current logged-in user
+
+            # Select the most recent budget for the current user
+            budget = Budget.objects.filter(user=request.user).order_by('-created_at').first()
+
+            if not budget:
+                messages.error(request, 'No budget found.')  # Use messages to display error
+                return render(request, 'goal_tracking.html', {'form': form})
+
+            # Associate the goal with the most recent budget
+            goal.budget = budget
+            goal.save()  # Save the goal in the database
+
+            messages.success(request, 'Goal saved successfully!')  # Success message
+            return redirect('add_goal')  # Redirect to the same page to show success message
+        else:
+            print("Form is not valid:", form.errors)  # Debug invalid form
+    else:
+        form = GoalForm()
+
+    return render(request, 'goal_tracking.html', {'form': form})

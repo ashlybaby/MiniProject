@@ -255,7 +255,15 @@ footer {
 <div class="container">
     <h2>Goal Tracking</h2>
 
-    
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
     <!-- Add Goal Form -->
     <div class="add-goal">
@@ -324,7 +332,14 @@ footer {
                     </ul>
                 {% endif %}
             </div>
-            
+            {% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 
             <button type="submit" id="add-goal-button">Add Goal</button>
         </form>
