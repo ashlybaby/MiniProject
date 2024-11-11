@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Articles</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <nav>
+        <li><a href="#" id="articles-menu"><i class="fas fa-newspaper"></i> <span>Articles</span></a></li>
+    </nav>
+
+    <main id="main-content"></main>
+
+    <!-- Hidden div to store articles data as JSON -->
+    <div id="articles-data" style="display: none;">
+        {{ articles|safe|json_script:"articlesJSON" }}
+    </div>
+
+    <!-- JavaScript to Render Articles Dynamically -->
+    <script>
+        $(document).ready(function() {
+            $('#articles-menu').on('click', function(event) {
+                event.preventDefault();  // Prevent default link behavior
+
+                // Retrieve articles data from the hidden JSON
+                const articles = JSON.parse(document.getElementById('articlesJSON').textContent);
+                const articlesContainer = $('#main-content');
+                articlesContainer.empty();  // Clear previous articles
+
+                if (articles.length > 0) {
+                    // Build HTML structure for each article
+                    let articlesHtml = '';
+                    articles.forEach(function(article) {
+                        articlesHtml += `
+                            <div class="article">
+                                <h3>${article.title}</h3>
+                                <p>${article.content}</p>
+                                <p><strong>Category:</strong> ${article.category}</p>
+                                <p><strong>Posted on:</strong> ${article.date_posted}</p>
+                                <p><strong>Author:</strong> ${article.author}</p>
+                                <hr>
+                            </div>
+                        `;
+                    });
+                    articlesContainer.html(articlesHtml);  // Inject all HTML at once
+                } else {
+                    articlesContainer.html('<p>No articles available at the moment.</p>');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

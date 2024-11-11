@@ -17,6 +17,7 @@
             --border-color: #bdc3c7;
         }
 
+        /* General styles */
         body {
             font-family: 'Arial', sans-serif;
             background-color: var(--background-color);
@@ -34,18 +35,6 @@
             padding: 1rem;
         }
 
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        footer {
-            margin-top: auto;
-        }
-
         main {
             flex-grow: 1;
             padding: 6rem 2rem 2rem;
@@ -59,10 +48,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 2rem;
-        }
-
-        h1, h2, h3, h4 {
-            color: var(--primary-color);
         }
 
         table {
@@ -112,14 +97,6 @@
             background-color: #2980b9;
         }
 
-        .btn-secondary {
-            background-color: #95a5a6;
-        }
-
-        .btn-secondary:hover {
-            background-color: #7f8c8d;
-        }
-
         .home-icon {
             position: absolute;
             top: 1rem;
@@ -127,15 +104,6 @@
             color: white;
             font-size: 1.5em;
             text-decoration: none;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
     </style>
 </head>
@@ -170,6 +138,26 @@
                 </table>
             </section>
             <section id="report-details" class="report-details fade-in">
+                <style>
+                    /* Inline styles for PDF rendering */
+                    #report-details {
+                        font-family: 'Arial', sans-serif;
+                        color: var(--text-color);
+                    }
+                    h2, h3 {
+                        color: var(--primary-color);
+                    }
+                    .report-summary p, .report-goals table th {
+                        color: var(--text-color);
+                    }
+                    .report-goals table th {
+                        background-color: var(--primary-color);
+                        color: white;
+                    }
+                    .report-goals table tr:nth-child(even) {
+                        background-color: #f8f9fa;
+                    }
+                </style>
                 <h2 id="report-user-name"></h2>
                 <div class="report-summary">
                     <h3>Summary</h3>
@@ -236,17 +224,12 @@
 
                 reportList.style.display = 'none';
                 reportDetails.style.display = 'block';
-                reportDetails.classList.add('fade-in');
             }
         }
 
         function closeReport() {
-            const reportDetails = document.getElementById('report-details');
-            const reportList = document.getElementById('report-list');
-
-            reportDetails.style.display = 'none';
-            reportList.style.display = 'block';
-            reportList.classList.add('fade-in');
+            document.getElementById('report-details').style.display = 'none';
+            document.getElementById('report-list').style.display = 'block';
         }
 
         function downloadPDF() {

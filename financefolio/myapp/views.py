@@ -1257,10 +1257,6 @@ from .forms import ArticleForm  # Create an ArticleForm in your forms.py
 def is_admin(user):
     return user.is_staff or user.is_superuser# Adjust this based on your custom admin role check
 
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render, redirect
-from .forms import ArticleForm
-
 @login_required
 @user_passes_test(is_admin)
 def add_article(request):
@@ -1397,3 +1393,17 @@ def add_goal(request):
         form = GoalForm()
 
     return render(request, 'goal_tracking.html', {'form': form})
+
+
+# views.py
+from django.shortcuts import render
+from .models import Article
+
+def article_list(request):
+    articles = Article.objects.all().order_by('-date_posted')  # Retrieve all articles, ordered by newest first
+    return render(request, 'articles/article_list.html', {'articles': articles})
+
+def load_articles(request):
+    articles = Article.objects.all().order_by('-date_posted')  # Retrieve all articles, ordered by newest first
+    data = serializers.serialize('json', articles)
+    return JsonResponse(data, safe=False)

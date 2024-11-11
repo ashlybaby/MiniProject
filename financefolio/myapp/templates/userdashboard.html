@@ -607,12 +607,13 @@
         <aside>
             <button class="sidebar-toggle"><i class="fas fa-chevron-left"></i></button>
             <div class="main-menu">
+                
                 <ul>
                     <li><a href="{% url 'budget_view' %}" id="budgeting-menu"><i class="fas fa-wallet"></i> <span>Track Expense</span></a></li>
                     <li><a href="#" id="history-menu"><i class="fas fa-chart-line"></i> <span>History & Chart</span></a></li>
-                    <li><a href="{% url 'budget_view' %}" id="goal-tracking-menu"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
-                    <li><a href="#" id="goal-progress-menu"><i class="fas fa-chart-pie"></i> <span>Goal Progress</span></a></li>
-                    <li><a href="#" id="alerts-menu"><i class="fas fa-bell"></i> <span>Alerts</span></a></li>
+                    <li><a href="{% url 'goal_view' %}" id="goal-stracking-menu"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
+                    <li><a href="{% url 'goal_progress'%}" id="goal-progress-menu"><i class="fas fa-chart-pie"></i> <span>Goal Progress</span></a></li>
+                   
                    
 
                 </ul>
@@ -623,13 +624,15 @@
                     <li><a href="#" id="tutorials-menu"><i class="fas fa-book-open"></i> <span>Tutorials</span></a></li>
                     <li><a href="#" id="feedback-menu"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a></li>
                     <li><a href="{% url 'query_list' %}" id="queries-menu"><i class="fas fa-question-circle"></i> <span>Queries</span></a></li>
-                    <li><a href="#" id="articles-menu"><i class="fas fa-newspaper"></i> <span>Articles</span></a></li>
+                    <li><a href="{% url 'article_list' %}" id="articles-menu"><i class="fas fa-newspaper"></i> <span>Articles</span></a></li>
+        
                 </ul>
             </div>
         </aside>
         
         <main id="main-content">
             <!-- Function Boxes -->
+            
             <div class="functions-container">
                 <div class="function-box">
                     <h3>Recommandation</h3>
@@ -724,6 +727,7 @@
     <div class="modal-content">
         <span id="closeEditProfileModal" class="close">&times;</span>
         <h2>Edit Profile</h2>
+        <div id="articles-container"></div>
 
         <!-- Success Message -->
         <div id="editProfileSuccess" class="alert alert-success" style="display: none;">
@@ -792,7 +796,7 @@
                 <input type="text" name="state" id="id_state" value="{{ form.state.value|default:user.state }}">
                 <span class="error" id="stateError" style="display:none;"></span>
             </div>
-            
+            <div id="articlesContainer"></div>
             <button type="submit">Update Profile</button>
         </form>
     </div>
@@ -802,10 +806,12 @@
 
       <button id="open-budget-modal" class="open-modal-button">Create Budget</button>
       
+
     
     <footer>
         <p>&copy; 2024 Finance Folio. All rights reserved.</p>
     </footer>
+    
     
     <!-- JavaScript for Interactivity -->
     <script>
@@ -927,7 +933,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Goal Tracking Menu
-    document.getElementById('goal-tracking-menu').addEventListener('click', (event) => {
+      document.getElementById('goal-tracking-menu').addEventListener('click', (event) => {
         event.preventDefault();
         loadGoalTracking();
     });
@@ -963,10 +969,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Articles Menu
-    document.getElementById('articles-menu').addEventListener('click', (event) => {
-        event.preventDefault();
-        loadArticles();
-    });
+    // JavaScript to load articles dynamically
+ 
 
     // Function to load History and Chart
     async function loadHistory() {
@@ -1085,6 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         mainContent.innerHTML = tutorialsContent;
     }
+    
 
     // Placeholder functions for other menus
     function loadGoalTracking() {
@@ -1148,9 +1153,7 @@ document.getElementById('announcements-menu').addEventListener('click', (event) 
         window.location.href = "{% url 'admin_query_list' %}";
     }
 
-    function loadArticles() {
-        mainContent.innerHTML = '<h2>Articles Section Coming Soon...</h2>';
-    }
+   
 
     // AJAX Form Submission for Edit Profile
     const editProfileForm = document.getElementById('editProfileForm');
@@ -1294,8 +1297,8 @@ document.getElementById('announcements-menu').addEventListener('click', (event) 
     event.preventDefault();
     loadAnnouncements();
 });
+
+
 </script>
-
-
 </body>
 </html>

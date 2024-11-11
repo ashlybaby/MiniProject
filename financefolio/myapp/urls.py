@@ -66,7 +66,15 @@ urlpatterns = [
     path('queries/', views.query_list, name='query_list'),
     path('admin/queries/', views.admin_query_list, name='admin_query_list'),
     path('admin/queries/<int:query_id>/update/', views.admin_update_query_status, name='admin_update_query_status'),
+    path('articles/', views.article_list, name='article_list'),
+    
+    
 ]
+
+    
+    
+
+
 
 
 
