@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback List</title>
+</head>
+<body>
+    <!-- Search Form -->
+    <form method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search feedback...">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Feedback List -->
+    <h2>Feedbacks</h2>
+    <ul>
+        {% for feedback in feedbacks %}
+            <li>
+                <strong>{{ feedback.content }}</strong> - 
+                <em>{{ feedback.created_at }}</em>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if feedbacks.has_previous %}
+                <a href="?page=1&q={{ query }}">First</a>
+                <a href="?page={{ feedbacks.previous_page_number }}&q={{ query }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ feedbacks.number }} of {{ feedbacks.paginator.num_pages }}.
+            </span>
+
+            {% if feedbacks.has_next %}
+                <a href="?page={{ feedbacks.next_page_number }}&q={{ query }}">Next</a>
+                <a href="?page={{ feedbacks.paginator.num_pages }}&q={{ query }}">Last</a>
+            {% endif %}
+        </span>
+    </div>
+</body>
+</html>

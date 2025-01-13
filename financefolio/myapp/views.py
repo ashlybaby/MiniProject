@@ -1574,3 +1574,28 @@ def chatbot(request):
         return JsonResponse({"reply": reply})
 
     return JsonResponse({"reply": "Invalid request."})
+
+#..................................................................................#
+
+
+
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from .models import Feedback
+
+def feedback_list1(request):
+    # Handle search functionality
+    query = request.GET.get('q', '')  # Get search query from URL parameters
+    feedbacks = Feedback.objects.filter(feedback_text__icontains=query).order_by('-created_at')
+
+    # Pagination
+    paginator = Paginator(feedbacks, 10)  # Show 10 feedbacks per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Render feedback list with pagination and search query
+    return render(request, 'feedback_list.html', {
+        'feedbacks': page_obj,
+        'query': query
+    })
+

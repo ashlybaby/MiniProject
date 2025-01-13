@@ -211,12 +211,16 @@
         <nav>
             <ul>
                 <li><a href="#">Profile</a></li>
-                <li><a href="#">Feedbacks</a></li>
+                
+                
+
                 <li><a href="#">Budgeting</a></li>
                 <li><a href="#" id="goalsBtn">Goals</a></li>
                 <li><a href="#" id="tutorialsBtn">Financial Management Tutorials</a></li>
                 <li><a href="{% url 'register' %}">So R u Ready to explore?Register</a></li>
                 <li><a href="{% url 'index' %}">Back Home</a></li>
+                <li><a href="{% url 'feedback_list1'%}">View Feedbacks</a></li>
+                
             </ul>
         </nav>
     </header>
@@ -268,11 +272,11 @@
             <p>Watch the following videos to improve your financial management skills:</p>
             <div class="video-container">
                 <h2>Understanding Budgeting</h2>
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/4sT2B2SRypo" frameborder="0" allowfullscreen></iframe>
+                <iframe width="1300" height="315" src="https://www.youtube.com/embed/4sT2B2SRypo" frameborder="0" allowfullscreen></iframe>
                 <h2>Saving for Retirement</h2>
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/GxrhIuVxURo" frameborder="0" allowfullscreen></iframe>
+                <iframe width="1300" height="315" src="https://www.youtube.com/embed/GxrhIuVxURo" frameborder="0" allowfullscreen></iframe>
                 <h2>Investment Basics</h2>
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/eIw1l8hLInE" frameborder="0" allowfullscreen></iframe>
+                <iframe width="1300" height="315" src="https://www.youtube.com/embed/eIw1l8hLInE" frameborder="0" allowfullscreen></iframe>
             </div>
         </div>
     </div>
@@ -287,6 +291,11 @@
             </div>
         </div>
     </div>
+      
+
+    <!-- Feedback Modal -->
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -391,6 +400,8 @@
                 goalsModal.style.display = "none";
             }
         }
+        
+        
     </script>
 
     <footer>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            padding: 0.5rem 1rem;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        .navbar a:hover {
+            color: #4CAF50;
+        }
+        .navbar a i {
+            margin-right: 0.5rem;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        /* Rest of the CSS remains unchanged */
+        form {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        input[type="text"] {
+            width: 75%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .feedback-item {
+            border-bottom: 1px solid #ddd;
+            padding: 1rem 0;
+        }
+        .feedback-item:last-child {
+            border-bottom: none;
+        }
+        .feedback-user {
+            font-weight: bold;
+        }
+        .feedback-text {
+            margin: 0.5rem 0;
+        }
+        .feedback-date {
+            font-size: 0.9rem;
+            color: gray;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .pagination a {
+            margin: 0 5px;
+            padding: 0.5rem 0.8rem;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+        }
+        .pagination a:hover {
+            background-color: #ddd;
+        }
+        .pagination .active {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<div class="navbar">
+    <a href="{% url 'guest_view' %}">
+        <i class="fas fa-home"></i> Home
+    </a>
+</div>
+
+<header>
+    <h1>Feedback List</h1>
+</header>
+
+<div class="container">
+    <!-- Search Form -->
+    <form method="get">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search feedback...">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Feedback List -->
+    {% for feedback in feedbacks %}
+    <div class="feedback-item">
+        <p class="feedback-user">
+            {% if feedback.user %}
+                {{ feedback.user.email }}
+            {% else %}
+                Guest User
+            {% endif %}
+            - Rating: {{ feedback.rating }} Stars
+        </p>
+        <p class="feedback-text">{{ feedback.feedback_text }}</p>
+        <p class="feedback-date">Posted on: {{ feedback.created_at|date:"F j, Y, g:i a" }}</p>
+    </div>
+    {% empty %}
+    <p>No feedback found.</p>
+    {% endfor %}
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if feedbacks.has_previous %}
+            <a href="?page=1&q={{ query }}">First</a>
+            <a href="?page={{ feedbacks.previous_page_number }}&q={{ query }}">Previous</a>
+        {% endif %}
+
+        {% for num in feedbacks.paginator.page_range %}
+            {% if feedbacks.number == num %}
+                <span class="active">{{ num }}</span>
+            {% elif num > feedbacks.number|add:'-3' and num < feedbacks.number|add:'3' %}
+                <a href="?page={{ num }}&q={{ query }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if feedbacks.has_next %}
+            <a href="?page={{ feedbacks.next_page_number }}&q={{ query }}">Next</a>
+            <a href="?page={{ feedbacks.paginator.num_pages }}&q={{ query }}">Last</a>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

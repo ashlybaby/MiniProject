@@ -77,6 +77,8 @@ urlpatterns = [
     path('read_csv/', views.read_csv, name='read_csv'),
     path('add_expense/', views.add_expense, name='add_expense'),
     path('download_csv/', views.download_csv, name='download_csv'),
+    path('feedback_list1/', views.feedback_list1,name='feedback_list1')
+    
 
     ]
  # URL path to view the CSV data
