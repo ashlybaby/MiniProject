@@ -578,6 +578,75 @@
             color: #777;
             font-style: italic;
         }
+        .chatbot-container {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .chat-header {
+            background-color: #003366;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-body {
+            overflow-y: auto;
+            height: 300px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .chat-input-container {
+            display: flex;
+            padding: 5px;
+            background-color: #e9ecef;
+        }
+        .chat-input-container input {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        .chat-input-container button {
+            margin-left: 5px;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            background-color: #003366;
+            color: white;
+            cursor: pointer;
+        }
+        .chat-input-container button:hover {
+            background-color: #004080;
+        }
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #003366;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -623,9 +692,15 @@
                     <li><a href="{% url 'get_announcements' %}" id="announcements-menu"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
                     <li><a href="#" id="tutorials-menu"><i class="fas fa-book-open"></i> <span>Tutorials</span></a></li>
                     <li><a href="#" id="feedback-menu"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a></li>
-                    <li><a href="{% url 'query_list' %}" id="queries-menu"><i class="fas fa-question-circle"></i> <span>Queries</span></a></li>
-                    <li><a href="{% url 'article_list' %}" id="articles-menu"><i class="fas fa-newspaper"></i> <span>Articles</span></a></li>
-        
+                    <li>
+                        <form method="get" action="{% url 'read_csv' %}" style="display: inline;">
+                            <button type="submit" id="prediction-button" class="btn btn-link" style="text-decoration: none; color: inherit;">
+                                <i class="fas fa-chart-line"></i> <span>Future Predictions</span>
+                            </button>
+                        </form>
+                    </li>
+                    
+                    {% comment %} <li><a href="{% url 'articles_page' %}"><i class="fas fa-newspaper"></i> <span>Articles</span></a></li> {% endcomment %}
                 </ul>
             </div>
         </aside>
@@ -672,6 +747,7 @@
         
                    <form id="feedbackForm" method="POST">
     {% csrf_token %}
+
     <div>
         <label for="feedback_text">Your Feedback:</label>
         <textarea name="feedback_text" id="feedback_text" rows="5" placeholder="Enter your feedback here..." required></textarea>
@@ -806,8 +882,22 @@
 
       <button id="open-budget-modal" class="open-modal-button">Create Budget</button>
       
-
-    
+      <div id="chatbot" class="chatbot-container">
+        <div class="chat-header">
+            <h5>Finance Chatbot</h5>
+            <button id="closeChat">X</button>
+        </div>
+        <div id="chatBody" class="chat-body">
+            <div class="bot-message">
+                Hello! I am your Finance Assistant. Ask me anything about managing your finances!
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="userMessage" placeholder="Type your message here..." />
+            <button id="sendMessage">Send</button>
+        </div>
+    </div>
+    <button id="chatToggle" class="chat-toggle">💬</button>    
     <footer>
         <p>&copy; 2024 Finance Folio. All rights reserved.</p>
     </footer>
@@ -1072,23 +1162,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Function to load Tutorials
-    function loadTutorials() {
-        const tutorialsContent = `
-            <h2>Video Tutorials</h2>
-            <div class="tutorials-section">
-                <div class="video">
-                    <h3>Introduction to Budgeting</h3>
-                    <iframe src="https://www.youtube.com/embed/GxrhIuVxURo" allowfullscreen></iframe>
-                </div>
-                <div class="video">
-                    <h3>Expense Tracking Tips</h3>
-                    <iframe src="https://www.youtube.com/embed/4sT2B2SRypo" allowfullscreen></iframe>
-                </div>
-            </div>
-        `;
-        mainContent.innerHTML = tutorialsContent;
-    }
     
 
     // Placeholder functions for other menus
@@ -1300,5 +1373,78 @@ document.getElementById('announcements-menu').addEventListener('click', (event) 
 
 
 </script>
+<script>
+    // Ensure this script is placed at the end of the body or in a DOMContentLoaded event
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add event listener for the Tutorials menu
+        document.getElementById('tutorials-menu').addEventListener('click', (event) => {
+            event.preventDefault(); // Prevent the default link behavior
+            loadTutorials(); // Call the function to load tutorials
+        });
+    
+        // Function to load Tutorials
+        function loadTutorials() {
+            const tutorialsContent = `
+                <h2>Video Tutorials</h2>
+                <div class="tutorials-section">
+                    <div class="video">
+                        <h3>Introduction to Budgeting</h3>
+                        <iframe src="https://www.youtube.com/embed/GxrhIuVxURo" allowfullscreen></iframe>
+                    </div>
+                    <div class="video">
+                        <h3>Expense Tracking Tips</h3>
+                        <iframe src="https://www.youtube.com/embed/4sT2B2SRypo" allowfullscreen></iframe>
+                    </div>
+                </div>
+            `;
+            document.getElementById('main-content').innerHTML = tutorialsContent; // Update the main content area
+        }
+    });
+
+    document.getElementById("chatToggle").addEventListener("click", function () {
+        const chatbot = document.getElementById("chatbot");
+        chatbot.style.display = chatbot.style.display === "none" ? "block" : "none";
+    });
+    
+    document.getElementById("sendMessage").addEventListener("click", function () {
+        const userMessage = document.getElementById("userMessage").value;
+        if (userMessage.trim() === "") return;
+    
+        const chatBody = document.getElementById("chatBody");
+    
+        // Display user message
+        const userMessageDiv = document.createElement("div");
+        userMessageDiv.className = "user-message";
+        userMessageDiv.textContent = userMessage;
+        chatBody.appendChild(userMessageDiv);
+    
+        // Send to backend and get response
+        fetch("/chatbot/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: userMessage }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const botMessageDiv = document.createElement("div");
+                botMessageDiv.className = "bot-message";
+                botMessageDiv.textContent = data.reply;
+                chatBody.appendChild(botMessageDiv);
+            })
+            .catch((error) => {
+                const botMessageDiv = document.createElement("div");
+                botMessageDiv.className = "bot-message";
+                botMessageDiv.textContent =
+                    "Something went wrong. Please try again later.";
+                chatBody.appendChild(botMessageDiv);
+            });
+    
+        document.getElementById("userMessage").value = "";
+        chatBody.scrollTop = chatBody.scrollHeight;
+    });
+    
+    </script>
 </body>
 </html>
+
+

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+{% load static %}
+<head>
+    <title>Expense Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        nav {
+            background-color: #003366; /* Navbar background color */
+            height: 70px;
+            display: flex;
+            align-items: center;
+            
+}
+        
+        nav a {
+            color: white; /* White text color for links */
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        nav a:hover {
+            background-color: #333; /* Darker background on hover */    
+            color: white;
+        }
+        .dashboard-link {
+            color: green; /* Green color for dashboard link */
+        }
+        .dashboard-link:hover {
+            background-color: #333;
+            color: green;
+        }
+        
+        .logout-link {
+            color: red; /* Red color for logout link */
+        }
+        .logout-link:hover {
+            background-color: #001f33;
+            color: red;
+        }
+        footer {
+            background-color: #343a40; /* Footer background color */
+            color: white; /* Footer text color */
+            text-align: center;
+            padding: 5px 0;
+            position: relative;
+            width: 100%;
+            bottom: 0;
+            font-size: 12px;
+        }
+        .container {
+            margin-bottom: 50px; /* Avoid footer overlap */
+        }
+        .table-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .table-container .table {
+            width: 48%; /* Set equal width for both tables */
+            border: 1px solid #ddd;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        body
+        {background-image: url("{% static 'img/login1.jpg' %}");
+        background-size: cover; /* Ensures the mage covers the entire navbar */
+        background-repeat: no-repeat; /* Prevents the image from repeating */
+        background-position: center; /* Centers the image */}
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="navbar-nav d-flex w-100">
+            <div class="ml-auto d-flex">
+                <a href="/download_csv/" class="btn btn-primary ml-3">Download CSV</a>
+                <a href="{% url 'user_dashboard' %}" class="nav-item nav-link dashboard-link">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-5">
+        <h1>Expense Data Overview</h1>
+        
+        <!-- Button to Toggle Future Expenses Visibility -->
+        <button id="toggleButton" class="btn btn-secondary mb-3">Show Future Expenses</button>
+        
+        <div class="table-container">
+            <!-- Current Expense Data Table -->
+            <div>
+                <h2>Current Expense Data</h2>
+                <div>{{ data|safe }}</div>
+            </div>
+            
+            <!-- Predicted Future Expenses Table -->
+            <div id="futureExpenses" style="display:none;">
+                <h2>Predicted Future Expenses</h2>
+                <div>{{ predictions|safe }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 FinanceFolio</p>
+    </footer>
+
+    <script>
+        // JavaScript to toggle visibility of the future expenses section
+        document.getElementById("toggleButton").addEventListener("click", function() {
+            var futureExpenses = document.getElementById("futureExpenses");
+            if (futureExpenses.style.display === "none") {
+                futureExpenses.style.display = "block";
+                this.textContent = "Hide Future Expenses"; // Change button text
+            } else {
+                futureExpenses.style.display = "none";
+                this.textContent = "Show Future Expenses"; // Reset button text
+            }
+        });
+    </script>
+</body>
+</html>

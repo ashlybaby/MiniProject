@@ -66,10 +66,23 @@ urlpatterns = [
     path('queries/', views.query_list, name='query_list'),
     path('admin/queries/', views.admin_query_list, name='admin_query_list'),
     path('admin/queries/<int:query_id>/update/', views.admin_update_query_status, name='admin_update_query_status'),
-    path('articles/', views.article_list, name='article_list'),
-    
-    
-]
+
+    path('articles_page/', views.articles_page, name='articles_page'),  # Ensure this line is present
+
+     path('edit_goal/<int:goal_id>/', views.edit_goal, name='edit_goal'),  # Ensure this line is present
+    #----------------------------------------------------------------------------------------
+    #ml implementation
+    path('predict-expense/', views.predict_future_expense, name='predict_expense'),  # Predict future expense
+    path('display-expenses/', views.read_csv, name='display_expenses'),  # Display expense data
+    path('read_csv/', views.read_csv, name='read_csv'),
+    path('add_expense/', views.add_expense, name='add_expense'),
+    path('download_csv/', views.download_csv, name='download_csv'),
+
+    ]
+ # URL path to view the CSV data
+    # This URL will trigger the 'read_csv' view
+
+
 
     
     

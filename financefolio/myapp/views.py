@@ -932,15 +932,18 @@ def goals_overview(request):
             progress_percentage = (goal.current_amount / goal.target_amount) * 100
 
         # Determine the goal status
-        if goal.current_amount >= goal.target_amount:
+        if goal.target_amount >= goal.current_amount:
             goal_status = 'completed'  # Goal has been completed
+            progress_percentage = 100
+            progress_color='#4CAF50'
         elif current_date.date() > goal.deadline:
-            goal_status = 'failed'  # Goal deadline has passed without achieving the target
+            goal_status = 'failed'
+            progress_percentage = 100  # Goal deadline has passed without achieving the target
+            progress_color = '#f44336'
         else:
-            goal_status = 'ongoing'  # Goal is still in progress
-
-        # Determine the progress bar color based on goal completion
-        progress_color = '#4CAF50' if goal_status == 'completed' else '#ff5722'
+            goal_status = 'ongoing' # Goal is still in progress
+            progress_color = '#ff9800' # Determine the progress bar color based on goal completion
+            progress_percentage = (goal.current_amount / goal.target_amount) * 100 
 
         # Build the summary data for each goal
         summary = {
@@ -1394,16 +1397,180 @@ def add_goal(request):
 
     return render(request, 'goal_tracking.html', {'form': form})
 
-
-# views.py
 from django.shortcuts import render
 from .models import Article
 
-def article_list(request):
-    articles = Article.objects.all().order_by('-date_posted')  # Retrieve all articles, ordered by newest first
-    return render(request, 'articles/article_list.html', {'articles': articles})
+from django.shortcuts import render
+from .models import Article
 
-def load_articles(request):
-    articles = Article.objects.all().order_by('-date_posted')  # Retrieve all articles, ordered by newest first
-    data = serializers.serialize('json', articles)
-    return JsonResponse(data, safe=False)
+def articles_page(request):
+    articles = Article.objects.all()  # Fetch all articles from the database
+    return render(request, 'articles_page.html', {'articles': articles})  # Pass articles to the template
+
+    #--------------------------------------------------------------------------------------------------------------------------
+    #ML implementation
+
+    # views.py
+import csv
+import pandas as pd
+from django.shortcuts import render
+from django.http import HttpResponse
+from sklearn.linear_model import LinearRegression
+from .models import Expense
+from datetime import date, timedelta
+
+def export_to_csv(request):
+    """Export the latest database data to a CSV file and serve it to the user."""
+    file_path = 'expenses.csv'
+    expenses = Expense.objects.all()
+
+    # Write data to the CSV file dynamically
+    with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Month', 'category', 'Planned Income', 'Actual Income', 'Expenses', 'Balance'])
+        for expense in expenses:
+            writer.writerow([
+                expense.month,
+                expense.category,
+                expense.planned_income,
+                expense.actual_income,
+                expense.expenses,
+                expense.balance,
+            ])
+
+    # Serve the CSV file to the user
+    with open(file_path, 'r', encoding='utf-8') as file:
+        response = HttpResponse(file, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
+        return response
+
+def predict_future_expense(request):
+    """Predict future expenses using machine learning."""
+    file_path = 'expenses.csv'
+    df = pd.read_csv(file_path)
+
+    # Prepare the feature matrix (X) and target vector (y)
+    df['Month_Num'] = pd.to_datetime(df['Month'], format='%B').dt.month  # Convert month names to numeric
+    df['category_num'] = pd.factorize(df['category'])[0]  # Encode categories as numeric
+    X = df[['Month_Num', 'category_num', 'Planned Income', 'Actual Income', 'Balance']]
+    y = df['Expenses']
+
+    # Train the Linear Regression model
+    model = LinearRegression()
+    model.fit(X, y)
+
+    # Predict future expense for the next month
+    next_month = X['Month_Num'].max() + 1
+    if next_month > 12:  # Wrap around to January
+        next_month = 1
+    next_data = [[next_month, 0, 5000, 4500, 500]]  # Example input for prediction (ensure this matches your features)
+    predicted_expense = model.predict(next_data)[0]
+
+    # Render the prediction result to the user
+    return render(request, 'predict_expense.html', {'predicted_expense': predicted_expense})
+
+
+
+from sklearn.linear_model import LinearRegression
+ # Ensure this model contains relevant fieldsimport csv
+from datetime import date, timedelta
+from django.http import HttpResponse
+from django.shortcuts import render
+import pandas as pd
+from .models import Expense
+
+def read_csv(request):
+    """Read the expenses from the database and save to CSV dynamically."""
+    expenses = Expense.objects.all()
+
+    # Prepare the data for CSV and machine learning
+    data = []
+    for expense in expenses:
+        data.append([expense.date, expense.category, float(expense.actual_expense)])
+
+    # Create a DataFrame and save to CSV
+    df = pd.DataFrame(data, columns=['date', 'category', 'actual_expense'])
+    csv_file_path = 'expenses.csv'
+    df.to_csv(csv_file_path, index=False)
+
+    # Prepare data for machine learning
+    df['date_numeric'] = pd.to_datetime(df['date']).map(lambda x: x.toordinal())  # Convert dates to numeric
+    df['category_num'] = pd.factorize(df['category'])[0]  # Encode categories as numeric
+
+    X = df[['date_numeric', 'category_num']]
+    y = df['actual_expense']
+
+    # Train a machine learning model
+    model = LinearRegression()
+    model.fit(X, y)
+
+    # Predict future expenses for the next 30 days
+    today = date.today()
+    future_dates = [today + timedelta(days=i) for i in range(1, 31)]
+    future_data = pd.DataFrame({
+        'date_numeric': [d.toordinal() for d in future_dates],
+        'category_num': [0] * len(future_dates)  # Assuming a default category
+    })
+
+    future_data['predicted_expense'] = model.predict(future_data[['date_numeric', 'category_num']])
+
+    # Combine predictions with dates
+    future_data['date'] = future_dates
+    future_predictions = future_data[['date', 'predicted_expense']]
+
+    # Render the predictions and the current expense data
+    return render(request, 'display_expenses.html', {
+        'data': df.to_html(classes='table table-bordered'),
+        'predictions': future_predictions.to_html(classes='table table-bordered')
+    })
+
+def add_expense(request):
+    """Add an expense to the database and update the CSV file."""
+    if request.method == 'POST':
+        # Extract form data
+        budget_id = request.POST['budget_id']
+        category = request.POST['category']
+        actual_expense = request.POST['actual_expense']
+        expense_date = request.POST['date']
+
+        # Save to the database
+        Expense.objects.create(
+            budget_id=budget_id,
+            category=category,
+            actual_expense=actual_expense,
+            date=expense_date
+        )
+
+        # Update the CSV file
+        read_csv(request)
+
+        return HttpResponse("Expense added successfully!")
+
+def download_csv(request):
+    """Serve the dynamically updated CSV file."""
+    file_path = 'expenses.csv'
+    with open(file_path, 'r', encoding='utf-8') as file:
+        response = HttpResponse(file, content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
+        return response
+#chatbot#
+
+from django.http import JsonResponse
+
+def chatbot(request):
+    if request.method == "POST":
+        user_message = request.POST.get("message", "").lower()
+
+        # Logic for handling finance-related questions
+        if "spend" in user_message:
+            reply = "You spent $500 on groceries this month."
+        elif "save" in user_message:
+            reply = "Try saving at least 20% of your income for future goals."
+        elif "goal" in user_message:
+            reply = "You are 50% toward your savings goal of $10,000."
+        else:
+            reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
+
+        return JsonResponse({"reply": reply})
+
+    return JsonResponse({"reply": "Invalid request."})

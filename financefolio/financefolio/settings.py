@@ -82,31 +82,31 @@ WSGI_APPLICATION = 'financefolio.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'financefolio',  # Replace with your actual database name
-#         'USER': 'root',  # Replace with your MySQL username (default is 'root')  
-#         'PASSWORD': '',  # Replace with your MySQL password (default is empty)
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-       
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'financefolio_fullcastat',
-        'USER': 'financefolio_fullcastat',
-        'PASSWORD': '1fd9d3f843bac9926296dfe0e8eac30505008942',
-        'HOST': 'd25xr.h.filess.io',
-        'PORT': '3307',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'NAME': 'financefolio',  # Replace with your actual database name
+        'USER': 'root',  # Replace with your MySQL username (default is 'root')  
+        'PASSWORD': '',  # Replace with your MySQL password (default is empty)
+        'HOST': 'localhost',
+        'PORT': '3306',
+       
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'financefolio_fullcastat',
+#         'USER': 'financefolio_fullcastat',
+#         'PASSWORD': '1fd9d3f843bac9926296dfe0e8eac30505008942',
+#         'HOST': 'd25xr.h.filess.io',
+#         'PORT': '3307',
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#     }
+# }
 
 
 # Password validation
