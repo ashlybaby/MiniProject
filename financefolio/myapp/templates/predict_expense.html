@@ -1,2 +1,17 @@
-<h2>Predicted Expense</h2>
-<p>Your predicted expense for the next period is: <strong>{{ predicted_expense }}</strong></p>
+{% comment %} <h2>Predicted Expense</h2>
+<p>Your predicted expense for the next period is: <strong>{{ predicted_expense }}</strong></p> {% endcomment %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Prediction</title>
+</head>
+<body>
+    <h1>Expense Prediction for 2025</h1>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        <p>Total Spending in 2024: {{ total_2024 }}</p>
+        <p>Predicted Spending in 2025: {{ predicted_2025_spending }}</p>
+    {% endif %}
+</body>
+</html>

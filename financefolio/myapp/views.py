@@ -901,7 +901,6 @@ from django.shortcuts import render
 from .models import Goal  # Ensure you import the Goal model correctly
 from django.utils import timezone
 from django.db.models import Sum
-from django.contrib.auth.decorators import user_passes_test
 from .models import Goal, Expense
 
 
@@ -1063,7 +1062,6 @@ from django.shortcuts import render
 from .models import Expense, Goal
 from django.db.models import Sum
 from .models import Expense, Budget, Goal
-
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Expense, Goal, Budget
@@ -1397,8 +1395,7 @@ def add_goal(request):
 
     return render(request, 'goal_tracking.html', {'form': form})
 
-from django.shortcuts import render
-from .models import Article
+
 
 from django.shortcuts import render
 from .models import Article
@@ -1444,30 +1441,91 @@ def export_to_csv(request):
         response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
         return response
 
+# def predict_future_expense(request):
+#     """Predict future expenses using historical data and machine learning."""
+#     import pandas as pd
+#     from sklearn.linear_model import LinearRegression
+#     from sklearn.model_selection import train_test_split
+#     from sklearn.preprocessing import StandardScaler
+#     from django.shortcuts import render
+
+#     file_path = 'expenses.csv'
+#     df = pd.read_csv(file_path)
+
+#     # Prepare the feature matrix (X) and target vector (y)
+#     df['Month_Num'] = pd.to_datetime(df['Month'], format='%B').dt.month
+#     df['category_num'] = pd.factorize(df['category'])[0]
+#     X = df[['Month_Num', 'category_num', 'Planned Income', 'Actual Income', 'Balance']]
+#     y = df['Expenses']
+
+#     # Split data into training and testing sets
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+#     # Scale features
+#     scaler = StandardScaler()
+#     X_train_scaled = scaler.fit_transform(X_train)
+#     X_test_scaled = scaler.transform(X_test)
+
+#     # Train the Linear Regression model
+#     model = LinearRegression()
+#     model.fit(X_train_scaled, y_train)
+
+#     # Prepare input for the next month's prediction dynamically
+#     next_month = X['Month_Num'].max() + 1
+#     if next_month > 12:  # Wrap around to January
+#         next_month = 1
+
+#     # Derive average planned income, actual income, and balance for the last 3 months
+#     recent_data = df[df['Month_Num'] == X['Month_Num'].max()]
+#     avg_planned_income = recent_data['Planned Income'].mean()
+#     avg_actual_income = recent_data['Actual Income'].mean()
+#     avg_balance = recent_data['Balance'].mean()
+
+#     # Create input data for the next month
+#     next_data = [[next_month, 0, avg_planned_income, avg_actual_income, avg_balance]]
+#     next_data_scaled = scaler.transform(next_data)  # Scale the input
+#     predicted_expense = model.predict(next_data_scaled)[0]
+
+#     # Render the prediction result to the user
+#     return render(request, 'predict_expense.html', {'predicted_expense': round(predicted_expense, 2)})
+#rewriting future prediction function#
 def predict_future_expense(request):
-    """Predict future expenses using machine learning."""
+    """Predict future expenses for 2025 based on historical data from a CSV file."""
+    import pandas as pd
+    from django.shortcuts import render
+    
+    # Path to your CSV file
     file_path = 'expenses.csv'
+    
+    # Load the data
     df = pd.read_csv(file_path)
 
-    # Prepare the feature matrix (X) and target vector (y)
-    df['Month_Num'] = pd.to_datetime(df['Month'], format='%B').dt.month  # Convert month names to numeric
-    df['category_num'] = pd.factorize(df['category'])[0]  # Encode categories as numeric
-    X = df[['Month_Num', 'category_num', 'Planned Income', 'Actual Income', 'Balance']]
-    y = df['Expenses']
+    # Ensure the necessary columns are present
+    if not {'category', 'amount', 'date'}.issubset(df.columns):
+        return render(request, 'predict_expense.html', {
+            'error': 'The CSV file must contain "category", "amount", and "date" columns.'
+        })
 
-    # Train the Linear Regression model
-    model = LinearRegression()
-    model.fit(X, y)
+    # Convert the date column to datetime format
+    df['date'] = pd.to_datetime(df['date'])
 
-    # Predict future expense for the next month
-    next_month = X['Month_Num'].max() + 1
-    if next_month > 12:  # Wrap around to January
-        next_month = 1
-    next_data = [[next_month, 0, 5000, 4500, 500]]  # Example input for prediction (ensure this matches your features)
-    predicted_expense = model.predict(next_data)[0]
+    # Filter for the year 2024
+    df_2024 = df[df['date'].dt.year == 2024]
 
-    # Render the prediction result to the user
-    return render(request, 'predict_expense.html', {'predicted_expense': predicted_expense})
+    # Calculate the total spending for 2024
+    total_2024 = df_2024['amount'].sum()
+
+    # Predict future spending for 2025
+    increase_percentage = 0.10  # Assuming a 10% increase
+    predicted_2025_spending = total_2024 * (1 + increase_percentage)
+
+    # Round the results and pass them to the template
+    context = {
+        'total_2024': round(total_2024, 2),
+        'predicted_2025_spending': round(predicted_2025_spending, 2),
+    }
+
+    return render(request, 'predict_expense.html', context)
 
 
 
@@ -1598,4 +1656,14 @@ def feedback_list1(request):
         'feedbacks': page_obj,
         'query': query
     })
+
+
+
+# ................................................#
+from django.shortcuts import render
+from .models import Article  # Import your Article model
+
+def articles_list(request):
+    articles = Article.objects.order_by('-date_posted')  # Get articles ordered by date
+    return render(request, 'articles_list.html', {'articles': articles})
 
