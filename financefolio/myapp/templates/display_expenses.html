@@ -5,70 +5,110 @@
     <title>Expense Data</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
+        /* Navbar Styling */
         nav {
-            background-color: #003366; /* Navbar background color */
+            background-color: #003366;
             height: 70px;
             display: flex;
             align-items: center;
-            
-}
-        
+        }
         nav a {
-            color: white; /* White text color for links */
+            color: white;
             padding: 10px 20px;
             text-decoration: none;
             font-weight: bold;
             font-size: 18px;
         }
         nav a:hover {
-            background-color: #333; /* Darker background on hover */    
+            background-color: #333;
             color: white;
         }
         .dashboard-link {
-            color: green; /* Green color for dashboard link */
+            color: green;
         }
         .dashboard-link:hover {
             background-color: #333;
             color: green;
         }
-        
-        .logout-link {
-            color: red; /* Red color for logout link */
-        }
-        .logout-link:hover {
-            background-color: #001f33;
-            color: red;
-        }
+
+        /* Footer Styling */
         footer {
-            background-color: #343a40; /* Footer background color */
-            color: white; /* Footer text color */
+            background-color: #343a40;
+            color: white;
             text-align: center;
-            padding: 5px 0;
-            position: relative;
-            width: 100%;
-            bottom: 0;
+            padding: 10px 0;
             font-size: 12px;
         }
+
+        /* General Layout */
         .container {
-            margin-bottom: 50px; /* Avoid footer overlap */
-        }
-        .table-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        .table-container .table {
-            width: 48%; /* Set equal width for both tables */
-            border: 1px solid #ddd;
+            margin-bottom: 50px;
         }
         h1, h2 {
             text-align: center;
         }
-        body
-        {background-image: url("{% static 'img/dashboardi.jpg' %}");
-        background-size: cover; /* Ensures the mage covers the entire navbar */
-        background-repeat: no-repeat; /* Prevents the image from repeating */
-        background-position: center; /* Centers the image */}
+        body {
+            background-image: url("{% static 'img/dashboardi.jpg' %}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Table Styling */
+        .table-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .table-container .table {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            table-layout: fixed;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+        }
+        .table th.date-column {
+            width: 30%;
+            text-align: center;
+        }
+        .table td.date-column {
+            text-align: center;
+            word-wrap: break-word;
+        }
+        .table td {
+            padding: 10px;
+        }
+
+        /* Button Styling */
+        #toggleButton {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        #toggleButton:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+
+        /* Section Styling */
+        .data-section {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -81,43 +121,58 @@
             </div>
         </div>
     </nav>
-    
+
+    <!-- Main Content -->
     <div class="container mt-5">
         <h1>Expense Data Overview</h1>
-        
-        <!-- Button to Toggle Future Expenses Visibility -->
-        <button id="toggleButton" class="btn btn-secondary mb-3">Show Future Expenses</button>
-        
+
+        <!-- Toggle Future Expenses Button -->
+        <div class="text-center">
+            <button id="toggleButton" class="btn mb-3">Show Future Expenses</button>
+        </div>
+
         <div class="table-container">
             <!-- Current Expense Data Table -->
-            <div>
+            <div class="data-section">
                 <h2>Current Expense Data</h2>
                 <div>{{ data|safe }}</div>
             </div>
-            
+
             <!-- Predicted Future Expenses Table -->
-            <div id="futureExpenses" style="display:none;">
+            <div id="futureExpenses" class="data-section" style="display:none;">
                 <h2>Predicted Future Expenses</h2>
-                <div>{{ predictions|safe }}</div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="date-column">Date</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ predictions|safe }}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2024 FinanceFolio</p>
+        <p>&copy; 2024 FinanceFolio. All rights reserved.</p>
     </footer>
 
+    <!-- JavaScript -->
     <script>
-        // JavaScript to toggle visibility of the future expenses section
+        // Toggle visibility of the future expenses section
         document.getElementById("toggleButton").addEventListener("click", function() {
             var futureExpenses = document.getElementById("futureExpenses");
             if (futureExpenses.style.display === "none") {
                 futureExpenses.style.display = "block";
-                this.textContent = "Hide Future Expenses"; // Change button text
+                this.textContent = "Hide Future Expenses";
             } else {
                 futureExpenses.style.display = "none";
-                this.textContent = "Show Future Expenses"; // Reset button text
+                this.textContent = "Show Future Expenses";
             }
         });
     </script>
