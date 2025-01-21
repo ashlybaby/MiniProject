@@ -79,6 +79,7 @@ urlpatterns = [
     path('download_csv/', views.download_csv, name='download_csv'),
     path('feedback_list1/', views.feedback_list1,name='feedback_list1'),
     path('articles_list/' ,views.articles_list,name='articles_list'),
+    path('chatbot/', views.chatbot, name='chatbot'),
     
 
     ]

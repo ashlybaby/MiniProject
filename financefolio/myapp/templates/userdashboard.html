@@ -1064,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
  
 
     // Function to load History and Chart
-    async function loadHistory() {
+     async function loadHistory() {
         try {
             const response = await fetch('/api/history/');
             if (!response.ok) {
@@ -1161,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-    }
+    } 
 
     
 
@@ -1443,6 +1443,12 @@ document.getElementById('announcements-menu').addEventListener('click', (event) 
         document.getElementById("userMessage").value = "";
         chatBody.scrollTop = chatBody.scrollHeight;
     });
+
+    fetch('/chatbot/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage })
+    })
     
     </script>
 </body>

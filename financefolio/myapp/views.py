@@ -1489,16 +1489,63 @@ def export_to_csv(request):
 #     # Render the prediction result to the user
 #     return render(request, 'predict_expense.html', {'predicted_expense': round(predicted_expense, 2)})
 #rewriting future prediction function#
+# def predict_future_expense(request):
+#     """Predict future expenses for 2025 based on historical data from a CSV file."""
+#     import pandas as pd
+#     from django.shortcuts import render
+    
+#     # Path to your CSV file
+#     file_path = 'expenses.csv'
+    
+#     # Load the data
+#     df = pd.read_csv(file_path)
+
+#     # Ensure the necessary columns are present
+#     if not {'category', 'amount', 'date'}.issubset(df.columns):
+#         return render(request, 'predict_expense.html', {
+#             'error': 'The CSV file must contain "category", "amount", and "date" columns.'
+#         })
+
+#     # Convert the date column to datetime format
+#     df['date'] = pd.to_datetime(df['date'])
+
+#     # Filter for the year 2024
+#     df_2024 = df[df['date'].dt.year == 2024]
+
+#     # Calculate the total spending for 2024
+#     total_2024 = df_2024['amount'].sum()
+
+#     # Predict future spending for 2025
+#     increase_percentage = 0.10  # Assuming a 10% increase
+#     predicted_2025_spending = total_2024 * (1 + increase_percentage)
+
+#     # Round the results and pass them to the template
+#     context = {
+#         'total_2024': round(total_2024, 2),
+#         'predicted_2025_spending': round(predicted_2025_spending, 2),
+#     }
+
+#     return render(request, 'predict_expense.html', context)
+
+
+#new trial#
 def predict_future_expense(request):
-    """Predict future expenses for 2025 based on historical data from a CSV file."""
+    """Predict future expenses for 2025 using historical data with seasonality and category trends."""
     import pandas as pd
     from django.shortcuts import render
     
+    import numpy as np
+
     # Path to your CSV file
     file_path = 'expenses.csv'
-    
+
     # Load the data
-    df = pd.read_csv(file_path)
+    try:
+        df = pd.read_csv(file_path)
+    except FileNotFoundError:
+        return render(request, 'predict_expense.html', {
+            'error': 'The CSV file does not exist. Please upload the correct file.'
+        })
 
     # Ensure the necessary columns are present
     if not {'category', 'amount', 'date'}.issubset(df.columns):
@@ -1509,30 +1556,55 @@ def predict_future_expense(request):
     # Convert the date column to datetime format
     df['date'] = pd.to_datetime(df['date'])
 
-    # Filter for the year 2024
-    df_2024 = df[df['date'].dt.year == 2024]
+    # Aggregate monthly expenses
+    df['month'] = df['date'].dt.to_period('M')
+    monthly_expenses = df.groupby('month')['amount'].sum().reset_index()
+    monthly_expenses['month'] = monthly_expenses['month'].dt.to_timestamp()
 
-    # Calculate the total spending for 2024
-    total_2024 = df_2024['amount'].sum()
+    # Ensure sufficient data for seasonal decomposition
+    if len(monthly_expenses) < 24:  # Minimum 2 years of data
+        return render(request, 'predict_expense.html', {
+            'error': 'Insufficient data for accurate prediction. At least 2 years of data are required.'
+        })
 
-    # Predict future spending for 2025
-    increase_percentage = 0.10  # Assuming a 10% increase
-    predicted_2025_spending = total_2024 * (1 + increase_percentage)
+    # Perform seasonal decomposition
+    decomposition = seasonal_decompose(monthly_expenses['amount'], model='additive', period=12)
+    trend = decomposition.trend
+    seasonal = decomposition.seasonal
+    residual = decomposition.resid
 
-    # Round the results and pass them to the template
+    # Use Holt-Winters Exponential Smoothing for forecasting
+    model = ExponentialSmoothing(
+        monthly_expenses['amount'], 
+        seasonal='add', 
+        seasonal_periods=12, 
+        trend='add'
+    )
+    model_fit = model.fit()
+
+    # Predict expenses for 2025
+    future_dates = pd.date_range(start=monthly_expenses['month'].iloc[-1] + pd.offsets.MonthEnd(1), periods=12, freq='M')
+    predicted_expenses = model_fit.forecast(steps=12)
+    predictions = pd.DataFrame({
+        'month': future_dates,
+        'predicted_expense': predicted_expenses
+    })
+
+    # Prepare context for the template
     context = {
-        'total_2024': round(total_2024, 2),
-        'predicted_2025_spending': round(predicted_2025_spending, 2),
+        'historical_data': monthly_expenses.to_html(index=False, classes='table table-bordered'),
+        'predictions': predictions.to_html(index=False, classes='table table-bordered'),
+        'trend': trend.tolist(),
+        'seasonal': seasonal.tolist(),
+        'residual': residual.tolist()
     }
 
     return render(request, 'predict_expense.html', context)
 
 
-
 from sklearn.linear_model import LinearRegression
- # Ensure this model contains relevant fieldsimport csv
 from datetime import date, timedelta
-from django.http import HttpResponse
+from django.http import HttpResponse 
 from django.shortcuts import render
 import pandas as pd
 from .models import Expense
@@ -1612,27 +1684,50 @@ def download_csv(request):
         response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
         return response
 #chatbot#
-
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
+@csrf_exempt
 def chatbot(request):
     if request.method == "POST":
-        user_message = request.POST.get("message", "").lower()
+        try:
+            # Parse the incoming data as JSON
+            body = json.loads(request.body)
+            user_message = body.get("message", "").lower()  # Safely retrieve the message
 
-        # Logic for handling finance-related questions
-        if "spend" in user_message:
-            reply = "You spent $500 on groceries this month."
-        elif "save" in user_message:
-            reply = "Try saving at least 20% of your income for future goals."
-        elif "goal" in user_message:
-            reply = "You are 50% toward your savings goal of $10,000."
-        else:
-            reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
+            # Logic for handling finance-related questions
+            if "spend for groceries " in user_message:
+                reply = "You spent 800 on groceries this month."
+            elif"spend" in user_message:
+                reply = "please tell which category details you need"
+            elif "save" in user_message:
+                reply = "Try saving at least 20% of your income for future goals."
+            elif "goal" in user_message:
+                reply = "You are 50% toward your savings goal of $10,000."
+            elif "emergency fund" in user_message:
+                 reply = "An emergency fund should cover 3 to 6 months of your living expenses. Start small and gradually build it up."
+            elif "investment" in user_message:
+                 reply = "Consider diversifying your investments into stocks, bonds, mutual funds, or real estate. Always research or consult a financial advisor."
+            elif "retirement" in user_message:
+                  reply = "Start saving for retirement early. Contributing to a retirement fund like a 401(k) or IRA is a great way to prepare for the future."
+            elif "save" in user_message:
+                  reply = "Try saving at least 20% of your income for future goals. You can allocate it to an emergency fund, investments, or retirement savings."
+            else:
+                reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
 
-        return JsonResponse({"reply": reply})
+            # Return a successful JSON response
+            return JsonResponse({"reply": reply}, status=200)
 
-    return JsonResponse({"reply": "Invalid request."})
+        except json.JSONDecodeError:
+            # Handle invalid JSON error
+            return JsonResponse({"error": "Invalid JSON data received."}, status=400)
 
+    # If not POST, return an error message
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+
+
+    
 #..................................................................................#
 
 
@@ -1667,3 +1762,4 @@ def articles_list(request):
     articles = Article.objects.order_by('-date_posted')  # Get articles ordered by date
     return render(request, 'articles_list.html', {'articles': articles})
 
+#..................................................................................#
