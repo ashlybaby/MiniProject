@@ -1529,11 +1529,84 @@ def export_to_csv(request):
 
 
 #new trial#
+# def predict_future_expense(request):
+#     """Predict future expenses for 2025 using historical data with seasonality and category trends."""
+#     import pandas as pd
+#     from django.shortcuts import render
+    
+#     import numpy as np
+
+#     # Path to your CSV file
+#     file_path = 'expenses.csv'
+
+#     # Load the data
+#     try:
+#         df = pd.read_csv(file_path)
+#     except FileNotFoundError:
+#         return render(request, 'predict_expense.html', {
+#             'error': 'The CSV file does not exist. Please upload the correct file.'
+#         })
+
+#     # Ensure the necessary columns are present
+#     if not {'category', 'amount', 'date'}.issubset(df.columns):
+#         return render(request, 'predict_expense.html', {
+#             'error': 'The CSV file must contain "category", "amount", and "date" columns.'
+#         })
+
+#     # Convert the date column to datetime format
+#     df['date'] = pd.to_datetime(df['date'])
+
+#     # Aggregate monthly expenses
+#     df['month'] = df['date'].dt.to_period('M')
+#     monthly_expenses = df.groupby('month')['amount'].sum().reset_index()
+#     monthly_expenses['month'] = monthly_expenses['month'].dt.to_timestamp()
+
+#     # Ensure sufficient data for seasonal decomposition
+#     if len(monthly_expenses) < 24:  # Minimum 2 years of data
+#         return render(request, 'predict_expense.html', {
+#             'error': 'Insufficient data for accurate prediction. At least 2 years of data are required.'
+#         })
+
+#     # Perform seasonal decomposition
+#     decomposition = seasonal_decompose(monthly_expenses['amount'], model='additive', period=12)
+#     trend = decomposition.trend
+#     seasonal = decomposition.seasonal
+#     residual = decomposition.resid
+
+#     # Use Holt-Winters Exponential Smoothing for forecasting
+#     model = ExponentialSmoothing(
+#         monthly_expenses['amount'], 
+#         seasonal='add', 
+#         seasonal_periods=12, 
+#         trend='add'
+#     )
+#     model_fit = model.fit()
+
+#     # Predict expenses for 2025
+#     future_dates = pd.date_range(start=monthly_expenses['month'].iloc[-1] + pd.offsets.MonthEnd(1), periods=12, freq='M')
+#     predicted_expenses = model_fit.forecast(steps=12)
+#     predictions = pd.DataFrame({
+#         'month': future_dates,
+#         'predicted_expense': predicted_expenses
+#     })
+
+#     # Prepare context for the template
+#     context = {
+#         'historical_data': monthly_expenses.to_html(index=False, classes='table table-bordered'),
+#         'predictions': predictions.to_html(index=False, classes='table table-bordered'),
+#         'trend': trend.tolist(),
+#         'seasonal': seasonal.tolist(),
+#         'residual': residual.tolist()
+#     }
+
+#     return render(request, 'predict_expense.html', context)
+
 def predict_future_expense(request):
     """Predict future expenses for 2025 using historical data with seasonality and category trends."""
     import pandas as pd
     from django.shortcuts import render
-    
+    from statsmodels.tsa.seasonal import seasonal_decompose
+    from statsmodels.tsa.holtwinters import ExponentialSmoothing
     import numpy as np
 
     # Path to your CSV file
@@ -1556,50 +1629,59 @@ def predict_future_expense(request):
     # Convert the date column to datetime format
     df['date'] = pd.to_datetime(df['date'])
 
-    # Aggregate monthly expenses
+    # Aggregate monthly expenses by category
     df['month'] = df['date'].dt.to_period('M')
-    monthly_expenses = df.groupby('month')['amount'].sum().reset_index()
-    monthly_expenses['month'] = monthly_expenses['month'].dt.to_timestamp()
+    monthly_expenses_by_category = df.groupby(['month', 'category'])['amount'].sum().reset_index()
+    monthly_expenses_by_category['month'] = monthly_expenses_by_category['month'].dt.to_timestamp()
 
     # Ensure sufficient data for seasonal decomposition
-    if len(monthly_expenses) < 24:  # Minimum 2 years of data
+    if len(monthly_expenses_by_category['month'].unique()) < 24:  # Minimum 2 years of data
         return render(request, 'predict_expense.html', {
             'error': 'Insufficient data for accurate prediction. At least 2 years of data are required.'
         })
 
-    # Perform seasonal decomposition
-    decomposition = seasonal_decompose(monthly_expenses['amount'], model='additive', period=12)
-    trend = decomposition.trend
-    seasonal = decomposition.seasonal
-    residual = decomposition.resid
+    # Perform forecasting for each category
+    predictions_by_category = []
+    for category, group in monthly_expenses_by_category.groupby('category'):
+        try:
+            # Perform seasonal decomposition
+            decomposition = seasonal_decompose(group['amount'], model='additive', period=12)
+            trend = decomposition.trend
+            seasonal = decomposition.seasonal
+            residual = decomposition.resid
 
-    # Use Holt-Winters Exponential Smoothing for forecasting
-    model = ExponentialSmoothing(
-        monthly_expenses['amount'], 
-        seasonal='add', 
-        seasonal_periods=12, 
-        trend='add'
-    )
-    model_fit = model.fit()
+            # Use Holt-Winters Exponential Smoothing for forecasting
+            model = ExponentialSmoothing(
+                group['amount'],
+                seasonal='add',
+                seasonal_periods=12,
+                trend='add'
+            )
+            model_fit = model.fit()
 
-    # Predict expenses for 2025
-    future_dates = pd.date_range(start=monthly_expenses['month'].iloc[-1] + pd.offsets.MonthEnd(1), periods=12, freq='M')
-    predicted_expenses = model_fit.forecast(steps=12)
-    predictions = pd.DataFrame({
-        'month': future_dates,
-        'predicted_expense': predicted_expenses
-    })
+            # Predict expenses for 2025
+            future_dates = pd.date_range(start=group['month'].iloc[-1] + pd.offsets.MonthEnd(1), periods=12, freq='M')
+            predicted_expenses = model_fit.forecast(steps=12)
+            predictions = pd.DataFrame({
+                'month': future_dates,
+                'category': category,
+                'predicted_expense': predicted_expenses
+            })
+            predictions_by_category.append(predictions)
+        except Exception as e:
+            print(f"Error processing category {category}: {e}")
+            continue
+
+    predictions_by_category = pd.concat(predictions_by_category, ignore_index=True)
 
     # Prepare context for the template
     context = {
-        'historical_data': monthly_expenses.to_html(index=False, classes='table table-bordered'),
-        'predictions': predictions.to_html(index=False, classes='table table-bordered'),
-        'trend': trend.tolist(),
-        'seasonal': seasonal.tolist(),
-        'residual': residual.tolist()
+        'historical_data': monthly_expenses_by_category.to_html(index=False, classes='table table-bordered'),
+        'predictions': predictions_by_category.to_html(index=False, classes='table table-bordered')
     }
 
     return render(request, 'predict_expense.html', context)
+
 
 
 from sklearn.linear_model import LinearRegression
@@ -1697,14 +1779,13 @@ def chatbot(request):
             user_message = body.get("message", "").lower()  # Safely retrieve the message
 
             # Logic for handling finance-related questions
-            if "spend for groceries " in user_message:
-                reply = "You spent 800 on groceries this month."
-            elif"spend" in user_message:
-                reply = "please tell which category details you need"
+            if "spend" in user_message:
+                reply = "Please check your available balance and spend expense based that."
+            
             elif "save" in user_message:
                 reply = "Try saving at least 20% of your income for future goals."
             elif "goal" in user_message:
-                reply = "You are 50% toward your savings goal of $10,000."
+                reply = "Check goal progress section for knowing about your goal.You can set new goals using set goal feature"
             elif "emergency fund" in user_message:
                  reply = "An emergency fund should cover 3 to 6 months of your living expenses. Start small and gradually build it up."
             elif "investment" in user_message:
@@ -1713,6 +1794,10 @@ def chatbot(request):
                   reply = "Start saving for retirement early. Contributing to a retirement fund like a 401(k) or IRA is a great way to prepare for the future."
             elif "save" in user_message:
                   reply = "Try saving at least 20% of your income for future goals. You can allocate it to an emergency fund, investments, or retirement savings."
+            elif "feedback" in user_message:
+                  reply = "Please check feedback from dashboard.You can find feedback from other users"
+            elif "where i can track expense":
+                  reply = "You can track your expense as well income in expense tracker"
             else:
                 reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
 
@@ -1748,6 +1833,21 @@ def feedback_list1(request):
 
     # Render feedback list with pagination and search query
     return render(request, 'feedback_list.html', {
+        'feedbacks': page_obj,
+        'query': query
+    })
+def feedback_list11(request):
+    # Handle search functionality
+    query = request.GET.get('q', '')  # Get search query from URL parameters
+    feedbacks = Feedback.objects.filter(feedback_text__icontains=query).order_by('-created_at')
+
+    # Pagination
+    paginator = Paginator(feedbacks, 10)  # Show 10 feedbacks per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Render feedback list with pagination and search query
+    return render(request, '404.html', {
         'feedbacks': page_obj,
         'query': query
     })

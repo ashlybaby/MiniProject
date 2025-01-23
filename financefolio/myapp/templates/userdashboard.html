@@ -647,6 +647,27 @@
             justify-content: center;
             align-items: center;
         }
+        whatsapp-icon {
+            background-color: #25D366; /* WhatsApp green */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+            transition: background-color 0.3s; /* Smooth background change */
+            width: 60px; /* Width of the icon */
+            height: 60px; /* Height of the icon */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        .whatsapp-button {
+            color: white; /* Icon color */
+            font-size: 28px; /* Icon size */
+            text-decoration: none; /* Remove underline */
+        }
+    
+        .whatsapp-icon:hover {
+            background-color: #128C7E; /* Darker green on hover */
+        }
     </style>
 </head>
 <body>
@@ -670,6 +691,12 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <a href="https://wa.me/9605289254" target="_blank" class="btn btn-success mt-3">
+                    <i class="fab fa-whatsapp"></i> Contact Us on WhatsApp
+                </a>
+            </div>
     </header>
     
     <div class="container">
@@ -692,6 +719,7 @@
                     <li><a href="{% url 'get_announcements' %}" id="announcements-menu"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
                     <li><a href="#" id="tutorials-menu"><i class="fas fa-book-open"></i> <span>Tutorials</span></a></li>
                     <li><a href="#" id="feedback-menu"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a></li>
+                    <li><a href="{% url 'feedback_list11'%}">View Feedbacks</a></li>
                     <li><a href="{% url 'articles_list' %}" id="articles-menu"><i class="fas fa-bullhorn"></i> <span>Articles</span></a></li>
                     <li>
                         <form method="get" action="{% url 'read_csv' %}" style="display: inline;">
@@ -902,7 +930,8 @@
     <footer>
         <p>&copy; 2024 Finance Folio. All rights reserved.</p>
     </footer>
-    
+   
+    </div>
     
     <!-- JavaScript for Interactivity -->
     <script>
