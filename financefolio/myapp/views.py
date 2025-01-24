@@ -1780,10 +1780,14 @@ def chatbot(request):
 
             # Logic for handling finance-related questions
             if "spend" in user_message:
-                reply = "Please check your available balance and spend expense based that."
+                reply = "Please check your available balance and spend expense based on that."
             
             elif "save" in user_message:
                 reply = "Try saving at least 20% of your income for future goals."
+            elif "hi" in user_message:
+                reply = "Hi .How can I assist you today"
+            elif"How are you" in user_message:
+                reply = "Fine.Hope you are also fine.How can you assiist you today"
             elif "goal" in user_message:
                 reply = "Check goal progress section for knowing about your goal.You can set new goals using set goal feature"
             elif "emergency fund" in user_message:
@@ -1796,8 +1800,12 @@ def chatbot(request):
                   reply = "Try saving at least 20% of your income for future goals. You can allocate it to an emergency fund, investments, or retirement savings."
             elif "feedback" in user_message:
                   reply = "Please check feedback from dashboard.You can find feedback from other users"
-            elif "where i can track expense":
-                  reply = "You can track your expense as well income in expense tracker"
+            elif "expense" in user_message:
+                  reply = "Please check the dashboard and use expense tracker to store your day today expenses"
+            elif "hello" in user_message:
+                  reply = "Hello,How can I assist you today"
+            elif "how are you" in user_message:
+                  reply = "Fine.How can I assist you today"
             else:
                 reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
 
