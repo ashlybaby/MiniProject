@@ -1440,100 +1440,14 @@ def export_to_csv(request):
         response = HttpResponse(file, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
         return response
-
-# def predict_future_expense(request):
-#     """Predict future expenses using historical data and machine learning."""
-#     import pandas as pd
-#     from sklearn.linear_model import LinearRegression
-#     from sklearn.model_selection import train_test_split
-#     from sklearn.preprocessing import StandardScaler
-#     from django.shortcuts import render
-
-#     file_path = 'expenses.csv'
-#     df = pd.read_csv(file_path)
-
-#     # Prepare the feature matrix (X) and target vector (y)
-#     df['Month_Num'] = pd.to_datetime(df['Month'], format='%B').dt.month
-#     df['category_num'] = pd.factorize(df['category'])[0]
-#     X = df[['Month_Num', 'category_num', 'Planned Income', 'Actual Income', 'Balance']]
-#     y = df['Expenses']
-
-#     # Split data into training and testing sets
-#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-#     # Scale features
-#     scaler = StandardScaler()
-#     X_train_scaled = scaler.fit_transform(X_train)
-#     X_test_scaled = scaler.transform(X_test)
-
-#     # Train the Linear Regression model
-#     model = LinearRegression()
-#     model.fit(X_train_scaled, y_train)
-
-#     # Prepare input for the next month's prediction dynamically
-#     next_month = X['Month_Num'].max() + 1
-#     if next_month > 12:  # Wrap around to January
-#         next_month = 1
-
-#     # Derive average planned income, actual income, and balance for the last 3 months
-#     recent_data = df[df['Month_Num'] == X['Month_Num'].max()]
-#     avg_planned_income = recent_data['Planned Income'].mean()
-#     avg_actual_income = recent_data['Actual Income'].mean()
-#     avg_balance = recent_data['Balance'].mean()
-
-#     # Create input data for the next month
-#     next_data = [[next_month, 0, avg_planned_income, avg_actual_income, avg_balance]]
-#     next_data_scaled = scaler.transform(next_data)  # Scale the input
-#     predicted_expense = model.predict(next_data_scaled)[0]
-
-#     # Render the prediction result to the user
-#     return render(request, 'predict_expense.html', {'predicted_expense': round(predicted_expense, 2)})
-#rewriting future prediction function#
-# def predict_future_expense(request):
-#     """Predict future expenses for 2025 based on historical data from a CSV file."""
-#     import pandas as pd
-#     from django.shortcuts import render
-    
-#     # Path to your CSV file
-#     file_path = 'expenses.csv'
-    
-#     # Load the data
-#     df = pd.read_csv(file_path)
-
-#     # Ensure the necessary columns are present
-#     if not {'category', 'amount', 'date'}.issubset(df.columns):
-#         return render(request, 'predict_expense.html', {
-#             'error': 'The CSV file must contain "category", "amount", and "date" columns.'
-#         })
-
-#     # Convert the date column to datetime format
-#     df['date'] = pd.to_datetime(df['date'])
-
-#     # Filter for the year 2024
-#     df_2024 = df[df['date'].dt.year == 2024]
-
-#     # Calculate the total spending for 2024
-#     total_2024 = df_2024['amount'].sum()
-
-#     # Predict future spending for 2025
-#     increase_percentage = 0.10  # Assuming a 10% increase
-#     predicted_2025_spending = total_2024 * (1 + increase_percentage)
-
-#     # Round the results and pass them to the template
-#     context = {
-#         'total_2024': round(total_2024, 2),
-#         'predicted_2025_spending': round(predicted_2025_spending, 2),
-#     }
-
-#     return render(request, 'predict_expense.html', context)
-
-
-#new trial#
+#.......................................................................................#
+#undoed latest future expense#
 # def predict_future_expense(request):
 #     """Predict future expenses for 2025 using historical data with seasonality and category trends."""
 #     import pandas as pd
 #     from django.shortcuts import render
-    
+#     from statsmodels.tsa.seasonal import seasonal_decompose
+#     from statsmodels.tsa.holtwinters import ExponentialSmoothing
 #     import numpy as np
 
 #     # Path to your CSV file
@@ -1556,132 +1470,121 @@ def export_to_csv(request):
 #     # Convert the date column to datetime format
 #     df['date'] = pd.to_datetime(df['date'])
 
-#     # Aggregate monthly expenses
+#     # Aggregate monthly expenses by category
 #     df['month'] = df['date'].dt.to_period('M')
-#     monthly_expenses = df.groupby('month')['amount'].sum().reset_index()
-#     monthly_expenses['month'] = monthly_expenses['month'].dt.to_timestamp()
+#     monthly_expenses_by_category = df.groupby(['month', 'category'])['amount'].sum().reset_index()
+#     monthly_expenses_by_category['month'] = monthly_expenses_by_category['month'].dt.to_timestamp()
 
 #     # Ensure sufficient data for seasonal decomposition
-#     if len(monthly_expenses) < 24:  # Minimum 2 years of data
+#     if len(monthly_expenses_by_category['month'].unique()) < 24:  # Minimum 2 years of data
 #         return render(request, 'predict_expense.html', {
 #             'error': 'Insufficient data for accurate prediction. At least 2 years of data are required.'
 #         })
 
-#     # Perform seasonal decomposition
-#     decomposition = seasonal_decompose(monthly_expenses['amount'], model='additive', period=12)
-#     trend = decomposition.trend
-#     seasonal = decomposition.seasonal
-#     residual = decomposition.resid
+#     # Perform forecasting for each category
+#     predictions_by_category = []
+#     for category, group in monthly_expenses_by_category.groupby('category'):
+#         try:
+#             # Perform seasonal decomposition
+#             decomposition = seasonal_decompose(group['amount'], model='additive', period=12)
+#             trend = decomposition.trend
+#             seasonal = decomposition.seasonal
+#             residual = decomposition.resid
 
-#     # Use Holt-Winters Exponential Smoothing for forecasting
-#     model = ExponentialSmoothing(
-#         monthly_expenses['amount'], 
-#         seasonal='add', 
-#         seasonal_periods=12, 
-#         trend='add'
-#     )
-#     model_fit = model.fit()
+#             # Use Holt-Winters Exponential Smoothing for forecasting
+#             model = ExponentialSmoothing(
+#                 group['amount'],
+#                 seasonal='add',
+#                 seasonal_periods=12,
+#                 trend='add'
+#             )
+#             model_fit = model.fit()
 
-#     # Predict expenses for 2025
-#     future_dates = pd.date_range(start=monthly_expenses['month'].iloc[-1] + pd.offsets.MonthEnd(1), periods=12, freq='M')
-#     predicted_expenses = model_fit.forecast(steps=12)
-#     predictions = pd.DataFrame({
-#         'month': future_dates,
-#         'predicted_expense': predicted_expenses
-#     })
+#             # Predict expenses for 2025
+#             future_dates = pd.date_range(start=group['month'].iloc[-1] + pd.offsets.MonthEnd(1), periods=12, freq='M')
+#             predicted_expenses = model_fit.forecast(steps=12)
+#             predictions = pd.DataFrame({
+#                 'month': future_dates,
+#                 'category': category,
+#                 'predicted_expense': predicted_expenses
+#             })
+#             predictions_by_category.append(predictions)
+#         except Exception as e:
+#             print(f"Error processing category {category}: {e}")
+#             continue
+
+#     predictions_by_category = pd.concat(predictions_by_category, ignore_index=True)
 
 #     # Prepare context for the template
 #     context = {
-#         'historical_data': monthly_expenses.to_html(index=False, classes='table table-bordered'),
-#         'predictions': predictions.to_html(index=False, classes='table table-bordered'),
-#         'trend': trend.tolist(),
-#         'seasonal': seasonal.tolist(),
-#         'residual': residual.tolist()
+#         'historical_data': monthly_expenses_by_category.to_html(index=False, classes='table table-bordered'),
+#         'predictions': predictions_by_category.to_html(index=False, classes='table table-bordered')
 #     }
 
 #     return render(request, 'predict_expense.html', context)
 
+import pandas as pd
+import joblib
+from django.shortcuts import render
+
+# Path to the trained models file
+models_file_path = 'expense_prediction_models.pkl'
+
 def predict_future_expense(request):
-    """Predict future expenses for 2025 using historical data with seasonality and category trends."""
-    import pandas as pd
-    from django.shortcuts import render
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    from statsmodels.tsa.holtwinters import ExponentialSmoothing
-    import numpy as np
-
-    # Path to your CSV file
-    file_path = 'expenses.csv'
-
-    # Load the data
     try:
-        df = pd.read_csv(file_path)
+        # Load the trained models
+        models = joblib.load(models_file_path)
+    except FileNotFoundError:
+        return render(request, 'predict_expense.html', {
+            'error': 'Prediction models not found. Please train the models first.'
+        })
+
+    # Load the data from the same CSV file to display historical data
+    csv_file_path = 'expenses.csv'
+    try:
+        df = pd.read_csv(csv_file_path)
     except FileNotFoundError:
         return render(request, 'predict_expense.html', {
             'error': 'The CSV file does not exist. Please upload the correct file.'
         })
 
-    # Ensure the necessary columns are present
-    if not {'category', 'amount', 'date'}.issubset(df.columns):
-        return render(request, 'predict_expense.html', {
-            'error': 'The CSV file must contain "category", "amount", and "date" columns.'
-        })
-
-    # Convert the date column to datetime format
+    # Prepare the historical data
     df['date'] = pd.to_datetime(df['date'])
-
-    # Aggregate monthly expenses by category
     df['month'] = df['date'].dt.to_period('M')
-    monthly_expenses_by_category = df.groupby(['month', 'category'])['amount'].sum().reset_index()
-    monthly_expenses_by_category['month'] = monthly_expenses_by_category['month'].dt.to_timestamp()
+    monthly_data = df.groupby(['month', 'category'])['amount'].sum().reset_index()
+    monthly_data['month'] = monthly_data['month'].dt.to_timestamp()
 
-    # Ensure sufficient data for seasonal decomposition
-    if len(monthly_expenses_by_category['month'].unique()) < 24:  # Minimum 2 years of data
-        return render(request, 'predict_expense.html', {
-            'error': 'Insufficient data for accurate prediction. At least 2 years of data are required.'
-        })
-
-    # Perform forecasting for each category
+    # Generate predictions using the pre-trained models
     predictions_by_category = []
-    for category, group in monthly_expenses_by_category.groupby('category'):
+    for category, group in monthly_data.groupby('category'):
         try:
-            # Perform seasonal decomposition
-            decomposition = seasonal_decompose(group['amount'], model='additive', period=12)
-            trend = decomposition.trend
-            seasonal = decomposition.seasonal
-            residual = decomposition.resid
-
-            # Use Holt-Winters Exponential Smoothing for forecasting
-            model = ExponentialSmoothing(
-                group['amount'],
-                seasonal='add',
-                seasonal_periods=12,
-                trend='add'
-            )
-            model_fit = model.fit()
-
-            # Predict expenses for 2025
-            future_dates = pd.date_range(start=group['month'].iloc[-1] + pd.offsets.MonthEnd(1), periods=12, freq='M')
-            predicted_expenses = model_fit.forecast(steps=12)
-            predictions = pd.DataFrame({
-                'month': future_dates,
-                'category': category,
-                'predicted_expense': predicted_expenses
-            })
-            predictions_by_category.append(predictions)
+            model = models.get(category)
+            if model:
+                # Predict for the next 12 months
+                future_dates = pd.date_range(
+                    start=group['month'].iloc[-1] + pd.offsets.MonthEnd(1),
+                    periods=12,
+                    freq='M'
+                )
+                predicted_expenses = model.forecast(steps=12)
+                predictions = pd.DataFrame({
+                    'month': future_dates,
+                    'category': category,
+                    'predicted_expense': predicted_expenses
+                })
+                predictions_by_category.append(predictions)
         except Exception as e:
-            print(f"Error processing category {category}: {e}")
-            continue
+            print(f"Error generating predictions for category {category}: {e}")
 
     predictions_by_category = pd.concat(predictions_by_category, ignore_index=True)
 
-    # Prepare context for the template
+    # Prepare the context
     context = {
-        'historical_data': monthly_expenses_by_category.to_html(index=False, classes='table table-bordered'),
+        'historical_data': monthly_data.to_html(index=False, classes='table table-bordered'),
         'predictions': predictions_by_category.to_html(index=False, classes='table table-bordered')
     }
 
     return render(request, 'predict_expense.html', context)
-
 
 
 from sklearn.linear_model import LinearRegression
@@ -1806,6 +1709,8 @@ def chatbot(request):
                   reply = "Hello,How can I assist you today"
             elif "how are you" in user_message:
                   reply = "Fine.How can I assist you today"
+            elif "who are you" in user_message:
+                  reply = "I am a software program on internet"
             else:
                 reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
 
