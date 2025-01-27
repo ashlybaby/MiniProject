@@ -914,7 +914,7 @@
       <div id="chatbot" class="chatbot-container">
         <div class="chat-header">
             <h5>Finance Chatbot</h5>
-            <button id="closeChat">X</button>
+            <button id="closeChat" class="close-toggle">X</button>
         </div>
         <div id="chatBody" class="chat-body">
             <div class="bot-message">
@@ -935,6 +935,10 @@
     
     <!-- JavaScript for Interactivity -->
     <script>
+        document.getElementById("closeChat").addEventListener("click", function () {
+  const chatBox = document.getElementById("chatBox");
+  chatBox.style.display = "none"; // Hides the chat box
+});
 // Sidebar Toggle for Mobile
 const sidebarToggleBtn = document.querySelector('.sidebar-toggle');
 const aside = document.querySelector('aside');

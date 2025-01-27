@@ -1711,6 +1711,9 @@ def chatbot(request):
                   reply = "Fine.How can I assist you today"
             elif "who are you" in user_message:
                   reply = "I am a software program on internet"
+            elif "income" in user_message:
+
+                  reply = "Please check expense  tracker or history to know about your income"
             else:
                 reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
 
