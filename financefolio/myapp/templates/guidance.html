@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guidance</title>
+    <style>
+        body, html {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: #283e4a;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-button, .logout-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .logout-button {
+            background-color: #d9534f;
+        }
+        
+        .dashboard-button:hover, .logout-button:hover {
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex-grow: 1;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #283e4a;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+        
+        .guidance-section {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        h3 {
+            color: #283e4a;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        footer {
+            background-color: #283e4a;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{% url 'user_dashboard' %}" class="dashboard-button">Dashboard</a>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
+    </header>
+
+    <div class="container">
+        <h2>Guidance</h2>
+
+        <div class="guidance-section">
+            <h3>Getting Started</h3>
+            <p>Welcome! Here's how you can make the most of our website:</p>
+            <ul>
+                <li>Use the <strong>Dashboard</strong> to access your personalized recommendations and insights.</li>
+                <li>Update your profile details for a customized experience.</li>
+                <li>Navigate through the menu to explore different features.</li>
+            </ul>
+        </div>
+
+        <div class="guidance-section">
+            <h3>Key Features</h3>
+            <p>Our platform offers the following features to enhance your experience:</p>
+            <ul>
+                <li>Personalized recommendations based on your preferences.</li>
+                <li>Interactive dashboards to track your income and expense  .</li>
+                <li>Secure and user-friendly interface for seamless navigation.</li>
+            </ul>
+        </div>
+
+        <div class="guidance-section">
+            <h3>Need Help?</h3>
+            <p>If you encounter any issues or have questions, you can contact us.</p>
+            <ul>
+                <li>Contact our support team through the <strong>financefolio2024@gmail.com</strong> or @9605289254.</li>
+                <li>Visit the <strong>Chatbot</strong>  for quick answers.</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 FinanceFolio. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

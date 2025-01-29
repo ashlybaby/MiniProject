@@ -673,7 +673,7 @@
 <body>
     <header>
         <div class="nav-left">
-            <span>Welcome, {{ user.email }}</span>
+            <span>Welcome  {{ user.first_name }} to FINANCE FOLIO </span>
         </div>
         
         <div class="nav-right">
@@ -720,6 +720,7 @@
                     <li><a href="#" id="tutorials-menu"><i class="fas fa-book-open"></i> <span>Tutorials</span></a></li>
                     <li><a href="#" id="feedback-menu"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a></li>
                     <li><a href="{% url 'feedback_list11'%}">View Feedbacks</a></li>
+                    <li><a href="{% url 'guidance_view'%}">Guidance</a></li>
                     <li><a href="{% url 'articles_list' %}" id="articles-menu"><i class="fas fa-bullhorn"></i> <span>Articles</span></a></li>
                     <li>
                         <form method="get" action="{% url 'read_csv' %}" style="display: inline;">
@@ -935,10 +936,63 @@
     
     <!-- JavaScript for Interactivity -->
     <script>
-        document.getElementById("closeChat").addEventListener("click", function () {
-  const chatBox = document.getElementById("chatBox");
-  chatBox.style.display = "none"; // Hides the chat box
-});
+        document.addEventListener("DOMContentLoaded", function () {
+            const chatBody = document.getElementById("chatBody");
+            const userMessageInput = document.getElementById("userMessage");
+            const sendMessageButton = document.getElementById("sendMessage");
+            const closeChatButton = document.getElementById("closeChat");
+            const chatToggleButton = document.getElementById("chatToggle");
+            const chatbotContainer = document.getElementById("chatbot");
+        
+            // Function to send the user message
+            function sendMessage() {
+                const userMessage = userMessageInput.value.trim();
+                if (userMessage === "") return; // Prevent sending empty messages
+        
+                // Append user message to chat
+                chatBody.innerHTML += `<div class="user-message"><strong>You:</strong> ${userMessage}</div>`;
+                userMessageInput.value = ""; // Clear input field
+        
+                // Send message to Django chatbot API
+                fetch("/chatbot/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userMessage })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Append bot response
+                    chatBody.innerHTML += `<div class="bot-message"><strong>Bot:</strong> ${data.reply}</div>`;
+                    chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll to latest message
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    chatBody.innerHTML += `<div class="bot-message error">Error: Unable to connect to chatbot.</div>`;
+                });
+            }
+        
+            // Send message when clicking "Send" button
+            sendMessageButton.addEventListener("click", sendMessage);
+        
+            // Send message when pressing "Enter" key
+            userMessageInput.addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Prevent form submission
+                    sendMessage();
+                }
+            });
+        
+            // Close chatbot on "X" button click
+            closeChatButton.addEventListener("click", function () {
+                chatbotContainer.style.display = "none"; // Hide chatbot
+            });
+        
+            // Reopen chatbot when clicking chat toggle button
+            chatToggleButton.addEventListener("click", function () {
+                chatbotContainer.style.display = "block"; // Show chatbot
+            });
+        });
+        
 // Sidebar Toggle for Mobile
 const sidebarToggleBtn = document.querySelector('.sidebar-toggle');
 const aside = document.querySelector('aside');

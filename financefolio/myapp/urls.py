@@ -81,6 +81,7 @@ urlpatterns = [
     path('feedbacklist11/',views.feedback_list11,name='feedback_list11'),
     path('articles_list/' ,views.articles_list,name='articles_list'),
     path('chatbot/', views.chatbot, name='chatbot'),
+    path('guidance_view/',views.guidance_view,name='guidance_view'),
     
 
     ]

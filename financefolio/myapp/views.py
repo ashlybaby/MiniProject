@@ -1714,6 +1714,8 @@ def chatbot(request):
             elif "income" in user_message:
 
                   reply = "Please check expense  tracker or history to know about your income"
+            elif "recommendation" in user_message:
+                  reply = "please check recommendation button avilable in dashboard to see personalized recommendation for you based on your goal progress"
             else:
                 reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
 
@@ -1779,3 +1781,6 @@ def articles_list(request):
     return render(request, 'articles_list.html', {'articles': articles})
 
 #..................................................................................#
+def guidance_view(request):
+    """View to display website usage guidance."""
+    return render(request, 'guidance.html')
