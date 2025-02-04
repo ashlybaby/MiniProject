@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,6 +96,15 @@
             font-size: 0.9em;
         }
 
+        /* Admin Response */
+        .admin-response {
+            background: #eef5ff;
+            border-left: 5px solid #1e90ff;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
         /* Footer */
         footer {
             background-color: #283e4a;
@@ -146,6 +156,20 @@
                     {% endif %}
 
                     <p><em>Created at: {{ query.created_at|date:"F d, Y H:i A" }}</em></p>
+
+                    <!-- Display Admin Responses -->
+                    {% if query.responses.all %}
+                        <div class="admin-response">
+                            <h6>Admin Response:</h6>
+                            {% for response in query.responses.all %}
+                                <p><strong>{{ response.admin.email }}</strong>: {{ response.response_text }}</p>
+                                <em>Responded at: {{ response.responded_at|date:"F d, Y H:i A" }}</em>
+                                {% if not forloop.last %}<hr>{% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No response from admin yet.</p>
+                    {% endif %}
 
                     <!-- Edit & Delete Buttons -->
                     <div class="query-actions">

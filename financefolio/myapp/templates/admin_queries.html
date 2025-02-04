@@ -20,16 +20,15 @@
         .header {
             background-color: #1a242f;
             color: white;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             font-size: 1.8em;
-            margin-bottom: 20px;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            height: 30px;
+            height: 50px;
         }
         .home-icon {
             position: absolute;
@@ -44,11 +43,11 @@
         }
         footer {
             background-color: #1a242f;
-            color: rgb(21, 45, 51);
+            color: white;
             text-align: center;
             padding: 10px;
             width: 100%;
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
@@ -62,6 +61,7 @@
         <a href="{% url 'index' %}" class="home-icon" title="Home">
             <i class="fas fa-home"></i> <!-- Home icon -->
         </a>
+        <span>Admin Queries</span>
     </div>
 
     <div class="container mt-4">
@@ -98,7 +98,7 @@
                     <td>{{ query.created_at }}</td>
                     <td>{{ query.updated_at }}</td>
                     <td>
-                        <a href="{% url 'admin_query_response' query.id %}" class="btn btn-sm btn-primary">Respond</a>
+                        <a href="{% url 'admin_response' query.id %}" class="btn btn-sm btn-primary">Respond</a>
                     </td>
                 </tr>
                 {% empty %}

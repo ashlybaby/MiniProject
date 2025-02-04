@@ -613,14 +613,16 @@ class QueryForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter query title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe your query'}),
         }
-# from django import forms
-# from .models import QueryResponse
 
-# class AdminResponseForm(forms.ModelForm):
-#     class Meta:
-#         model = QueryResponse
-#         fields = ['response', 'status']
-#         widgets = {
-#             'response': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter your response...'}),
-#             'status': forms.Select(attrs={'class': 'form-control'}),
-#         }
+
+from django import forms
+from .models import AdminResponse
+
+class AdminResponseForm(forms.ModelForm):
+    class Meta:
+        model = AdminResponse
+        fields = ['response_text']  # ✅ Use the correct field name
+        widgets = {
+            'response_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter your response...'}),
+        }
+

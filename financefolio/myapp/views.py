@@ -1919,20 +1919,34 @@ def delete_query(request, query_id):
 
     return render(request, "user_query_list.html")  # Fallback
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Query, AdminResponse
+from .forms import AdminResponseForm  # Ensure this form is created
+from django.contrib.auth.decorators import login_required
+
 @login_required
-def admin_query_response(request, query_id):
+def admin_response_view(request, query_id):
     query = get_object_or_404(Query, id=query_id)
-    responses = query.responses.all()  # Get all responses for the query
-    
+    responses = AdminResponse.objects.filter(query=query).order_by('-responded_at')
+
     if request.method == 'POST':
         form = AdminResponseForm(request.POST)
         if form.is_valid():
             response = form.save(commit=False)
+            response.admin = request.user
             response.query = query
-            response.admin = request.user  # Assign the logged-in admin
             response.save()
-            return redirect('admin_query_response', query_id=query.id)  # Refresh page after submission
+            return redirect('admin_response', query_id=query.id)  # Redirect to prevent form resubmission
     else:
         form = AdminResponseForm()
 
-    return render(request, 'admin_query_response.html', {'query': query, 'form': form, 'responses': responses})
+    return render(request, 'admin_response.html', {'query': query, 'responses': responses, 'form': form})
+
+
+
+from django.shortcuts import render
+from .models import Query, AdminResponse
+
+def user_queries(request):
+    queries = Query.objects.filter(user=request.user).prefetch_related('response')
+    return render(request, 'user_quries.html', {'queries': queries})

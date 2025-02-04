@@ -89,7 +89,10 @@ urlpatterns = [
     path('view-queries/', views.view_queries, name='view_queries'),
     path('query/edit/<int:query_id>/', views.edit_query, name='edit_query'),
     path('query/delete/<int:query_id>/', views.delete_query, name='delete_query'),
-    path('admin/query/<int:query_id>/', views.admin_query_response, name='admin_query_response'),
+    path('response/<int:query_id>/', views.admin_response_view, name='admin_response'),
+
+
+    
 ]
 
 
