@@ -1530,58 +1530,90 @@ from django.shortcuts import render
 # Path to the trained models file
 models_file_path = 'expense_prediction_models.pkl'
 
+import pandas as pd
+import joblib
+from django.shortcuts import render
+
+# Paths to files
+models_file_path = 'expense_prediction_models.pkl'
+csv_file_path = 'expenses.csv'
+
+import pandas as pd
+import joblib
+from django.shortcuts import render
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
+# File paths
+models_file_path = 'expense_prediction_models.pkl'
+csv_file_path = 'expenses.csv'
+
 def predict_future_expense(request):
     try:
-        # Load the trained models
+        # Load trained models
         models = joblib.load(models_file_path)
     except FileNotFoundError:
         return render(request, 'predict_expense.html', {
             'error': 'Prediction models not found. Please train the models first.'
         })
 
-    # Load the data from the same CSV file to display historical data
-    csv_file_path = 'expenses.csv'
     try:
+        # Load historical expense data
         df = pd.read_csv(csv_file_path)
     except FileNotFoundError:
         return render(request, 'predict_expense.html', {
             'error': 'The CSV file does not exist. Please upload the correct file.'
         })
 
-    # Prepare the historical data
-    df['date'] = pd.to_datetime(df['date'])
+    # Ensure required columns exist
+    required_columns = {'category', 'amount', 'date'}
+    if not required_columns.issubset(df.columns):
+        return render(request, 'predict_expense.html', {
+            'error': 'CSV file must contain "category", "amount", and "date" columns.'
+        })
+
+    # Convert date column to datetime
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df = df.dropna(subset=['date'])  # Drop rows with invalid dates
+
+    # Aggregate expenses per month and category
     df['month'] = df['date'].dt.to_period('M')
     monthly_data = df.groupby(['month', 'category'])['amount'].sum().reset_index()
     monthly_data['month'] = monthly_data['month'].dt.to_timestamp()
 
-    # Generate predictions using the pre-trained models
-    predictions_by_category = []
-    for category, group in monthly_data.groupby('category'):
-        try:
-            model = models.get(category)
-            if model:
-                # Predict for the next 12 months
-                future_dates = pd.date_range(
-                    start=group['month'].iloc[-1] + pd.offsets.MonthEnd(1),
-                    periods=12,
-                    freq='M'
-                )
-                predicted_expenses = model.forecast(steps=12)
-                predictions = pd.DataFrame({
-                    'month': future_dates,
-                    'category': category,
-                    'predicted_expense': predicted_expenses
-                })
-                predictions_by_category.append(predictions)
-        except Exception as e:
-            print(f"Error generating predictions for category {category}: {e}")
+    predictions_list = []
 
-    predictions_by_category = pd.concat(predictions_by_category, ignore_index=True)
+    # Get last recorded month for forecasting start
+    if not monthly_data.empty:
+        last_month = monthly_data['month'].max()
+        future_dates = pd.date_range(start=last_month + pd.offsets.MonthEnd(1), periods=12, freq='M')
 
-    # Prepare the context
+        # Predict expenses for each category
+        for category, group in monthly_data.groupby('category'):
+            try:
+                model = models.get(category)
+                if model:
+                    predicted_expenses = model.forecast(steps=12)
+                    category_predictions = pd.DataFrame({
+                        'month': future_dates,
+                        'category': category,
+                        'predicted_expense': predicted_expenses.round(2)
+                    })
+                    predictions_list.append(category_predictions)
+                else:
+                    print(f"No model found for category: {category}")
+            except Exception as e:
+                print(f"Error predicting for category {category}: {e}")
+
+    # Combine predictions
+    if predictions_list:
+        predictions_df = pd.concat(predictions_list, ignore_index=True)
+    else:
+        predictions_df = pd.DataFrame(columns=['month', 'category', 'predicted_expense'])
+
+    # Convert DataFrame to HTML tables for rendering
     context = {
         'historical_data': monthly_data.to_html(index=False, classes='table table-bordered'),
-        'predictions': predictions_by_category.to_html(index=False, classes='table table-bordered')
+        'predictions': predictions_df.to_html(index=False, classes='table table-bordered')
     }
 
     return render(request, 'predict_expense.html', context)
@@ -1668,7 +1700,10 @@ def download_csv(request):
         response = HttpResponse(file, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
         return response
+    
+
 #chatbot#
+# __________________________________________________________________________________#
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -1714,7 +1749,7 @@ def chatbot(request):
             elif "income" in user_message:
 
                   reply = "Please check expense  tracker or history to know about your income"
-            elif "recommendation" in user_message:
+            elif "recommandation" in user_message:
                   reply = "please check recommendation button avilable in dashboard to see personalized recommendation for you based on your goal progress"
             else:
                 reply = "I am not sure how to help with that. Would you please ask about finance management-related questions?"
@@ -1729,10 +1764,7 @@ def chatbot(request):
     # If not POST, return an error message
     return JsonResponse({"error": "Invalid request method."}, status=405)
 
-
-    
-#..................................................................................#
-
+#feedback#
 
 
 from django.core.paginator import Paginator
@@ -1770,17 +1802,137 @@ def feedback_list11(request):
         'query': query
     })
 
-
-
-# ................................................#
-from django.shortcuts import render
+#articles#
 from .models import Article  # Import your Article model
 
 def articles_list(request):
     articles = Article.objects.order_by('-date_posted')  # Get articles ordered by date
     return render(request, 'articles_list.html', {'articles': articles})
 
-#..................................................................................#
+
+#guidance#
 def guidance_view(request):
     """View to display website usage guidance."""
     return render(request, 'guidance.html')
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import QueryForm
+from .models import Query
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import QueryForm
+@login_required
+def submit_query(request):
+    if request.method == "POST":
+        form = QueryForm(request.POST)
+        if form.is_valid():
+            query = form.save(commit=False)
+            query.user = request.user  # Associate query with logged-in user
+            query.save()
+            messages.success(request, "Your query has been submitted successfully!")
+            return redirect("submit_query")  # Redirect back to the form after submission
+    else:
+        form = QueryForm()
+    
+    return render(request, "submit_query.html", {"form": form})
+
+
+@login_required
+def user_query_list(request):
+    queries = Query.objects.filter(user=request.user)  # Fetch queries for the logged-in user
+    return render(request, 'user_queries.html', {'queries': queries})
+
+from django.shortcuts import get_object_or_404
+
+@login_required
+def cancel_query(request, query_id):
+    query = get_object_or_404(Query, id=query_id, user=request.user)  # Ensure the query belongs to the user
+    query.status = 'C'  # Mark the query as 'Closed'
+    query.save()
+    messages.success(request, "Your query has been canceled successfully!")
+    return redirect('user_query_list')
+
+# from django.contrib.admin.views.decorators import staff_member_required
+
+# @staff_member_required
+from django.shortcuts import render
+from .models import Query
+
+def admin_query_list(request):
+    queries = Query.objects.all()  # Fetch all queries
+    return render(request, 'admin_queries.html', {'queries': queries})
+
+@login_required
+def resolve_query(request, query_id):
+    query = get_object_or_404(Query, id=query_id)
+    query.status = 'R'  # Mark as 'Resolved'
+    query.save()
+    messages.success(request, "Query has been resolved!")
+    return redirect('admin_query_list')
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Query
+
+@login_required
+def view_queries(request):
+    queries = Query.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'submit_query.html', {'queries': queries})
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Query
+from .forms import QueryForm
+
+def edit_query(request, query_id):
+    query = get_object_or_404(Query, id=query_id)
+    if request.method == "POST":
+        form = QueryForm(request.POST, instance=query)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Query updated successfully!")  # Success message
+            return redirect('edit_query', query_id=query.id)  # Stay to show message
+    else:
+        form = QueryForm(instance=query)
+
+    return render(request, 'edit_query.html', {'form': form})
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Query
+
+def delete_query(request, query_id):
+    query = get_object_or_404(Query, id=query_id, user=request.user)
+    
+    if request.method == "POST":
+        query.delete()
+        messages.success(request, "Query deleted successfully.")
+        return redirect("submit_query")  # Redirect after deletion
+
+    return render(request, "user_query_list.html")  # Fallback
+
+@login_required
+def admin_query_response(request, query_id):
+    query = get_object_or_404(Query, id=query_id)
+    responses = query.responses.all()  # Get all responses for the query
+    
+    if request.method == 'POST':
+        form = AdminResponseForm(request.POST)
+        if form.is_valid():
+            response = form.save(commit=False)
+            response.query = query
+            response.admin = request.user  # Assign the logged-in admin
+            response.save()
+            return redirect('admin_query_response', query_id=query.id)  # Refresh page after submission
+    else:
+        form = AdminResponseForm()
+
+    return render(request, 'admin_query_response.html', {'query': query, 'form': form, 'responses': responses})

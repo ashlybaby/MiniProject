@@ -82,17 +82,23 @@ urlpatterns = [
     path('articles_list/' ,views.articles_list,name='articles_list'),
     path('chatbot/', views.chatbot, name='chatbot'),
     path('guidance_view/',views.guidance_view,name='guidance_view'),
+    path('user_query_list/',views.user_query_list, name='user_query_list'),
+    path('query/cancel/<int:query_id>/', views.cancel_query, name='cancel_query'),
+    path('admin_query_list/', views.admin_query_list, name='admin_query_list'),
+    path('admin/query/resolve/<int:query_id>/', views.resolve_query, name='resolve_query'),
+    path('view-queries/', views.view_queries, name='view_queries'),
+    path('query/edit/<int:query_id>/', views.edit_query, name='edit_query'),
+    path('query/delete/<int:query_id>/', views.delete_query, name='delete_query'),
+    path('admin/query/<int:query_id>/', views.admin_query_response, name='admin_query_response'),
+]
+
+
+
     
 
-    ]
+    
  # URL path to view the CSV data
     # This URL will trigger the 'read_csv' view
-
-
-
-    
-    
-
 
 
 

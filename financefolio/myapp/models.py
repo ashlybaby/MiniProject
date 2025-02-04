@@ -288,3 +288,12 @@ class Query(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.user.email}"
+    
+class AdminResponse(models.Model):
+    query = models.ForeignKey(Query, on_delete=models.CASCADE, related_name='responses')
+    admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='admin_responses')
+    response_text = models.TextField()
+    responded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Response by {self.admin.email} to {self.query.title}"

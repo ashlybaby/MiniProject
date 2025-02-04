@@ -14,12 +14,17 @@ def train_model_from_csv():
         return
 
     # Ensure the necessary columns are present
-    if not {'category', 'amount', 'date'}.issubset(df.columns):
-        print('Error: The CSV file must contain "category", "amount", and "date" columns.')
+    required_columns = {'category', 'amount', 'date'}
+    if not required_columns.issubset(df.columns):
+        print(f'Error: The CSV file must contain the following columns: {", ".join(required_columns)}.')
         return
 
+    # Handle missing data (you can modify this depending on your preference)
+    df = df.dropna(subset=['category', 'amount', 'date'])
+
     # Convert the date column to datetime format
-    df['date'] = pd.to_datetime(df['date'])
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df = df.dropna(subset=['date'])  # Drop rows with invalid dates
 
     # Aggregate monthly expenses by category
     df['month'] = df['date'].dt.to_period('M')
