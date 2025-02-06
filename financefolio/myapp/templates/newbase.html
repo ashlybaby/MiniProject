@@ -290,6 +290,16 @@
                 margin-left: 0;
             }
         }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px; /* Adjust this width as necessary */
+            height: 100%;
+            background-color: #f8f9fa; /* Background color for sidebar */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000; /* Ensure it stays above other content */
+        }
     </style>
 </head>
 <body>
@@ -297,15 +307,11 @@
         <div class="nav-left">
             <span>Welcome to Finance Folio</span>
         </div>
-        <div class="nav-center">
+        {% comment %} <div class="nav-center">
             <a href="{% url 'user_dashboard' %}" class="dashboard-button">Home</a>
-        </div
+        </div {% endcomment %}
         <div class="nav-right">
-            {% comment %} <div class="dropdown">
-                <button class="dropbtn"><i class="fas fa-user-circle"></i> Profile</button>
-                <div class="dropdown-content">
-                    <a href="#" id="view-profile">View Profile</a>
-                    <a href="#" id="edit-profile-button"><i class="fas fa-edit"></i> Edit Profile</a> {% endcomment %}
+             
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
                         <button type="submit" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>

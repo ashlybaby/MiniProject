@@ -1,9 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Goal Progress</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Ensure body and html take full height */
@@ -13,44 +16,21 @@
             display: flex;
             flex-direction: column;
         }
-        .dashboard-button {
-            background-color: #28a745; /* Green background */
-            color: white;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            transition: background-color 0.3s, transform 0.2s;
-            text-decoration: none;
-        }
-
-        .dashboard-button i {
-            margin-right: 5px; /* Space between icon and text */
-        }
-
-        .dashboard-button:hover {
-            background-color: #218838; /* Darker green on hover */
-            transform: scale(1.05);
-        }
-
-        .dashboard-button:active {
-            transform: scale(0.95);
-        }
 
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
             color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
+        /* Header Styles */
         header {
             background-color: #283e4a;
             color: #fff;
-            padding: 15px 20px;
+            padding: 20px 20px; /* Increased padding for a bigger header */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -59,16 +39,74 @@
             position: fixed;
             width: 100%;
             top: 0;
-            left: 0;
             z-index: 1000;
-            box-sizing: border-box;
+            font-size: 1.5em; /* Increased font size for header */
         }
 
+        /* Container Layout */
         .container {
-            max-width: 1200px;
-            margin: 100px auto 20px; /* Added space for the fixed header */
-            padding: 40px 20px 20px; 
-            flex: 1; /* Takes remaining space */
+            display: flex;
+            flex: 1;
+            margin-top: 70px; /* Height of the fixed header */
+        }
+
+        /* Sidebar Styles */
+        aside {
+            width: 240px;
+            background-color: #34495e;
+            padding: 20px 15px;
+            border-right: 1px solid #2c3e50;
+            transition: width 0.3s ease;
+            position: fixed;
+            top: 70px;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .main-menu,
+        .secondary-menu {
+            margin-bottom: 30px;
+        }
+
+        .main-menu ul,
+        .secondary-menu ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .main-menu ul li a,
+        .secondary-menu ul li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background-color: #3d566e;
+            color: #ecf0f1;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            font-size: 1em;
+            text-decoration: none; /* Remove underline */
+        }
+
+        .main-menu ul li a:hover,
+        .secondary-menu ul li a:hover {
+            background-color: #2c3e50;
+        }
+
+        .main-menu ul li a i,
+        .secondary-menu ul li a i {
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+
+        /* Main Content Styles */
+        main {
+            flex: 1;
+            padding: 20px;
+            margin-left: 240px; /* Adjust this to match the sidebar width */
+            background-color: #ecf0f1;
+            min-height: calc(100vh - 70px);
+            transition: margin-left 0.3s ease;
         }
 
         h2 {
@@ -141,7 +179,6 @@
             margin-bottom: 10px;
         }
 
-        /* New CSS class for failed progress fill */
         .progress-fill {
             height: 100%;
             transition: width 0.5s;
@@ -179,44 +216,50 @@
             width: 100%;
             margin-top: auto; /* Sticks footer to bottom */
         }
-        
+
         .logout-button {
-            background-color: #d9534f; /* Bootstrap danger color */
+            background-color: #e74c3c; /* Red background for logout */
             color: white;
-            border: none;
-            padding: 10px 12px;
-            border-radius: 5px;
+            padding: 10px 20px;
             cursor: pointer;
-            font-size: 16px;
-            text-align: center;
-            display: flex; /* Flexbox for centering icon and text */
-            align-items: center; /* Center vertically */
-            transition: background-color 0.3s, transform 0.2s;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            text-align: left;
         }
-        
-        .logout-button i {
+
+        .logout-button:hover {
+            background-color: #c0392b; /* Darker red on hover */
+        }
+
+        .home-icon {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 15px; /* Padding for button-like appearance */
+            background-color: #4CAF50; /* Green background */
+            color: white; /* White text */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth transition */
+            text-decoration: none; /* Remove underline */
+        }
+
+        .home-icon:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+
+        .home-icon i {
             margin-right: 5px; /* Space between icon and text */
         }
-        
-        .logout-button:hover {
-            background-color: #c9302c; /* Darker shade on hover */
-            transform: scale(1.05);
-        }
-        
-        .logout-button:active {
-            transform: scale(0.95);
-        }
-       
-    
-        
     </style>
 </head>
 <body>
     <header>
         <div class="nav-left">
-            <a href="{% url 'user_dashboard' %}" class="dashboard-button">Dashboard</a>
+            <span>Welcome to Finance Folio</span>
         </div>
-        
+        {% comment %} <div class="nav-center">
+            <a href="{% url 'user_dashboard' %}" class="dashboard-button home-icon">Home</a> <!-- Home icon styled as a button -->
+        </div> {% endcomment %}
         <div class="nav-right">
             <form action="{% url 'logout' %}" method="post">
                 {% csrf_token %}
@@ -226,55 +269,87 @@
     </header>
 
     <div class="container">
-        <h2>Goal Progress</h2>
-
-        <div class="goal-list">
-            {% for data in progress_data %}
-            <div class="goal-container {% if data.status == 'failed' %}failed{% elif data.status == 'completed' %}completed{% elif data.status == 'ongoing' %}ongoing{% endif %}">
-                <div class="goal-header">
-                    <strong>{{ data.goal.name }}</strong> ({{ data.goal.category }})
-                </div>
-                <div class="goal-status">
-                    <span>Target: {{ data.goal.target_amount }}</span> | 
-                    <span>Current: {{ data.goal.current_amount }}</span>
-                </div>
-                <div class="goal-status">
-                    <span>Status: <span class="status-indicator">{{ data.status|capfirst }}</span></span> <!-- Display the status -->
-                </div>
-                <div class="goal-deadline">
-                    <span>Deadline: {{ data.goal.deadline }}</span>  <!-- Display the deadline -->
-                </div>
-
-                <div class="progress-bar">
-                    <div class="progress-fill {% if data.status == 'failed' %}failed{% elif data.status == 'completed' %}completed{% elif data.status == 'ongoing' %}ongoing{% endif %}" style="width: {{ data.progress }}%;"></div>
-                </div>
-
-                <div class="chart-container">
-                    <canvas id="chart-{{ forloop.counter }}" width="400" height="200"></canvas>
-                    <script>
-                        const ctx = document.getElementById('chart-{{ forloop.counter }}').getContext('2d');
-                        const myChart = new Chart(ctx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['Current Amount', 'Remaining Amount'],
-                                datasets: [{
-                                    label: 'Goal Progress',
-                                    data: [{{ data.goal.current_amount }}, {{ data.goal.target_amount|add:'-'|add:data.goal.current_amount }}],
-                                    backgroundColor: ['#4caf50', '#e0e0e0'],
-                                    borderColor: ['#fff', '#fff'],
-                                    borderWidth: 2
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                            }
-                        });
-                    </script>
-                </div>
+        <aside>
+            <div class="main-menu">
+                <ul>
+                    <li><a href="{% url 'budget_view' %}"><i class="fas fa-wallet"></i> <span>Track Expense</span></a></li>
+                    <li><a href="#"><i class="fas fa-chart-line"></i> <span>History & Chart</span></a></li>
+                    <li><a href="{% url 'goal_view' %}"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
+                    <li><a href="{% url 'goal_progress' %}"><i class="fas fa-chart-pie"></i> <span>Goal Progress</span></a></li>
+                    <li><a href="{% url 'get_announcements' %}"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
+                    <li><a href="#"><i class="fas fa-book-open"></i> <span>Tutorials</span></a></li>
+                </ul>
             </div>
-            {% endfor %}
-        </div>
+            <div class="secondary-menu">
+                <ul>
+                    <li><a href="#"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a></li>
+                    <li><a href="{% url 'feedback_list11' %}">View Feedbacks</a></li>
+                    <li><a href="{% url 'guidance_view' %}">Guidance</a></li>
+                    <li><a href="{% url 'submit_query' %}">Add Query</a></li>
+                    <li><a href="{% url 'user_query_list' %}">View Query</a></li>
+                    <li><a href="{% url 'articles_list' %}"><i class="fas fa-bullhorn"></i> <span>Articles</span></a></li>
+                    <li>
+                        <form method="get" action="{% url 'read_csv' %}" style="display: inline;">
+                            <button type="submit" id="prediction-button" class="btn btn-link" style="text-decoration: none; color: inherit;">
+                                <i class="fas fa-chart-line"></i> <span>Future Predictions</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <main id="main-content">
+            <h2>Goal Progress</h2>
+
+            <div class="goal-list">
+                {% for data in progress_data %}
+                <div class="goal-container {% if data.status == 'failed' %}failed{% elif data.status == 'completed' %}completed{% elif data.status == 'ongoing' %}ongoing{% endif %}">
+                    <div class="goal-header">
+                        <strong>{{ data.goal.name }}</strong> ({{ data.goal.category }})
+                    </div>
+                    <div class="goal-status">
+                        <span>Target: {{ data.goal.target_amount }}</span> | 
+                        <span>Current: {{ data.goal.current_amount }}</span>
+                    </div>
+                    <div class="goal-status">
+                        <span>Status: <span class="status-indicator">{{ data.status|capfirst }}</span></span> <!-- Display the status -->
+                    </div>
+                    <div class="goal-deadline">
+                        <span>Deadline: {{ data.goal.deadline }}</span>  <!-- Display the deadline -->
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill {% if data.status == 'failed' %}failed{% elif data.status == 'completed' %}completed{% elif data.status == 'ongoing' %}ongoing{% endif %}" style="width: {{ data.progress }}%;"></div>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="chart-{{ forloop.counter }}" width="400" height="200"></canvas>
+                        <script>
+                            const ctx = document.getElementById('chart-{{ forloop.counter }}').getContext('2d');
+                            const myChart = new Chart(ctx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Current Amount', 'Remaining Amount'],
+                                    datasets: [{
+                                        label: 'Goal Progress',
+                                        data: [{{ data.goal.current_amount }}, {{ data.goal.target_amount|add:'-'|add:data.goal.current_amount }}],
+                                        backgroundColor: ['#4caf50', '#e0e0e0'],
+                                        borderColor: ['#fff', '#fff'],
+                                        borderWidth: 2
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
     </div>
 
     <footer>
