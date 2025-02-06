@@ -529,6 +529,29 @@ from django import forms
 from django.utils import timezone
 from .models import Goal
 
+# class GoalForm(forms.ModelForm):
+#     class Meta:
+#         model = Goal
+#         fields = ['name', 'category', 'target_amount', 'deadline']
+
+#     # Ensure target amount is positive
+#     def clean_target_amount(self):
+#         target_amount = self.cleaned_data.get('target_amount')
+#         if target_amount <= 0:
+#             raise forms.ValidationError("Target amount must be greater than 0.")
+#         return target_amount
+
+#     # Ensure deadline is in the future
+#     def clean_deadline(self):
+#         deadline = self.cleaned_data.get('deadline')
+#         if deadline <= timezone.now().date():
+#             raise forms.ValidationError("Deadline must be a future date.")
+#         return deadline
+
+from django import forms
+from django.utils import timezone
+from .models import Goal
+
 class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
@@ -547,8 +570,6 @@ class GoalForm(forms.ModelForm):
         if deadline <= timezone.now().date():
             raise forms.ValidationError("Deadline must be a future date.")
         return deadline
-
-
 
 from .models import Announcement
 import re

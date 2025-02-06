@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -9,247 +8,252 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
-          /* General Styles */
-body {
-    font-family: 'Roboto', sans-serif; /* Updated font */
-    margin: 0;
-    padding: 0;
-    background-color: #f0f8ff; /* Light blue background */
-}
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif; /* Updated font */
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff; /* Light blue background */
+        }
 
-header {
-    background-color: #283e4a; /* Updated header color */
-    color: white;
-    padding: 20px 30px; /* Increased padding for better spacing */
-    text-align: center;
-    border-bottom: 2px solid #1a2a33; /* Updated border */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
-    position: fixed; /* Fixed position */
-    width: 100%; /* Full width */
-    top: 0; /* Position it at the top */
-    left: 0; /* Align to left */
-    z-index: 1000; /* Keep it above other elements */
-}
+        header {
+            background-color: #283e4a; /* Updated header color */
+            color: white;
+            padding: 20px 30px; /* Increased padding for better spacing */
+            text-align: center;
+            border-bottom: 2px solid #1a2a33; /* Updated border */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+            position: fixed; /* Fixed position */
+            width: 100%; /* Full width */
+            top: 0; /* Position it at the top */
+            left: 0; /* Align to left */
+            z-index: 1000; /* Keep it above other elements */
+        }
 
-header h1 {
-    margin: 0;
-    font-size: 1.8em; /* Adjusted header font size */
-}
+        header h1 {
+            margin: 0;
+            font-size: 1.8em; /* Adjusted header font size */
+        }
 
-nav {
-    display: flex;
-    justify-content: center;
-    gap: 30px; /* Increased gap for better spacing */
-}
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* Increased gap for better spacing */
+        }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    padding: 12px 20px; /* Increased padding */
-    border-radius: 5px;
-    transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
-}
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px; /* Increased padding */
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
+        }
 
-nav a:hover {
-    background-color: #0056b3; /* Hover effect */
-    transform: scale(1.05); /* Slight zoom effect on hover */
-}
+        nav a:hover {
+            background-color: #0056b3; /* Hover effect */
+            transform: scale(1.05); /* Slight zoom effect on hover */
+        }
 
-.container {
-    width: 80%;
-    margin: 100px auto; /* Adjusted to avoid overlap with fixed header */
-    background-color: #fff;
-    padding: 30px; /* Increased padding */
-    border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
-}
+        .container {
+            width: 80%;
+            margin: 100px auto; /* Adjusted to avoid overlap with fixed header */
+            background-color: #fff;
+            padding: 30px; /* Increased padding */
+            border-radius: 15px; /* Rounded corners */
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
+        }
 
-h2 {
-    text-align: center;
-    color: #2980b9; /* Updated color */
-    font-size: 1.6em; /* Adjusted font size */
-}
+        h2 {
+            text-align: center;
+            color: #2980b9; /* Updated color */
+            font-size: 1.6em; /* Adjusted font size */
+        }
 
-/* Add Goal Form */
-.add-goal {
-    margin-top: 30px;
-    display: flex;
-    justify-content: center;
-}
+        /* Add Goal Form */
+        .add-goal {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+        }
 
-.add-goal form {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 15px; /* Increased gap for better spacing */
-    align-items: center;
-}
+        .add-goal form {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Increased gap for better spacing */
+            align-items: center;
+        }
 
-.add-goal form input[type="text"],
-.add-goal form input[type="number"],
-.add-goal form input[type="date"],
-.add-goal form select {
-    padding: 15px; /* Increased padding */
-    border: 1px solid #bdc3c7; /* Updated border */
-    border-radius: 8px; /* Rounded corners */
-    width: 60%;
-    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
-}
+        .add-goal form input[type="text"],
+        .add-goal form input[type="number"],
+        .add-goal form input[type="date"],
+        .add-goal form select {
+            padding: 15px; /* Increased padding */
+            border: 1px solid #bdc3c7; /* Updated border */
+            border-radius: 8px; /* Rounded corners */
+            width: 60%;
+            transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+        }
 
-.add-goal form input:focus,
-.add-goal form select:focus {
-    border-color: #2980b9; /* Focus color */
-    box-shadow: 0 0 8px rgba(41, 128, 185, 0.5); /* Glow effect on focus */
-}
+        .add-goal form input:focus,
+        .add-goal form select:focus {
+            border-color: #2980b9; /* Focus color */
+            box-shadow: 0 0 8px rgba(41, 128, 185, 0.5); /* Glow effect on focus */
+        }
 
-.add-goal form button {
-    padding: 12px 25px; /* Increased padding */
-    border: none;
-    background-color: #2980b9; /* Updated button color */
-    color: #fff;
-    border-radius: 8px; /* Rounded corners */
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
-}
+        .add-goal form button {
+            padding: 12px 25px; /* Increased padding */
+            border: none;
+            background-color: #2980b9; /* Updated button color */
+            color: #fff;
+            border-radius: 8px; /* Rounded corners */
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+        }
 
-.add-goal form button:hover {
-    background-color: #3498db; /* Hover color */
-    transform: scale(1.05); /* Slight zoom effect on hover */
-}
+        .add-goal form button:hover {
+            background-color: #3498db; /* Hover color */
+            transform: scale(1.05); /* Slight zoom effect on hover */
+        }
 
-/* Goal Section */
-.goal-category {
-    margin-bottom: 40px; /* Increased margin */
-}
+        /* Error Messages */
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none; /* Hidden by default */
+        }
 
-.goal-category h3 {
-    color: #2980b9; /* Updated color */
-    border-bottom: 2px solid #2980b9; /* Updated border */
-    padding-bottom: 5px;
-}
+        /* Goal Section */
+        .goal-category {
+            margin-bottom: 40px; /* Increased margin */
+        }
 
-/* Button to toggle goals */
-.toggle-goals-btn {
-    background-color: #2980b9; /* Updated button color */
-    color: white;
-    padding: 12px; /* Increased padding */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    display: block;
-    margin: 0 auto;
-    width: 220px; /* Increased width */
-    transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
-}
+        .goal-category h3 {
+            color: #2980b9; /* Updated color */
+            border-bottom: 2px solid #2980b9; /* Updated border */
+            padding-bottom: 5px;
+        }
 
-.toggle-goals-btn:hover {
-    background-color: #3498db; /* Hover color */
-    transform: scale(1.05); /* Slight zoom effect on hover */
-}
+        /* Button to toggle goals */
+        .toggle-goals-btn {
+            background-color: #2980b9; /* Updated button color */
+            color: white;
+            padding: 12px; /* Increased padding */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            width: 220px; /* Increased width */
+            transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
+        }
 
-/* Goal List (hidden initially) */
-.goal-list {
-    display: none;
-    margin-top: 10px;
-    list-style-type: none;
-    padding-left: 0;
-}
+        .toggle-goals-btn:hover {
+            background-color: #3498db; /* Hover color */
+            transform: scale(1.05); /* Slight zoom effect on hover */
+        }
 
-.goal-list li {
-    background-color: #ecf0f1; /* Updated background */
-    padding: 20px;
-    margin-bottom: 15px; /* Increased margin */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #bdc3c7; /* Updated border */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1); /* Enhanced shadow */
-    transition: transform 0.2s; /* Transition for hover effect */
-}
+        /* Goal List (hidden initially) */
+        .goal-list {
+            display: none;
+            margin-top: 10px;
+            list-style-type: none;
+            padding-left: 0;
+        }
 
-.goal-list li:hover {
-    transform: translateY(-5px); /* Lift effect on hover */
-}
+        .goal-list li {
+            background-color: #ecf0f1; /* Updated background */
+            padding: 20px;
+            margin-bottom: 15px; /* Increased margin */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #bdc3c7; /* Updated border */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1); /* Enhanced shadow */
+            transition: transform 0.2s; /* Transition for hover effect */
+        }
 
-/* Goal Actions */
-.goal-actions {
-    display: flex;
-    gap: 10px;
-}
+        .goal-list li:hover {
+            transform: translateY(-5px); /* Lift effect on hover */
+        }
 
-.goal-actions button {
-    border: none;
-    background-color: #fff; /* Button background */
-    cursor: pointer;
-}
+        /* Goal Actions */
+        .goal-actions {
+            display: flex;
+            gap: 10px;
+        }
 
-.goal-actions button i {
-    color: #2980b9; /* Icon color */
-    font-size: 20px; /* Increased icon size */
-}
+        .goal-actions button {
+            border: none;
+            background-color: #fff; /* Button background */
+            cursor: pointer;
+        }
 
-.goal-actions button:hover i {
-    color: #3498db; /* Icon hover color */
-}
+        .goal-actions button i {
+            color: #2980b9; /* Icon color */
+            font-size: 20px; /* Increased icon size */
+        }
 
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5); /* Darker overlay */
-    padding-top: 60px;
-}
+        .goal-actions button:hover i {
+            color: #3498db; /* Icon hover color */
+        }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; /* Increased margin for better positioning */
-    padding: 30px; /* Increased padding */
-    border: 1px solid #888;
-    width: 80%;
-    border-radius: 10px; /* Rounded corners for modal */
-}
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5); /* Darker overlay */
+            padding-top: 60px;
+        }
 
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* Increased margin for better positioning */
+            padding: 30px; /* Increased padding */
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px; /* Rounded corners for modal */
+        }
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
 
-footer {
-    background-color: #2c3e50;
-    color: white;
-    text-align: center;
-    padding: 15px; /* Increased padding */
-    position: fixed; /* Make footer fixed */
-    width: 100%; /* Full width */
-    bottom: 0; /* Position it at the bottom */
-}
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
 
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px; /* Increased padding */
+            position: fixed; /* Make footer fixed */
+            width: 100%; /* Full width */
+            bottom: 0; /* Position it at the bottom */
+        }
     </style>
     
 </head>
 <body>
 
 <header>
-    
     <nav>
         <a href="{% url 'user_dashboard' %}">Home</a>
-        
     </nav>
 </header>
 
@@ -264,11 +268,11 @@ footer {
             </div>
         {% endfor %}
     </div>
-{% endif %}
+    {% endif %}
 
     <!-- Add Goal Form -->
     <div class="add-goal">
-        <form method="POST" action="{% url 'add_goal' %}">
+        <form method="POST" action="{% url 'add_goal' %}" id="goal-form">
             {% csrf_token %}
             
             <div class="form-group">
@@ -301,6 +305,7 @@ footer {
 
             <div class="form-group">
                 <input type="number" name="target_amount" id="target_amount" placeholder="Target Amount" step="0.01" required>
+                <div id="target_amount_error" class="error-message"></div>
                 {% if form.target_amount.errors %}
                     <ul class="errorlist">
                         {% for error in form.target_amount.errors %}
@@ -311,7 +316,7 @@ footer {
             </div>
 
             <div class="form-group">
-                <label for="deadline">Expense(Current Month)</label>
+                <label for="current_amount">Expense(Current Month)</label>
                 <input type="number" id="current_amount" name="current_amount" placeholder="Current Amount" step="0.01" required readonly>
                 {% if form.current_amount.errors %}
                     <ul class="errorlist">
@@ -325,6 +330,7 @@ footer {
             <div class="form-group">
                 <label for="deadline">Target Deadline (Month)</label>
                 <input type="date" id="deadline" name="deadline" required>
+                <div id="deadline_error" class="error-message"></div>
                 {% if form.deadline.errors %}
                     <ul class="errorlist">
                         {% for error in form.deadline.errors %}
@@ -333,47 +339,38 @@ footer {
                     </ul>
                 {% endif %}
             </div>
-            {% if messages %}
-    {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
-
 
             <button type="submit" id="add-goal-button">Add Goal</button>
         </form>
     </div>
 </div>
 
+<!-- Toggle Goals Button -->
+<button class="toggle-goals-btn" onclick="toggleGoals()">View Goals</button>
 
-    <!-- Toggle Goals Button -->
-    <button class="toggle-goals-btn" onclick="toggleGoals()">View Goals</button>
-
-    <!-- Goal Categories (Hidden by default) -->
-    <div class="goal-category">
-        <ul class="goal-list">
-            {% for goal in user.goals.all %}
-                <li>
-                    <span>{{ goal.name }} - {{ goal.target_amount }} by {{ goal.deadline }} ({{ goal.category }})</span>
-                    <div class="goal-actions">
-                        <button class="edit-btn" data-id="{{ goal.id }}" data-name="{{ goal.name }}" data-category="{{ goal.category }}" data-target="{{ goal.target_amount }}" data-deadline="{{ goal.deadline }}">
-                            <i class="fas fa-edit"></i>
-                        </button> <!-- Edit goal -->
-                        <form method="POST" action="{% url 'delete_goal' goal.id %}">
-                            {% csrf_token %}
-                            <button type="submit" style="background:none; border:none;">
-                                <i class="fas fa-trash"></i> <!-- Delete goal -->
-                            </button>
-                        </form>
-                    </div>
-                </li>
-            {% empty %}
-                <li>No goals yet.</li>
-            {% endfor %}
-        </ul>
-    </div>
+<!-- Goal Categories (Hidden by default) -->
+<div class="goal-category">
+    <ul class="goal-list">
+        {% for goal in user.goals.all %}
+            <li>
+                <span>{{ goal.name }} - {{ goal.target_amount }} by {{ goal.deadline }} ({{ goal.category }})</span>
+                <div class="goal-actions">
+                    <button class="edit-btn" data-id="{{ goal.id }}" data-name="{{ goal.name }}" data-category="{{ goal.category }}" data-target="{{ goal.target_amount }}" data-deadline="{{ goal.deadline }}">
+                        <i class="fas fa-edit"></i>
+                    </button> <!-- Edit goal -->
+                    <form method="POST" action="{% url 'delete_goal' goal.id %}">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none; border:none;">
+                            <i class="fas fa-trash"></i> <!-- Delete goal -->
+                        </button>
+                    </form>
+                </div>
+            </li>
+        {% empty %}
+            <li>No goals yet.</li>
+        {% endfor %}
+    </ul>
+</div>
 </div>
 
 <!-- Edit Goal Modal -->
@@ -495,50 +492,35 @@ footer {
         function capitalizeFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
-    });
 
-    $(document).ready(function() {
-        $('#categorySelect').change(function() {
-            const category = this.value;
-            const goalNameInput = $('#goalName');
-    
-            // Predefined goal names based on categories
-            const goalSuggestions = {
-                'rent': 'Save for Rent',
-                'food': 'Monthly Grocery Savings',
-                'travel': 'Vacation Savings',
-                'entertainment': 'Entertainment Fund',
-                'electricity': 'Electricity Bill Savings',
-                'medicine': 'Health & Medicine Fund',
-                'groceries': 'Grocery Savings',
-                'bills': 'Monthly Bill Payments',
-                'loan': 'Loan Repayment Fund',
-                'insurance': 'Insurance Premium Fund',
-                'transport': 'Transport Expense Fund',
-                'subscriptions': 'Manage Subscriptions Fund',
-                'clothing': 'Clothing Fund',
-                'household_supplies': 'Household Supplies Fund',
-                'dining_out': 'Dining Out Budget',
-                'gifts': 'Gifts Savings',
-                'miscellaneous': 'Miscellaneous Expense Fund',
-                'charity': 'Charity Donation Fund',
-                'education': 'Education Fund',
-                'dress': 'Dress Fund',
-                'gym': 'Gym Membership Fund',
-                'custom': 'Custom Goal for Other Expenses'
-            };
+        // Client-side validation
+        const targetAmountInput = document.getElementById('target_amount');
+        const deadlineInput = document.getElementById('deadline');
 
-            // Auto-fill with predefined suggestion, if available
-            goalNameInput.val(goalSuggestions[category] || capitalizeFirstLetter(category));
+        targetAmountInput.addEventListener('input', function() {
+            const errorDiv = document.getElementById('target_amount_error');
+            if (this.value <= 0) {
+                errorDiv.innerText = "Target amount must be greater than 0.";
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
 
-            // Utility function to capitalize the first letter of the category
-            function capitalizeFirstLetter(string) {
-                return string.charAt(0).toUpperCase() + string.slice(1);
+        deadlineInput.addEventListener('input', function() {
+            const errorDiv = document.getElementById('deadline_error');
+            const today = new Date();
+            const selectedDate = new Date(this.value);
+            today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+            if (selectedDate <= today) {
+                errorDiv.innerText = "Deadline must be a future date.";
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
             }
         });
     });
 </script>
-
 
 <footer>
     <p>&copy; 2024 FinanceFolio</p>
