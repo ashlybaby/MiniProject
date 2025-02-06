@@ -125,7 +125,26 @@
         .logout-button:hover {
             background-color: #c0392b;
         }
-
+        .home-icon {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #4CAF50; /* Green background */
+            color: white; /* White text */
+            border-radius: 5px; /* Rounded corners */
+            text-decoration: none; /* Remove underline */
+            transition: background-color 0.3s; /* Smooth transition */
+        }
+        
+        .home-icon:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+        
+        .home-icon::before {
+            content: '🏠'; /* Home emoji as icon */
+            margin-right: 5px; /* Space between icon and text */
+            font-size: 1.2em; /* Increase icon size */
+        }
         /* Container Layout */
         .container {
             display: flex;
@@ -278,12 +297,15 @@
         <div class="nav-left">
             <span>Welcome to Finance Folio</span>
         </div>
+        <div class="nav-center">
+            <a href="{% url 'user_dashboard' %}" class="dashboard-button">Home</a>
+        </div
         <div class="nav-right">
-            <div class="dropdown">
+            {% comment %} <div class="dropdown">
                 <button class="dropbtn"><i class="fas fa-user-circle"></i> Profile</button>
                 <div class="dropdown-content">
                     <a href="#" id="view-profile">View Profile</a>
-                    <a href="#" id="edit-profile-button"><i class="fas fa-edit"></i> Edit Profile</a>
+                    <a href="#" id="edit-profile-button"><i class="fas fa-edit"></i> Edit Profile</a> {% endcomment %}
                     <form action="{% url 'logout' %}" method="post">
                         {% csrf_token %}
                         <button type="submit" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
