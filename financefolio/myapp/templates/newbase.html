@@ -1,0 +1,389 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Finance Folio{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #283e4a;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #1a2a33;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-left span {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .nav-right {
+            position: relative;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background-color: #4a6ea9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            font-size: 1em;
+        }
+
+        .dropbtn:hover {
+            background-color: #3A4B7C;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 180px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            right: 0;
+            z-index: 1;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .dropdown-content a,
+        .dropdown-content button {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .dropdown-content a:hover,
+        .dropdown-content button:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .logout-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            text-align: left;
+        }
+
+        .logout-button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Container Layout */
+        .container {
+            display: flex;
+            flex: 1;
+            margin-top: 70px; /* Height of the fixed header */
+        }
+
+        /* Sidebar Styles */
+        aside {
+            width: 240px;
+            background-color: #34495e;
+            padding: 20px 15px;
+            border-right: 1px solid #2c3e50;
+            transition: width 0.3s ease;
+            position: fixed;
+            top: 70px;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: absolute;
+            top: 15px;
+            right: -40px;
+            background-color: #34495e;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 0 5px 5px 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background-color: #2c3e50;
+        }
+
+        .main-menu,
+        .secondary-menu {
+            margin-bottom: 30px;
+        }
+
+        .main-menu ul,
+        .secondary-menu ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .main-menu ul li a,
+        .secondary-menu ul li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background-color: #3d566e;
+            color: #ecf0f1;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            font-size: 1em;
+        }
+
+        .main-menu ul li a:hover,
+        .secondary-menu ul li a:hover {
+            background-color: #2c3e50;
+        }
+
+        .main-menu ul li a i,
+        .secondary-menu ul li a i {
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+
+        .secondary-menu {
+            background-color: #2c3e50;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Collapse Sidebar */
+        .collapsed aside {
+            width: 60px;
+        }
+
+        .collapsed aside .main-menu ul li a span,
+        .collapsed aside .secondary-menu ul li a span {
+            display: none;
+        }
+
+        .collapsed aside .sidebar-toggle {
+            right: -40px;
+        }
+
+        /* Main Content Styles */
+        main {
+            flex: 1;
+            padding: 20px;
+            margin-left: 240px;
+            background-color: #ecf0f1;
+            min-height: calc(100vh - 70px);
+            transition: margin-left 0.3s ease;
+        }
+
+        .collapsed main {
+            margin-left: 60px;
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #283e4a;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            position: relative;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            aside {
+                position: fixed;
+                left: -240px;
+                top: 70px;
+                height: calc(100vh - 70px);
+                transition: left 0.3s ease;
+                z-index: 1000;
+            }
+
+            aside.active {
+                left: 0;
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            main {
+                margin-left: 0;
+            }
+
+            .collapsed main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-left">
+            <span>Welcome to Finance Folio</span>
+        </div>
+        <div class="nav-right">
+            <div class="dropdown">
+                <button class="dropbtn"><i class="fas fa-user-circle"></i> Profile</button>
+                <div class="dropdown-content">
+                    <a href="#" id="view-profile">View Profile</a>
+                    <a href="#" id="edit-profile-button"><i class="fas fa-edit"></i> Edit Profile</a>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside>
+            <button class="sidebar-toggle"><i class="fas fa-chevron-left"></i></button>
+            <div class="main-menu">
+                <ul>
+                    <li><a href="{% url 'budget_view' %}" id="budgeting-menu"><i class="fas fa-wallet"></i> <span>Track Expense</span></a></li>
+                    <li><a href="#" id="history-menu"><i class="fas fa-chart-line"></i> <span>History & Chart</span></a></li>
+                    <li><a href="{% url 'goal_view' %}" id="goal-stracking-menu"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
+                    <li><a href="{% url 'goal_progress'%}" id="goal-progress-menu"><i class="fas fa-chart-pie"></i> <span>Goal Progress</span></a></li>
+                    <li><a href="{% url 'get_announcements' %}" id="announcements-menu"><i class="fas fa-bullhorn"></i> <span>Announcements</span></a></li>
+                    <li><a href="#" id="tutorials-menu"><i class="fas fa-book-open"></i> <span>Tutorials</span></a></li>
+                </ul>
+            </div>
+            <div class="secondary-menu">
+                <ul>
+                    <li><a href="#" id="feedback-menu"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a></li>
+                    <li><a href="{% url 'feedback_list11'%}">View Feedbacks</a></li>
+                    <li><a href="{% url 'guidance_view'%}">Guidance</a></li>
+                    <li><a href="{% url 'submit_query'%}">Add Query</a></li>
+                    <li><a href="{% url 'user_query_list'%}">View Query</a></li>
+                    <li><a href="{% url 'articles_list' %}" id="articles-menu"><i class="fas fa-bullhorn"></i> <span>Articles</span></a></li>
+                    <li>
+                        <form method="get" action="{% url 'read_csv' %}" style="display: inline;">
+                            <button type="submit" id="prediction-button" class="btn btn-link" style="text-decoration: none; color: inherit;">
+                                <i class="fas fa-chart-line"></i> <span>Future Predictions</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <main id="main-content">
+            {% block content %}
+            <!-- Content will be overridden by child templates -->
+            {% endblock %}
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Finance Folio. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebarToggleBtn = document.querySelector('.sidebar-toggle');
+            const aside = document.querySelector('aside');
+            const mainContent = document.getElementById('main-content');
+
+            sidebarToggleBtn.addEventListener('click', () => {
+                aside.classList.toggle('active');
+            });
+
+            // Profile Modal Functionality
+            const profileModal = document.getElementById("profileModal");
+            const viewProfileBtn = document.getElementById("view-profile");
+            const closeProfileBtn = document.getElementById("closeProfileModal");
+
+            viewProfileBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                profileModal.style.display = "block";
+            });
+
+            closeProfileBtn.addEventListener('click', function() {
+                profileModal.style.display = "none";
+            });
+
+            // Edit Profile Modal Functionality
+            const editProfileModal = document.getElementById("editProfileModal");
+            const editProfileButton = document.getElementById("edit-profile-button");
+            const closeEditProfileModal = document.getElementById("closeEditProfileModal");
+
+            editProfileButton.addEventListener("click", function(event) {
+                event.preventDefault();
+                editProfileModal.style.display = "block";
+            });
+
+            closeEditProfileModal.addEventListener("click", function() {
+                editProfileModal.style.display = "none";
+            });
+
+            // Consolidated window click handler
+            window.addEventListener("click", function(event) {
+                const modals = [profileModal, editProfileModal];
+                modals.forEach(modal => {
+                    if (modal && event.target === modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

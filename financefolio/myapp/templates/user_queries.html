@@ -143,8 +143,8 @@
             {% for query in queries %}
                 <div class="query-card">
                     <h5>{{ query.title }}</h5>
-                    
-                    <!-- Status Badge -->
+                {% comment %} status hided to unhide status will come   {% endcomment %}
+                    {% comment %} <!-- Status Badge -->
                     {% if query.status == 'pending' %}
                         <span class="status-badge status-pending">Pending</span>
                     {% elif query.status == 'resolved' %}
@@ -153,7 +153,7 @@
                         <span class="status-badge status-rejected">Rejected</span>
                     {% else %}
                         <span class="status-badge status-pending">{{ query.get_status_display }}</span>
-                    {% endif %}
+                    {% endif %} {% endcomment %}
 
                     <p><em>Created at: {{ query.created_at|date:"F d, Y H:i A" }}</em></p>
 

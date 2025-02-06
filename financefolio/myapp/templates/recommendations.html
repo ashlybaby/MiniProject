@@ -1,65 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Recommendations</title>
+{% extends 'newbase.html' %}
+
+{% block content %}
     <style>
-        body, html {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        header {
-            background-color: #283e4a;
-            color: #fff;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .dashboard-button, .logout-button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            text-decoration: none;
-            transition: background-color 0.3s;
-        }
-        
-        .logout-button {
-            background-color: #d9534f;
-        }
-        
-        .dashboard-button:hover, .logout-button:hover {
-            opacity: 0.9;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-            flex-grow: 1;
-        }
-        
-        h2 {
-            text-align: center;
-            color: #283e4a;
-            font-size: 2em;
-            margin-bottom: 30px;
-        }
-        
         .recommendation-list {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -116,27 +58,10 @@
         .recommendation-action:hover {
             background-color: #218838;
         }
-        
-        footer {
-            background-color: #283e4a;
-            color: #fff;
-            text-align: center;
-            padding: 15px;
-            margin-top: auto;
-        }
     </style>
-</head>
-<body>
-    <header>
-        <a href="{% url 'user_dashboard' %}" class="dashboard-button">Dashboard</a>
-        <form action="{% url 'logout' %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="logout-button">Logout</button>
-        </form>
-    </header>
     
     <div class="container">
-        <h2>Your Recommendations</h2>
+        
 
         <ul class="recommendation-list">
             {% for recommendation in recommendations %}
@@ -165,9 +90,4 @@
             {% endfor %}
         </ul>
     </div>
-
-    <footer>
-        <p>&copy; 2024 FinanceFolio. All Rights Reserved.</p>
-    </footer>
-</body>
-</html>
+{% endblock %}

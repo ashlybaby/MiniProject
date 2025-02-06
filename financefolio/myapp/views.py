@@ -635,7 +635,7 @@ def feedback_list(request):
  
 from django.shortcuts import render
 from .forms import GoalForm
-
+@login_required
 def goal_view(request):
     form = GoalForm()  # Create an instance of the form
     return render(request, 'goal_tracking.html', {'form': form})  # Pass the form to the template
@@ -742,7 +742,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .forms import GoalForm
 from .models import Goal
-
+@login_required
 def edit_goal(request):
     if request.method == 'POST':
         goal_id = request.POST.get('id')

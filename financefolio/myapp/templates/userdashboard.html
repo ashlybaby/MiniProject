@@ -675,6 +675,15 @@
         <div class="nav-left">
             <span>Welcome  {{ user.first_name }} to FINANCE FOLIO </span>
         </div>
+        {% comment %} <li><a href="{% url 'budget_view' %}" id="budgeting-menu"><i class="fas fa-wallet"></i> <span>Track Expense</span></a></li>
+        <li><a href="{% url 'goal_view' %}" id="goal-stracking-menu"><i class="fas fa-bullseye"></i> <span>Goal Tracking</span></a></li>
+        <li><a href="{% url 'goal_progress'%}" id="goal-progress-menu"><i class="fas fa-chart-pie"></i> <span>Goal Progress</span></a></li>
+        <li><a href="{% url 'feedback_list11'%}">View Feedbacks</a></li>
+                    <li><a href="{% url 'guidance_view'%}">Guidance</a></li>
+                    <li><a href="{% url 'submit_query'%}">Add Query</a></li>
+                    <li><a href="{% url 'user_query_list'%}">View Query</a></li>
+                    <li><a href="{% url 'articles_list' %}" id="articles-menu"><i class="fas fa-bullhorn"></i> <span>Articles</span></a></li>
+                     {% endcomment %}
         
         <div class="nav-right">
             <div class="dropdown">
