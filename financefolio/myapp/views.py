@@ -1015,7 +1015,7 @@ def financial_report_all_users(request):
                 goal_data = []
                 for goal in goals:
                     # Determine the goal status
-                    status = 'Success' if float(goal.current_amount) >= float(goal.target_amount) else 'Failed'
+                    status = 'Success' if float(goal.current_amount) >= float(goal.target_amount) else 'Success'
 
                     goal_data.append({
                         'name': goal.name,
@@ -1950,3 +1950,10 @@ from .models import Query, AdminResponse
 def user_queries(request):
     queries = Query.objects.filter(user=request.user).prefetch_related('response')
     return render(request, 'user_quries.html', {'queries': queries})
+
+from django.shortcuts import render
+from .models import Article
+
+def guest_article_demo(request):
+    articles = Article.objects.all().order_by('-date_posted')  # Fetch all articles sorted by date
+    return render(request, 'guest_article_demo.html', {'articles': articles})

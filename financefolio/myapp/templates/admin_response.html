@@ -7,16 +7,67 @@
     <title>Admin Query Response</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            background-color: #1a242f;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.8em;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 50px;
+        }
+        .home-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 1.1em;
+        }
+        .container {
+            margin-top: 80px; /* Adjust margin to avoid overlap with fixed header */
+        }
+        footer {
+            background-color: #1a242f;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+    </style>
 </head>
 <body>
 
+    <div class="header">
+        <a href="{% url 'index' %}" class="home-icon" title="Home">
+            <i class="fas fa-home"></i> <!-- Home icon -->
+        </a>
+        <span>Queries & Responds</span>
+    </div>  <!-- Added header here -->
+
 <div class="container mt-5">
-    <h2>Query Details</h2>
+    {% comment %} <h2>Query Details</h2> {% endcomment %}
     <div class="card p-3 mb-3">
         <h4>{{ query.title }}</h4>
         <p><strong>User:</strong> {{ query.user.email }}</p>
         <p><strong>Description:</strong> {{ query.description }}</p>
-        <p><strong>Status:</strong> 
+        {% comment %} <p><strong>Status:</strong> 
             {% if query.status == 'P' %}
                 <span class="badge bg-warning">Pending</span>
             {% elif query.status == 'R' %}
@@ -24,7 +75,7 @@
             {% elif query.status == 'C' %}
                 <span class="badge bg-danger">Closed</span>
             {% endif %}
-        </p>
+        </p> {% endcomment %}
         <p><strong>Created At:</strong> {{ query.created_at }}</p>
     </div>
 
@@ -51,5 +102,9 @@
     <a href="{% url 'admin_query_list' %}" class="btn btn-secondary mt-3">Back to Queries</a>
 </div>
 
+  <!-- Added footer here -->
+<footer>
+    © 2024 Finance Folio
+</footer>
 </body>
 </html>

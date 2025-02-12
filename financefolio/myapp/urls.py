@@ -90,6 +90,7 @@ urlpatterns = [
     path('query/edit/<int:query_id>/', views.edit_query, name='edit_query'),
     path('query/delete/<int:query_id>/', views.delete_query, name='delete_query'),
     path('response/<int:query_id>/', views.admin_response_view, name='admin_response'),
+    path('guest/articles/', views.guest_article_demo, name='guest_article_demo'),
 
 
     

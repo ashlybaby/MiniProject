@@ -101,7 +101,7 @@
             background: #eef5ff;
             border-left: 5px solid #1e90ff;
             padding: 10px;
-            margin-top: 15px;
+            margin-top: 10px;
             border-radius: 5px;
         }
 
@@ -143,17 +143,7 @@
             {% for query in queries %}
                 <div class="query-card">
                     <h5>{{ query.title }}</h5>
-                {% comment %} status hided to unhide status will come   {% endcomment %}
-                    {% comment %} <!-- Status Badge -->
-                    {% if query.status == 'pending' %}
-                        <span class="status-badge status-pending">Pending</span>
-                    {% elif query.status == 'resolved' %}
-                        <span class="status-badge status-resolved">Resolved</span>
-                    {% elif query.status == 'rejected' %}
-                        <span class="status-badge status-rejected">Rejected</span>
-                    {% else %}
-                        <span class="status-badge status-pending">{{ query.get_status_display }}</span>
-                    {% endif %} {% endcomment %}
+                    <p>{{ query.description }}</p>  <!-- Ensure query description is displayed properly -->
 
                     <p><em>Created at: {{ query.created_at|date:"F d, Y H:i A" }}</em></p>
 

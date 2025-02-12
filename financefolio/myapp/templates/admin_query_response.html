@@ -16,7 +16,7 @@
         <h4>{{ query.title }}</h4>
         <p><strong>User:</strong> {{ query.user.email }}</p>
         <p><strong>Description:</strong> {{ query.description }}</p>
-        <p><strong>Status:</strong> 
+        {% comment %} <p><strong>Status:</strong> 
             {% if query.status == 'P' %}
                 <span class="badge bg-warning">Pending</span>
             {% elif query.status == 'R' %}
@@ -24,7 +24,7 @@
             {% elif query.status == 'C' %}
                 <span class="badge bg-danger">Closed</span>
             {% endif %}
-        </p>
+        </p> {% endcomment %}
         <p><strong>Created At:</strong> {{ query.created_at }}</p>
     </div>
 
