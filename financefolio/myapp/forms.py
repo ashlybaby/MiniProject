@@ -626,6 +626,18 @@ class ArticleForm(forms.ModelForm):
         model = Article
         fields = ['title', 'content', 'category']
 
+# class QueryForm(forms.ModelForm):
+#     class Meta:
+#         model = Query
+#         fields = ['title', 'description']
+#         widgets = {
+#             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter query title'}),
+#             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe your query'}),
+#         }
+
+from django import forms
+from .models import Query
+
 class QueryForm(forms.ModelForm):
     class Meta:
         model = Query
@@ -634,6 +646,23 @@ class QueryForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter query title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe your query'}),
         }
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if not title:
+            raise forms.ValidationError("Title field cannot be empty.")
+        if len(title) < 5:
+            raise forms.ValidationError("Title must be at least 5 characters long.")
+        return title
+
+    def clean_description(self):
+        description = self.cleaned_data.get('description')
+        if not description:
+            raise forms.ValidationError("Description field cannot be empty.")
+        if len(description) < 10:
+            raise forms.ValidationError("Description must be at least 10 characters long.")
+        return description
+
 
 
 from django import forms
