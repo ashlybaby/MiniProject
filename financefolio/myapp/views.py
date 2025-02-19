@@ -1656,6 +1656,7 @@ def read_csv(request):
 # Combine predictions with dates
     future_data['date'] = future_dates
     print(future_data['date'])
+    
 
     future_predictions = future_data[['date', 'predicted_expense']]
 
