@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Challenges</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: 20px auto;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #4CAF50;
+            color: white;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            height: 15px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress {
+            height: 15px;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            margin-top: 5px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: 1px solid #4CAF50;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .accepted {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            cursor: not-allowed;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Load accepted challenges from local storage
+            const acceptedChallenges = JSON.parse(localStorage.getItem('acceptedChallenges')) || [];
+
+            acceptedChallenges.forEach(challengeId => {
+                const button = document.getElementById("accept-btn-" + challengeId);
+                if (button) {
+                    button.innerText = 'Accepted';
+                    button.classList.add('accepted');
+                    button.disabled = true;
+                }
+            });
+
+            // Accept challenge event
+            document.querySelectorAll('.accept-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const challengeId = this.getAttribute("data-id");
+                    this.innerText = 'Accepted';
+                    this.classList.add('accepted');
+                    this.disabled = true;
+
+                    acceptedChallenges.push(challengeId);
+                    localStorage.setItem('acceptedChallenges', JSON.stringify(acceptedChallenges));
+                });
+            });
+
+            // Initialize progress bars
+            document.querySelectorAll('.progress').forEach(progressBar => {
+                const challengeId = progressBar.getAttribute("data-id");
+                const currentAmount = parseFloat(progressBar.getAttribute("data-current"));
+                const targetAmount = parseFloat(progressBar.getAttribute("data-target"));
+                updateProgress(challengeId, currentAmount, targetAmount);
+            });
+        });
+
+        function updateProgress(challengeId, currentAmount, targetAmount) {
+            let progressBar = document.getElementById("progress-" + challengeId);
+            if (progressBar) {
+                let percentage = (currentAmount / targetAmount) * 100;
+                progressBar.style.width = percentage + "%";
+            }
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Available Challenges</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Challenge</th>
+                <th>Target</th>
+                <th>Duration</th>
+                <th>Reward</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for challenge in challenges %}
+            <tr>
+                <td>{{ challenge.name }}</td>
+                <td>₹{{ challenge.target_amount }}</td>
+                <td>{{ challenge.duration_days }} days</td>
+                <td>{{ challenge.points }} Points</td>
+                <td>
+                    <a id="accept-btn-{{ challenge.id }}" class="btn accept-btn" href="javascript:void(0);" data-id="{{ challenge.id }}">Accept Challenge</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; font-style: italic;">No available challenges.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% comment %} <h2>Your Active Challenges</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Challenge</th>
+                <th>Progress</th>
+                <th>Amount Saved</th>
+                <th>Target Amount</th>
+                <th>Action</th>
+            </tr>
+        </thead> {% endcomment %}
+        {% comment %} <tbody>
+            {% for user_challenge in user_challenges %}
+            <tr>
+                <td>{{ user_challenge.challenge.name }}</td>
+                <td>
+                    <div class="progress-bar">
+                        <div class="progress" 
+                            id="progress-{{ user_challenge.challenge.id }}"
+                            data-id="{{ user_challenge.challenge.id }}"
+                            data-current="{{ user_challenge.progress_amount }}"
+                            data-target="{{ user_challenge.challenge.target_amount }}">
+                        </div>
+                    </div>
+                </td>
+                {% comment %} <td>₹{{ user_challenge.progress_amount }}</td>
+                <td>₹{{ user_challenge.challenge.target_amount }}</td>
+                <td>
+                    <a class="btn" href="{% url 'update_progress' user_challenge.challenge.id 100 %}" 
+                        onclick="setTimeout(() => location.reload(), 500);">
+                        Add ₹100
+                    </a>
+                </td>
+            </tr> {% endcomment %}
+            {% comment %} {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; font-style: italic;">No active challenges.</td>
+            </tr>
+            {% endfor %} {% endcomment %}
+        {% comment %} </tbody> {% endcomment %}
+    {% comment %} </table> {% endcomment %}
+</div>
+
+</body>
+</html>

@@ -91,10 +91,17 @@ urlpatterns = [
     path('query/delete/<int:query_id>/', views.delete_query, name='delete_query'),
     path('response/<int:query_id>/', views.admin_response_view, name='admin_response'),
     path('guest/articles/', views.guest_article_demo, name='guest_article_demo'),
+    path('challenges/', views.challenge_list, name='challenge_list'),
+    path('challenges/accept/<int:challenge_id>/', views.accept_challenge, name='accept_challenge'),
+    path('challenges/update/<int:challenge_id>/<int:amount>/', views.update_progress, name='update_progress'),
+    path('add-challenge/', views.add_challenge, name='add_challenge'),
+    path('user-challenge-expenses/', views.user_challenge_expenses, name='user_challenge_expenses'),
+]
+
 
 
     
-]
+
 
 
 

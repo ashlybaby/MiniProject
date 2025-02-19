@@ -72,7 +72,7 @@
                 <div class="recommendation-body">
                     <p class="recommendation-description">{{ recommendation.description }}</p>
                     {% if recommendation.category %}
-                        <a href="{% url 'category_detail' category=recommendation.category %}" class="recommendation-action">Learn More</a>
+                        <a href="{% url 'category_detail' category=recommendation.category %}" id="recommentation" class="recommendation-action">Learn More</a>
                     {% else %}
                         <span class="recommendation-action" style="background-color: #6c757d;">No Details Available</span>
                     {% endif %}

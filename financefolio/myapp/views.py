@@ -1523,20 +1523,8 @@ def export_to_csv(request):
 
 #     return render(request, 'predict_expense.html', context)
 
-import pandas as pd
-import joblib
-from django.shortcuts import render
 
-# Path to the trained models file
-models_file_path = 'expense_prediction_models.pkl'
 
-import pandas as pd
-import joblib
-from django.shortcuts import render
-
-# Paths to files
-models_file_path = 'expense_prediction_models.pkl'
-csv_file_path = 'expenses.csv'
 
 import pandas as pd
 import joblib
@@ -1658,12 +1646,21 @@ def read_csv(request):
         'date_numeric': [d.toordinal() for d in future_dates],
         'category_num': [0] * len(future_dates)  # Assuming a default category
     })
+    
 
     future_data['predicted_expense'] = model.predict(future_data[['date_numeric', 'category_num']])
 
-    # Combine predictions with dates
+# Convert negative values to positive
+    future_data['predicted_expense'] = future_data['predicted_expense'].abs()
+
+# Combine predictions with dates
     future_data['date'] = future_dates
+    print(future_data['date'])
+
     future_predictions = future_data[['date', 'predicted_expense']]
+
+    
+    print(future_predictions)
 
     # Render the predictions and the current expense data
     return render(request, 'display_expenses.html', {
@@ -1957,3 +1954,181 @@ from .models import Article
 def guest_article_demo(request):
     articles = Article.objects.all().order_by('-date_posted')  # Fetch all articles sorted by date
     return render(request, 'guest_article_demo.html', {'articles': articles})
+
+#new change challenge#
+
+from .models import Challenge, UserChallenge, Reward
+from django.contrib.auth.decorators import login_required
+from .models import Challenge, UserChallenge
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Challenge, UserChallenge
+
+@login_required
+def challenge_list(request):
+    # Get unique challenges
+    challenges = Challenge.objects.all().distinct()
+
+    # Get only unique active user challenges
+    user_challenges = UserChallenge.objects.filter(user=request.user, is_completed=False).distinct()
+
+    # Remove duplicates using a set
+    unique_challenges = list(set(challenges))
+
+    return render(request, 'challenge_list.html', {
+        'challenges': unique_challenges,
+        'user_challenges': user_challenges
+    })
+
+
+@login_required
+def accept_challenge(request, challenge_id):
+    challenge = get_object_or_404(Challenge, id=challenge_id)
+    
+    # Check if the challenge is already accepted by the user
+    existing_challenge = UserChallenge.objects.filter(user=request.user, challenge=challenge).exists()
+    
+    if not existing_challenge:
+        UserChallenge.objects.create(user=request.user, challenge=challenge)
+    
+    return redirect('challenge_list')
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import UserChallenge, Reward
+
+@login_required
+def update_progress(request, challenge_id, amount):
+    # Get the user's challenge instance
+    user_challenge = get_object_or_404(UserChallenge, user=request.user, challenge_id=challenge_id)
+    
+    # Update the progress of the user challenge
+    user_challenge.update_progress(amount)
+
+    # Check if the challenge is completed
+    if user_challenge.is_completed:
+        # Create or get the reward for the user
+        reward, created = Reward.objects.get_or_create(user=request.user)
+        reward.add_points(user_challenge.earned_points)
+
+    # Redirect to the challenge list view to display updated challenges
+    return redirect('challenge_list')  # Ensure 'challenge_list' is the name of your URL pattern for the challenge list
+
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import ChallengeForm
+from .models import Challenge  # ✅ Import the Challenge model for duplicate checking
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import ChallengeForm
+from .models import Challenge
+
+@login_required
+def add_challenge(request):
+    if request.method == "POST":
+        form = ChallengeForm(request.POST)
+
+        if form.is_valid():
+            challenge_name = form.cleaned_data['name']
+
+            # ✅ Check if challenge already exists before saving
+            if Challenge.objects.filter(name=challenge_name).exists():
+                return JsonResponse({"success": False, "message": "Challenge already exists."}, status=400)
+
+            form.save()
+            messages.success(request, "Challenge added successfully!")  # ✅ Store the success message
+
+            # ✅ Return messages in JSON response
+            return JsonResponse({
+                "success": True, 
+                "message": "Challenge added successfully!"
+            })
+        
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    else:
+        form = ChallengeForm()
+
+    return render(request, 'add_challenge.html', {'form': form})
+
+
+# from django.http import JsonResponse
+# from .forms import ChallengeForm
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from .models import Challenge  # Import your Challenge model
+
+# @login_required
+# def add_challenge(request):
+#     if request.method == "POST":
+#         form = ChallengeForm(request.POST)
+#         if form.is_valid():
+#             # Check if a challenge with the same name already exists
+#             challenge_name = form.cleaned_data['name']  # Assuming 'name' is a field in your ChallengeForm
+#             existing_challenge = Challenge.objects.filter(name=challenge_name).first()
+
+#             if existing_challenge:
+#                 return JsonResponse({"success": False, "message": "Challenge already exists."}, status=400)
+
+#             # Save the new challenge
+#             form.save()
+#             messages.success(request, "Challenge added successfully!")
+#             return JsonResponse({"success": True, "message": "Challenge added successfully!"})
+#         else:
+#             # Log the form errors for debugging
+#             print("Form errors:", form.errors)  # Print errors to the console
+#             return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+#     else:
+#         form = ChallengeForm()
+
+#     return render(request, 'add_challenge.html', {'form': form})
+
+
+
+
+from django.shortcuts import render
+from .models import UserChallenge, Expense
+from django.utils import timezone
+
+def user_challenge_expenses(request):
+    user = request.user
+    active_challenges = UserChallenge.objects.filter(user=user)
+
+    # Prepare a dictionary to hold challenge scores
+    challenge_scores = {}
+
+    for user_challenge in active_challenges:
+        # Get the challenge start and end dates
+        start_date = user_challenge.start_date
+        end_date = start_date + timezone.timedelta(days=user_challenge.challenge.duration_days)
+
+        # Fetch expenses that fall within the challenge date range
+        expenses = Expense.objects.filter(
+            budget__user=user,  # Assuming the Budget model has a ForeignKey to User
+            date__range=(start_date, end_date)
+        )
+
+        # Calculate the total expenses for the challenge
+        total_expense = sum(expense.actual_expense for expense in expenses)
+
+        # Store the total expense in the challenge_scores dictionary
+        challenge_scores[user_challenge.challenge.id] = {
+            'challenge': user_challenge.challenge,
+            'total_expense': total_expense,
+            'score': 0  # Initialize score
+        }
+
+        # Calculate score based on the total expense and challenge target amount
+        if total_expense >= user_challenge.challenge.target_amount:
+            challenge_scores[user_challenge.challenge.id]['score'] = user_challenge.challenge.points
+
+    return render(request, 'user_challenge_expenses.html', {
+        'active_challenges': active_challenges,
+        'challenge_scores': challenge_scores
+    })

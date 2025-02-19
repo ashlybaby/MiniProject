@@ -676,3 +676,35 @@ class AdminResponseForm(forms.ModelForm):
             'response_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter your response...'}),
         }
 
+from django import forms
+from .models import Challenge
+
+class ChallengeForm(forms.ModelForm):
+    class Meta:
+        model = Challenge
+        fields = ['name', 'description', 'target_amount', 'duration_days', 'points']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'validate-field'}),
+            'name': forms.TextInput(attrs={'class': 'validate-field'}),
+            'target_amount': forms.NumberInput(attrs={'class': 'validate-field', 'min': 1}),
+            'duration_days': forms.NumberInput(attrs={'class': 'validate-field', 'min': 1}),
+            'points': forms.NumberInput(attrs={'class': 'validate-field', 'min': 1}),
+        }
+
+    def clean_target_amount(self):
+        target_amount = self.cleaned_data.get('target_amount')
+        if target_amount <= 0:
+            raise forms.ValidationError("Target amount must be greater than 0.")
+        return target_amount
+
+    def clean_duration_days(self):
+        duration_days = self.cleaned_data.get('duration_days')
+        if duration_days <= 0:
+            raise forms.ValidationError("Duration must be at least 1 day.")
+        return duration_days
+
+    def clean_points(self):
+        points = self.cleaned_data.get('points')
+        if points <= 0:
+            raise forms.ValidationError("Points must be a positive number.")
+        return points
