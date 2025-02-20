@@ -97,10 +97,10 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'financefolio_fullcastat',
-#         'USER': 'financefolio_fullcastat',
-#         'PASSWORD': '1fd9d3f843bac9926296dfe0e8eac30505008942',
-#         'HOST': 'd25xr.h.filess.io',
+#         'NAME': 'financefolio_shelffact',
+#         'USER': 'financefolio_shelffact',
+#         'PASSWORD': '1d4bea88b49be505c1e9b2e11a19cc58e632d128',
+#         'HOST': '8z42u.h.filess.io',
 #         'PORT': '3307',
 #         'OPTIONS': {
 #             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

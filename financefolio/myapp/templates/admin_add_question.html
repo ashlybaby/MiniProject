@@ -1,0 +1,255 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Question - Admin Panel</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --border-color: #bdc3c7;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header, footer {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 6rem 2rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .message.success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .message.error {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .errorlist {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .home-icon {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            color: white;
+            font-size: 1.5em;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{% url 'admin_dashboard' %}" class="home-icon" title="Back to Admin Dashboard">
+            <i class="fas fa-home"></i>
+        </a>
+        <h2> Quiz Questions</h2>
+        <p>Enhance the learning experience by adding well-structured and engaging questions to the quiz.</p>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Display Success and Error Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" action="{% url 'add_quiz_question' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_question">Question:</label>
+                    {{ form.question }}
+                    {% if form.question.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.question.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_option1">Option 1:</label>
+                    {{ form.option1 }}
+                    {% if form.option1.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.option1.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_option2">Option 2:</label>
+                    {{ form.option2 }}
+                    {% if form.option2.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.option2.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_option3">Option 3:</label>
+                    {{ form.option3 }}
+                    {% if form.option3.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.option3.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_option4">Option 4:</label>
+                    {{ form.option4 }}
+                    {% if form.option4.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.option4.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_correct_option">Correct Answer:</label>
+                    {{ form.correct_option }}
+                    {% if form.correct_option.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.correct_option.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_explanation">Explanation:</label>
+                    {{ form.explanation }}
+                    {% if form.explanation.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.explanation.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    <ul class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <button type="submit" class="btn">Submit</button>
+            </form>
+        </div>
+    </main>
+    <footer>
+        © 2024 Finance Folio
+    </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let messages = document.querySelectorAll(".message");
+            messages.forEach((message) => {
+                setTimeout(() => {
+                    message.style.display = "none";
+                }, 5000); // Message stays for 5 seconds (5000ms)
+            });
+        });
+    </script>
+    
+</body>
+</html>

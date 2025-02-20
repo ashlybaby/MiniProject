@@ -96,7 +96,10 @@ urlpatterns = [
     path('challenges/update/<int:challenge_id>/<int:amount>/', views.update_progress, name='update_progress'),
     path('add-challenge/', views.add_challenge, name='add_challenge'),
     path('user-challenge-expenses/', views.user_challenge_expenses, name='user_challenge_expenses'),
+    path('add-question/', views.add_quiz_question, name='add_quiz_question'),
+    path('quiz/', views.take_quiz, name='take_quiz'),
 ]
+
 
 
 

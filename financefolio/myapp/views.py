@@ -2133,3 +2133,78 @@ def user_challenge_expenses(request):
         'active_challenges': active_challenges,
         'challenge_scores': challenge_scores
     })
+#-----------------------------------------------------------------------------------#
+
+
+from django.shortcuts import render
+from django.contrib import messages
+from .forms import QuizQuestionForm
+
+@login_required
+def add_quiz_question(request):
+    form = QuizQuestionForm()
+
+    if request.method == "POST":
+        form = QuizQuestionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Question submitted successfully!")  # Success message
+            form = QuizQuestionForm()  # Reset form after success
+        else:
+            messages.error(request, "There was an error submitting the question. Please check the form.")  # Error message
+
+    return render(request, "admin_add_question.html", {"form": form})
+
+
+from django.shortcuts import render
+from .models import QuizQuestion
+
+@login_required
+def take_quiz(request):
+    if request.method == "POST":
+        user_answers = request.POST
+        questions = QuizQuestion.objects.all()
+        results = []
+        unanswered_questions = []
+
+        for question in questions:
+            user_answer = user_answers.get(f'question_{question.id}')
+            if not user_answer:  # Check for unanswered questions
+                unanswered_questions.append(question)
+            else:
+                is_correct = user_answer == question.correct_option
+                results.append({
+                    'question': question.question,
+                    'user_answer': user_answer,
+                    'correct_answer': question.correct_option,
+                    'explanation': question.explanation,
+                    'is_correct': is_correct
+                })
+
+        if unanswered_questions:
+            return render(request, 'quiz.html', {
+                'questions': questions,
+                'error': "All questions are mandatory. Please answer all questions before submitting."
+            })
+
+        return render(request, 'quiz_result.html', {'results': results})
+
+    questions = QuizQuestion.objects.all()
+    return render(request, 'quiz.html', {'questions': questions})
+
+def quiz_results(request):
+    # Example: Assuming results is a list of dictionaries
+    results = [
+        {"question": "What is 2 + 2?", "user_answer": "4", "correct_answer": "4", "is_correct": True, "explanation": "Basic math"},
+        {"question": "Capital of France?", "user_answer": "London", "correct_answer": "Paris", "is_correct": False, "explanation": "Paris is the capital"},
+        # Add more results as needed
+    ]
+
+    total_questions = len(results)
+    correct_answers = sum(1 for result in results if result["is_correct"])  # Count correct answers
+
+    return render(request, 'quiz_results.html', {
+        'results': results,
+        'total_questions': total_questions,
+        'correct_answers': correct_answers
+    })

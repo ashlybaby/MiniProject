@@ -708,3 +708,44 @@ class ChallengeForm(forms.ModelForm):
         if points <= 0:
             raise forms.ValidationError("Points must be a positive number.")
         return points
+#---------------------------------------------------------------------------------------------------#
+from django import forms
+from .models import QuizQuestion
+
+class QuizQuestionForm(forms.ModelForm):
+    class Meta:
+        model = QuizQuestion
+        fields = ['question', 'option1', 'option2', 'option3', 'option4', 'correct_option', 'explanation']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        correct_option = cleaned_data.get("correct_option")
+        explanation = cleaned_data.get("explanation")
+        
+        options = [
+            cleaned_data.get("option1"),
+            cleaned_data.get("option2"),
+            cleaned_data.get("option3"),
+            cleaned_data.get("option4"),
+        ]
+
+        # Ensure all options are filled
+        if any(opt is None or opt.strip() == "" for opt in options):
+            raise forms.ValidationError("All four options must be provided.")
+
+        # Ensure the correct option matches one of the actual values
+        if correct_option not in options:
+            raise forms.ValidationError("The correct answer must match one of the provided options.")
+
+        # Ensure no duplicate options
+        if len(set(options)) < 4:
+            raise forms.ValidationError("All four options must be unique.")
+
+        # Ensure explanation is at least 5 characters long
+        if explanation and len(explanation.strip()) < 5:
+            raise forms.ValidationError("The explanation must be at least 5 characters long.")
+
+        return cleaned_data
+
+
+

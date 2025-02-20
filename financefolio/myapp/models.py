@@ -344,3 +344,19 @@ class Reward(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.total_points} Points"
+
+
+
+from django.db import models
+
+class QuizQuestion(models.Model):
+    question = models.TextField()
+    option1 = models.CharField(max_length=255)
+    option2 = models.CharField(max_length=255)
+    option3 = models.CharField(max_length=255)
+    option4 = models.CharField(max_length=255)
+    correct_option = models.CharField(max_length=10)  # Example: "option2"
+    explanation = models.TextField()
+
+    def __str__(self):
+        return self.question
