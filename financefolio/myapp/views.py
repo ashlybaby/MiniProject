@@ -2208,3 +2208,81 @@ def quiz_results(request):
         'total_questions': total_questions,
         'correct_answers': correct_answers
     })
+#...................................................................................#
+from django.contrib import messages  # Import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import QuizQuestion
+from .forms import QuizQuestionForm
+
+@login_required
+def manage_quiz_questions(request):
+    questions = QuizQuestion.objects.all().order_by('-id')
+    return render(request, 'manage_quiz_questions.html', {'questions': questions})
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .models import QuizQuestion
+
+@login_required
+@require_POST
+def update_question(request, question_id):
+    try:
+        question = QuizQuestion.objects.get(id=question_id)
+        
+        # Update the question fields
+        question.question = request.POST.get('question')
+        question.option1 = request.POST.get('option1')
+        question.option2 = request.POST.get('option2')
+        question.option3 = request.POST.get('option3')
+        question.option4 = request.POST.get('option4')
+        question.correct_option = request.POST.get('correct_option')
+        question.explanation = request.POST.get('explanation')
+        
+        # Validate the data
+        if not all([question.question, question.option1, question.option2, 
+                   question.option3, question.option4, question.correct_option]):
+            return JsonResponse({
+                'success': False,
+                'message': 'All fields are required'
+            }, status=400)
+        
+        # Save the question
+        question.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Question updated successfully!'
+        })
+        
+    except QuizQuestion.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Question not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+
+@login_required
+@require_POST
+def delete_question(request, question_id):
+    try:
+        question = QuizQuestion.objects.get(id=question_id)
+        question.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Question deleted successfully!'
+        })
+    except QuizQuestion.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Question not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)

@@ -98,7 +98,13 @@ urlpatterns = [
     path('user-challenge-expenses/', views.user_challenge_expenses, name='user_challenge_expenses'),
     path('add-question/', views.add_quiz_question, name='add_quiz_question'),
     path('quiz/', views.take_quiz, name='take_quiz'),
+    path('manage-quiz-questions/', views.manage_quiz_questions, name='manage_quiz_questions'),
+    path('quiz/update/<int:question_id>/', views.update_question, name='update_question'),
+    path('quiz/delete/<int:question_id>/', views.delete_question, name='delete_question'),
+    # ... other URLs ...
 ]
+
+
 
 
 
